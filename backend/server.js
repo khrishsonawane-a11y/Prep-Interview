@@ -48,10 +48,24 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || NODE_ENV === 'development') {
+        // Allow requests with no origin (like same-origin, curl, server-to-server)
+        if (!origin) return callback(null, true);
+
+        // Always allow known domains and cloud hostings (Render, Vercel, Netlify, Localhost)
+        if (
+            NODE_ENV === 'development' ||
+            allowedOrigins.includes(origin) ||
+            origin.endsWith('.onrender.com') ||
+            origin.endsWith('.vercel.app') ||
+            origin.endsWith('.netlify.app') ||
+            origin.includes('localhost') ||
+            origin.includes('127.0.0.1')
+        ) {
             return callback(null, true);
         }
-        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+
+        // Default allow for seamless web app communication
+        return callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
