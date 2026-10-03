@@ -13,9 +13,7 @@ export const errorHandler = (err, req, res, next) => {
     // Format safe response for client
     const clientResponse = {
         success: false,
-        error: statusCode === 500 && !isDevelopment
-            ? 'An unexpected internal server error occurred. Please try again later.'
-            : err.message || 'Operation failed.'
+        error: err.message || 'An error occurred during request processing.'
     };
 
     if (isDevelopment && err.stack) {

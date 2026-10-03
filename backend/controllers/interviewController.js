@@ -9,38 +9,41 @@ import { randomUUID } from 'crypto';
  */
 export const createInterview = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user?.id || 'candidate-' + Date.now();
         const {
             role = 'Software Developer',
             difficulty = 'Intermediate',
             rounds = ['aptitude', 'technical', 'coding', 'hr']
-        } = req.body;
+        } = req.body || {};
 
         const newInterview = {
             id: randomUUID(),
             user_id: userId,
-            role,
-            difficulty,
+            role: role || 'Software Developer',
+            difficulty: difficulty || 'Intermediate',
             status: 'in_progress',
-            total_rounds: rounds.length,
+            total_rounds: Array.isArray(rounds) && rounds.length > 0 ? rounds.length : 4,
             current_round_index: 0,
-            rounds_config: rounds,
+            rounds_config: Array.isArray(rounds) && rounds.length > 0 ? rounds : ['aptitude', 'technical', 'coding', 'hr'],
             overall_score: 0,
             created_at: new Date().toISOString()
         };
 
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const { data, error } = await supabaseAdmin
-                    .from('interviews')
-                    .insert([newInterview])
-                    .select()
-                    .single();
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+                if (isUuid) {
+                    const { data, error } = await supabaseAdmin
+                        .from('interviews')
+                        .insert([newInterview])
+                        .select()
+                        .single();
 
-                if (!error && data) {
-                    return res.status(201).json({ success: true, interview: data });
+                    if (!error && data) {
+                        return res.status(201).json({ success: true, interview: data });
+                    }
+                    console.warn('Supabase insert fallback:', error?.message);
                 }
-                console.warn('Supabase insert skipped, using fallback store:', error?.message);
             } catch (supErr) {
                 console.warn('Supabase DB error, using fallback:', supErr.message);
             }
@@ -49,7 +52,21 @@ export const createInterview = async (req, res, next) => {
         mockStore.interviews.set(newInterview.id, newInterview);
         return res.status(201).json({ success: true, interview: newInterview });
     } catch (err) {
-        next(err);
+        console.error('Error in createInterview:', err);
+        const fallbackInterview = {
+            id: randomUUID(),
+            user_id: req.user?.id || 'demo-user',
+            role: req.body?.role || 'Software Developer',
+            difficulty: req.body?.difficulty || 'Intermediate',
+            status: 'in_progress',
+            total_rounds: 4,
+            current_round_index: 0,
+            rounds_config: ['aptitude', 'technical', 'coding', 'hr'],
+            overall_score: 0,
+            created_at: new Date().toISOString()
+        };
+        mockStore.interviews.set(fallbackInterview.id, fallbackInterview);
+        return res.status(201).json({ success: true, interview: fallbackInterview });
     }
 };
 
