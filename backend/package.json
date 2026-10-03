@@ -1,0 +1,33 @@
+{
+  "name": "ai-interview-preparation-backend",
+  "version": "1.0.0",
+  "description": "Production Backend for AI Interview Preparation System",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "ai",
+    "interview-preparation",
+    "groq",
+    "supabase",
+    "express"
+  ],
+  "author": "AI Interview Preparation System Team",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^2.27.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "groq-sdk": "^0.15.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.23.1",
+    "ws": "^8.22.0"
+  }
+}

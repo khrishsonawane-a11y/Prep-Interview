@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+  <div id="navbar-mount"></div>
+
+  <main class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Create Account</h1>
+        <p>Set up your candidate profile to begin multi-round interview practice</p>
+      </div>
+
+      <form class="auth-form" id="signup-form">
+        <div class="form-group">
+          <label class="form-label" for="signup-name">Full name</label>
+          <input type="text" id="signup-name" class="form-control" placeholder="Your name" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email address</label>
+          <input type="email" id="signup-email" class="form-control" placeholder="name@company.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Password</label>
+          <div class="password-input-wrap">
+            <input type="password" id="signup-password" class="form-control" placeholder="Create a password (min. 6 characters)" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="signup-confirm-password">Confirm password</label>
+          <div class="password-input-wrap">
+            <input type="password" id="signup-confirm-password" class="form-control" placeholder="Re-enter password" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;">
+          Create Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="login.html" style="font-weight: 500;">Sign in</a>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

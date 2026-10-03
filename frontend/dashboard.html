@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div id="navbar-mount"></div>
+
+  <main class="container dashboard-page">
+    <!-- Welcome Header Banner -->
+    <section class="welcome-banner">
+      <div class="welcome-text">
+        <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Candidate Portal</span>
+        <h1>Welcome back, <span id="user-welcome-name" style="color: #60a5fa;">Candidate</span>! 👋</h1>
+        <p>Ready to level up your technical communication and algorithmic skills today?</p>
+      </div>
+      <div>
+        <a href="interview.html" class="btn btn-primary btn-lg">
+          Start Full Interview 🚀
+        </a>
+      </div>
+    </section>
+
+    <!-- Stat Metrics -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green">✓</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-completed">0</div>
+          <div class="stat-label">Interviews Completed</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon blue">📋</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-attempted">0</div>
+          <div class="stat-label">Interviews Attempted</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon purple">📊</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-avg-score">0%</div>
+          <div class="stat-label">Average Score</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon amber">🎯</div>
+        <div class="stat-info">
+          <div class="stat-value" id="stat-last-interview" style="font-size: 1.15rem; font-weight:700;">N/A</div>
+          <div class="stat-label">Last Target Role</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Direct Round Practice Modes -->
+    <section>
+      <div class="section-title-wrap">
+        <div>
+          <h2>Targeted Round Practice</h2>
+          <p>Focus specifically on high-impact areas of the interview loop</p>
+        </div>
+      </div>
+
+      <div class="practice-grid">
+        <div class="practice-card">
+          <div class="practice-icon">🧠</div>
+          <h3>Aptitude Practice</h3>
+          <p>Quantitative, Profit & Loss, Percentages, and Logical Puzzles.</p>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Practice Aptitude →</a>
+        </div>
+
+        <div class="practice-card">
+          <div class="practice-icon">⚙️</div>
+          <h3>Technical Interview</h3>
+          <p>Deep dive on Core CS, DBMS, OOP, APIs, and system architecture.</p>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start Technical →</a>
+        </div>
+
+        <div class="practice-card">
+          <div class="practice-icon">💻</div>
+          <h3>Coding / DSA</h3>
+          <p>Solve data structures and algorithmic challenges with safe execution.</p>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start Coding →</a>
+        </div>
+
+        <div class="practice-card">
+          <div class="practice-icon">🎙️</div>
+          <h3>HR / Voice Interview</h3>
+          <p>Behavioral storytelling with live speech recognition and STAR feedback.</p>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start HR Round →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Interviews Table -->
+    <section>
+      <div class="section-title-wrap">
+        <div>
+          <h2>Recent Interview Sessions</h2>
+          <p>Your performance history and AI evaluations</p>
+        </div>
+        <a href="history.html" class="btn btn-secondary btn-sm">View Full History ↗</a>
+      </div>
+
+      <div class="table-card">
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Job Role</th>
+                <th>Date</th>
+                <th>Rounds Configured</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="recent-interviews-tbody">
+              <!-- Populated dynamically by dashboard.js -->
+            </tbody>
+          </table>
+        </div>
+        <div id="empty-interviews-state" style="display:none; padding:3rem; text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:0.75rem;">📝</div>
+          <h3>No Interview Sessions Yet</h3>
+          <p style="margin-bottom:1.25rem;">Start your first AI-assisted mock interview to see analytics and reports here.</p>
+          <a href="interview.html" class="btn btn-primary">Start New Interview 🚀</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

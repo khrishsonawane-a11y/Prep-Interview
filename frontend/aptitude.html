@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Round 1: Aptitude & Reasoning | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/aptitude.css">
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div id="navbar-mount"></div>
+
+  <main class="container" style="padding: 2.5rem 1.5rem 5rem;">
+    <!-- Round Header & Timer -->
+    <div class="round-header-bar">
+      <div>
+        <span class="badge badge-primary">Round 1: Aptitude & Logic</span>
+        <h2 style="font-size: 1.4rem; margin-top: 0.25rem;">
+          <span id="display-role">Software Developer</span> • <span id="display-diff">Intermediate</span>
+        </h2>
+      </div>
+
+      <div class="timer-box">
+        <span>⏱️</span>
+        <span id="aptitude-timer">10:00</span>
+      </div>
+    </div>
+
+    <!-- Aptitude Layout -->
+    <div class="aptitude-layout">
+      <!-- Left: Active Question -->
+      <div class="question-box">
+        <div class="question-meta">
+          <span class="badge badge-purple" id="question-topic-badge">Percentages</span>
+          <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-number-display">Question 1 of 5</span>
+        </div>
+
+        <div class="question-text" id="question-text">
+          Loading aptitude question...
+        </div>
+
+        <div class="options-list" id="options-container">
+          <!-- Populated by aptitude.js -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+          <button id="prev-q-btn" class="btn btn-secondary">← Previous</button>
+          <button id="next-q-btn" class="btn btn-secondary">Next Question →</button>
+        </div>
+      </div>
+
+      <!-- Right: Palette & Overview -->
+      <div>
+        <div class="question-palette">
+          <h4 style="margin-bottom: 0.25rem;">Question Palette</h4>
+          <p style="font-size: 0.8rem; color: var(--text-dim);">Jump to any question instantly</p>
+
+          <div class="palette-grid" id="palette-container">
+            <!-- Numbers 1..5 populated by aptitude.js -->
+          </div>
+
+          <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; font-size: 0.78rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 0.4rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 12px; height: 12px; background: rgba(16, 185, 129, 0.4); border: 1px solid #10b981; border-radius: 2px;"></span>
+              <span>Answered</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="width: 12px; height: 12px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 2px;"></span>
+              <span>Unanswered</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/aptitude.js"></script>
+</body>
+</html>

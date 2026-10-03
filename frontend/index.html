@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Interview Preparation System | Professional Mock Interviews</title>
+  <meta name="description" content="Structured interview preparation platform with aptitude tests, technical architecture discussions, sandboxed coding practice, and voice HR rounds.">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <style>
+    .hero-section {
+      padding: 4rem 0 3rem;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-full);
+      color: #38bdf8;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 1.25rem;
+    }
+    .hero-title {
+      font-size: 2.6rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      color: var(--text-main);
+    }
+    .hero-subtitle {
+      font-size: 1.05rem;
+      max-width: 620px;
+      margin: 0 auto 2rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .hero-cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 3.5rem;
+    }
+    /* Workflow Steps */
+    .workflow-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 2rem 1.5rem;
+      margin-bottom: 4rem;
+    }
+    .workflow-grid {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .workflow-step {
+      flex: 1;
+      min-width: 130px;
+      text-align: center;
+    }
+    .step-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-subtle);
+      margin: 0 auto 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+    .step-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.15rem;
+    }
+    .step-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .step-arrow {
+      color: var(--text-dim);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    /* Features Section */
+    .features-section {
+      padding: 2.5rem 0 4rem;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .section-header h2 {
+      font-size: 1.85rem;
+      margin-bottom: 0.5rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .feature-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2rem; }
+      .workflow-grid { flex-direction: column; gap: 1.25rem; }
+      .step-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-mount"></div>
+
+  <main class="container">
+    <!-- Clean Hero -->
+    <section class="hero-section">
+      <div class="hero-badge">
+        <span>AI-Powered Technical Preparation</span>
+      </div>
+      <h1 class="hero-title">Practice Realistic Technical & HR Interviews</h1>
+      <p class="hero-subtitle">
+        Structured simulation of company recruitment rounds: quantitative aptitude tests, technical architecture discussions, sandboxed coding challenges, and voice behavioral rounds.
+      </p>
+      <div class="hero-cta-group">
+        <a href="interview.html" class="btn btn-primary btn-lg">Start Interview</a>
+        <a href="#process" class="btn btn-secondary btn-lg">View Process</a>
+      </div>
+    </section>
+
+    <!-- Visual Process -->
+    <section class="workflow-container" id="process">
+      <div style="text-align: center; margin-bottom: 1.75rem;">
+        <span class="badge badge-primary" style="margin-bottom: 0.4rem;">Evaluation Pipeline</span>
+        <h3 style="font-size: 1.3rem;">Standard 4-Stage Interview Process</h3>
+      </div>
+      <div class="workflow-grid">
+        <div class="workflow-step">
+          <div class="step-icon-wrap">🧠</div>
+          <div class="step-title">1. Aptitude</div>
+          <div class="step-subtitle">Quant & Logic</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="workflow-step">
+          <div class="step-icon-wrap">⚙️</div>
+          <div class="step-title">2. Technical</div>
+          <div class="step-subtitle">Role Architecture</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="workflow-step">
+          <div class="step-icon-wrap">💻</div>
+          <div class="step-title">3. Coding / DSA</div>
+          <div class="step-subtitle">Live Algorithm Test</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="workflow-step">
+          <div class="step-icon-wrap">🎙️</div>
+          <div class="step-title">4. HR & Voice</div>
+          <div class="step-subtitle">STAR Method</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="workflow-step">
+          <div class="step-icon-wrap">📄</div>
+          <div class="step-title">5. PDF Appraisal</div>
+          <div class="step-subtitle">Readiness Audit</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature Grid -->
+    <section class="features-section" id="features">
+      <div class="section-header">
+        <h2>Features Designed for Technical Candidates</h2>
+        <p style="max-width: 550px; margin: 0 auto; font-size: 0.95rem;">Actionable preparation with structured feedback and objective evaluation.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background: rgba(37, 99, 235, 0.15); color: #93c5fd;">🤖</div>
+          <h3 style="margin-bottom: 0.35rem; font-size: 1.1rem;">Role-Specific Questions</h3>
+          <p style="font-size: 0.88rem;">Dynamic questions generated specifically for your selected role (Software Developer, Full Stack, Frontend, Backend, Java, Python).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background: rgba(79, 70, 229, 0.15); color: #c7d2fe;">🧠</div>
+          <h3 style="margin-bottom: 0.35rem; font-size: 1.1rem;">Aptitude Assessment</h3>
+          <p style="font-size: 0.88rem;">Quantitative reasoning, number systems, percentages, profit & loss, and logical puzzles with step-by-step mathematical explanations.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background: rgba(5, 150, 105, 0.15); color: #6ee7b7;">💬</div>
+          <h3 style="margin-bottom: 0.35rem; font-size: 1.1rem;">Technical Evaluation</h3>
+          <p style="font-size: 0.88rem;">Evaluations based on correctness, depth of explanation, production nuances, and missing architecture concepts.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background: rgba(37, 99, 235, 0.15); color: #93c5fd;">⚡</div>
+          <h3 style="margin-bottom: 0.35rem; font-size: 1.1rem;">Sandboxed Coding Environment</h3>
+          <p style="font-size: 0.88rem;">Clean starter templates in JavaScript and Python with visible test cases, time/space complexity audits, and optional model solutions.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background: rgba(217, 119, 6, 0.15); color: #fcd34d;">🎙️</div>
+          <h3 style="margin-bottom: 0.35rem; font-size: 1.1rem;">Voice HR Interview</h3>
+          <p style="font-size: 0.88rem;">Speech-to-text recording with behavioral analysis focused on clarity, structure, and STAR methodology.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box" style="background: rgba(220, 38, 38, 0.15); color: #fca5a5;">📄</div>
+          <h3 style="margin-bottom: 0.35rem; font-size: 1.1rem;">PDF Appraisal Reports</h3>
+          <p style="font-size: 0.88rem;">Downloadable performance feedback appraisal reports with strengths, areas to improve, and recommended topics.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-content">
+      <div>
+        <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-main);">
+          InterviewPrep System
+        </div>
+        <p style="font-size: 0.8rem; margin-top: 0.2rem;">Professional interview preparation for software engineers.</p>
+      </div>
+      <ul class="footer-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="interview.html">Practice</a></li>
+        <li><a href="history.html">History</a></li>
+        <li><a href="login.html">Sign In</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+</body>
+</html>

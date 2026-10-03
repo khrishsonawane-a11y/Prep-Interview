@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Round 3: Coding & DSA | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/coding.css">
+</head>
+<body>
+  <div id="navbar-mount"></div>
+
+  <main class="container" style="padding: 1.5rem 1.5rem 3rem;">
+    <!-- Round Navigation Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span class="badge badge-primary">Round 3: Coding Assessment</span>
+        <span class="badge badge-success" id="problem-diff-badge">Beginner</span>
+        <span class="badge badge-purple" id="problem-topic-badge">Arrays</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="view-solution-btn" class="btn btn-secondary btn-sm" type="button">
+          💡 View Model Solution
+        </button>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">Sandboxed Environment</span>
+      </div>
+    </div>
+
+    <!-- Split IDE Workbench -->
+    <div class="coding-workbench">
+      <!-- Left Pane: Problem Description -->
+      <div class="problem-pane">
+        <div class="pane-header">
+          <h3 style="font-size: 1.05rem;" id="problem-title-display">Problem Description</h3>
+        </div>
+        <div class="pane-body">
+          <div class="problem-description" id="problem-desc-content">
+            Loading algorithmic challenge...
+          </div>
+
+          <h4 style="font-size: 0.95rem; margin: 1.25rem 0 0.5rem;">Examples</h4>
+          <div id="examples-wrap"></div>
+
+          <h4 style="font-size: 0.95rem; margin: 1.25rem 0 0.5rem;">Constraints</h4>
+          <ul id="constraints-wrap" style="list-style: none; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem;"></ul>
+        </div>
+      </div>
+
+      <!-- Right Pane: Code Editor & Execution Console -->
+      <div class="editor-pane">
+        <div class="editor-wrapper">
+          <div class="editor-toolbar">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.82rem; font-weight: 500; color: var(--text-muted);">Language:</span>
+              <select id="code-language-select" class="form-control" style="padding: 0.25rem 0.6rem; width: auto; font-size: 0.82rem;">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button id="reset-code-btn" class="btn btn-secondary btn-sm" title="Reset starter template">↺ Reset</button>
+              <button id="run-code-btn" class="btn btn-secondary btn-sm">▶ Run Tests</button>
+              <button id="submit-code-btn" class="btn btn-primary btn-sm">Submit Solution</button>
+            </div>
+          </div>
+
+          <textarea id="code-editor-textarea" class="code-textarea" spellcheck="false" placeholder="// Implement your solution here..."></textarea>
+        </div>
+
+        <!-- Output Console & Test Results -->
+        <div class="console-wrapper">
+          <div class="console-tabs">
+            <div class="console-tab active">Execution Output & Test Cases</div>
+          </div>
+          <div class="console-output" id="console-output-pane">
+            <span style="color: var(--text-dim);">Click 'Run Tests' to compile and test against sample test cases.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Model Solution Modal -->
+  <div id="solution-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="card" style="max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+        <h3 style="font-size: 1.15rem;">💡 Model Solution & Approach</h3>
+        <button id="close-solution-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+      </div>
+
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Reference implementation for comparison:
+      </p>
+
+      <pre id="solution-code-view" style="background: #090d16; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.85rem; color: #38bdf8; overflow-x: auto; white-space: pre;"></pre>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+        <button id="copy-solution-btn" class="btn btn-secondary btn-sm">Copy to Editor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Review Modal -->
+  <div id="ai-review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="card" style="max-width: 620px; width: 100%; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+        <div>
+          <span class="badge badge-success" style="margin-bottom: 0.25rem;">Code Evaluated</span>
+          <h2 style="font-size: 1.4rem;">AI Algorithmic Code Review</h2>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 1.6rem; font-weight: 700; color: #34d399;" id="code-eval-score">90/100</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+        <div style="background: var(--bg-primary); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">Time Complexity</div>
+          <div id="code-time-comp" style="font-size: 0.95rem; font-weight: 600; color: #93c5fd;">O(N)</div>
+        </div>
+        <div style="background: var(--bg-primary); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">Space Complexity</div>
+          <div id="code-space-comp" style="font-size: 0.95rem; font-weight: 600; color: #c7d2fe;">O(N)</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.25rem;">Code Quality</div>
+        <span class="badge badge-primary" id="code-quality-badge">Clean Code</span>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <h4 style="font-size: 0.9rem; margin-bottom: 0.25rem;">Review Summary</h4>
+        <p id="code-feedback-text" style="font-size: 0.88rem; line-height: 1.55;"></p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="proceed-to-hr-btn" class="btn btn-accent btn-lg" style="width: 100%;">
+          Proceed to HR Round →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/coding.js"></script>
+</body>
+</html>

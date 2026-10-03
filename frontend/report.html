@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Completed | AI Performance Appraisal Report</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/report.css">
+  <!-- html2pdf.js for client-side PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* PDF Export Container Styling (Clean White / Formal Appraisal Layout) */
+    .pdf-printable-area {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media print {
+      body { background: #ffffff !important; color: #000000 !important; }
+      .navbar, footer, .action-buttons-wrap { display: none !important; }
+      .pdf-printable-area { border: none !important; padding: 0 !important; background: #ffffff !important; color: #000000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-mount"></div>
+
+  <main class="container" style="padding: 2.5rem 1.5rem 5rem;">
+    <!-- Top Action Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <div>
+        <span class="badge badge-success" style="margin-bottom: 0.35rem;">Interview Completed</span>
+        <h1 style="font-size: 1.85rem;">Performance Assessment Report</h1>
+      </div>
+      <div class="action-buttons-wrap" style="display: flex; gap: 0.75rem;">
+        <button id="download-pdf-btn" class="btn btn-primary btn-sm">
+          📥 Download PDF Report
+        </button>
+        <a href="dashboard.html" class="btn btn-secondary btn-sm">
+          Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Printable Report Container -->
+    <div class="pdf-printable-area" id="report-document">
+      <!-- Report Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: var(--text-main);" id="report-candidate-name">Candidate Performance Report</div>
+          <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">
+            Target Role: <strong id="report-role" style="color: var(--text-main);">Software Developer</strong> • 
+            Level: <strong id="report-difficulty" style="color: var(--text-main);">Intermediate</strong> • 
+            Date: <span id="report-date">October 3, 2026</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 2.2rem; font-weight: 800; color: #38bdf8; line-height: 1;" id="overall-score-display">82</div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-top: 0.25rem;">Overall Score / 100</div>
+          <div id="readiness-rating-badge" class="badge badge-success" style="margin-top: 0.35rem;">Interview Ready</div>
+        </div>
+      </div>
+
+      <!-- Executive Summary -->
+      <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Executive Summary</h3>
+        <p id="overall-summary-text" style="font-size: 0.92rem; line-height: 1.65; color: var(--text-main);">
+          Synthesizing performance across quantitative aptitude, technical architecture discussions, safe live code execution, and behavioral communication...
+        </p>
+      </div>
+
+      <!-- Multi-Round Breakdown -->
+      <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Round Performance Breakdown</h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+          <!-- Aptitude -->
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 600; font-size: 0.95rem;">Aptitude & Logic</span>
+              <span class="badge badge-primary" id="apt-score-badge">80%</span>
+            </div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
+            <ul id="apt-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 600; margin-top: 0.5rem;">Improvements:</div>
+            <ul id="apt-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+          </div>
+
+          <!-- Technical -->
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 600; font-size: 0.95rem;">Technical Architecture</span>
+              <span class="badge badge-purple" id="tech-score-badge">75%</span>
+            </div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
+            <ul id="tech-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 600; margin-top: 0.5rem;">Improvements:</div>
+            <ul id="tech-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+          </div>
+
+          <!-- Coding -->
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 600; font-size: 0.95rem;">Coding & DSA</span>
+              <span class="badge badge-primary" id="code-score-badge">85%</span>
+            </div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
+            <ul id="code-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 600; margin-top: 0.5rem;">Improvements:</div>
+            <ul id="code-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+          </div>
+
+          <!-- HR -->
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 600; font-size: 0.95rem;">HR & Behavioral</span>
+              <span class="badge badge-purple" id="hr-score-badge">80%</span>
+            </div>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
+            <ul id="hr-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+            <div style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 600; margin-top: 0.5rem;">Improvements:</div>
+            <ul id="hr-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended Topics Roadmap -->
+      <div>
+        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem;">Recommended Preparation Plan</h3>
+        <div id="recommended-topics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem;"></div>
+      </div>
+    </div>
+
+    <!-- Bottom Action Bar -->
+    <div class="action-buttons-wrap" style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+      <a href="dashboard.html" class="btn btn-secondary btn-lg">Back to Dashboard</a>
+      <a href="interview.html" class="btn btn-primary btn-lg">Start New Interview</a>
+      <button id="download-pdf-btn-bottom" class="btn btn-accent btn-lg">Save PDF Appraisal 📄</button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/report.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Round 4: HR & Voice Behavioral | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/hr.css">
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div id="navbar-mount"></div>
+
+  <main class="container hr-stage" style="padding: 2.5rem 1.5rem 5rem;">
+    <!-- Round Navigation -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <div>
+        <span class="badge badge-primary">Round 4: HR & Behavioral</span>
+        <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Communication & Cultural Fit</h2>
+      </div>
+      <div>
+        <span class="badge badge-purple" id="hr-q-counter">Question 1 of 2</span>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="hr-loading-state" class="card" style="text-align: center; padding: 3rem;">
+      <div class="spinner" style="width: 32px; height: 32px; border-width: 3px; margin-bottom: 1rem;"></div>
+      <h3>HR Director is preparing behavioral scenario...</h3>
+    </div>
+
+    <!-- Question Box -->
+    <div class="hr-question-box" id="hr-question-container" style="display: none;">
+      <div class="hr-question-badge">
+        <span class="badge badge-primary" id="hr-q-category">Behavioral & Situational</span>
+      </div>
+
+      <div class="hr-question-text" id="hr-question-text">
+        Loading question...
+      </div>
+
+      <div>
+        <button id="speak-question-btn" type="button" class="btn btn-secondary btn-sm">
+          🔊 Read Question Aloud
+        </button>
+      </div>
+    </div>
+
+    <!-- Voice Recording Interaction Area -->
+    <div class="card" style="margin-bottom: 2rem; text-align: center;">
+      <div class="voice-recorder-section">
+        <button type="button" class="mic-circle-btn" id="mic-record-btn" aria-label="Toggle Microphone Recording">
+          🎙️
+        </button>
+        <div class="voice-status-text" id="voice-status-indicator">
+          Click microphone to record your voice answer
+        </div>
+      </div>
+
+      <div style="text-align: left; margin-top: 1.5rem;">
+        <label class="form-label" for="hr-transcript-input">Answer Transcript / Text Response:</label>
+        <textarea id="hr-transcript-input" class="transcript-area" placeholder="Your voice transcription or typed answer will appear here... Speak using the STAR method (Situation, Task, Action, Result)."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+        <button id="submit-hr-btn" class="btn btn-primary btn-lg">
+          Submit & Review Answer 🎯
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Behavioral Evaluation Panel -->
+    <div class="card" id="hr-eval-panel" style="display: none; border-color: rgba(59, 130, 246, 0.4);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+        <div>
+          <span class="badge badge-success" style="margin-bottom: 0.25rem;">Behavioral Analysis</span>
+          <h3>Communication Assessment</h3>
+        </div>
+        <div style="text-align: right;">
+          <div class="score-badge-large" id="hr-eval-score">80/100</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="eval-metric-box">
+          <div class="eval-metric-title">Clarity & Articulation</div>
+          <div class="eval-metric-val" id="hr-eval-clarity" style="color: #60a5fa;">High</div>
+        </div>
+        <div class="eval-metric-box">
+          <div class="eval-metric-title">STAR Method Structure</div>
+          <div class="eval-metric-val" id="hr-eval-structure" style="color: #34d399;">Good Flow</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.35rem;">HR Feedback:</h4>
+        <p id="hr-eval-feedback" style="line-height: 1.6; font-size: 0.9rem; color: var(--text-muted);"></p>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem;">
+        <h4 style="font-size: 0.95rem; color: #fbbf24; margin-bottom: 0.35rem;">Executive Tip:</h4>
+        <p id="hr-eval-improvement" style="font-size: 0.9rem; color: var(--text-main);"></p>
+      </div>
+
+      <div style="text-align: right;">
+        <button id="next-hr-stage-btn" class="btn btn-accent btn-lg">
+          Complete Interview & View Final Report 🏆
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/hr.js"></script>
+</body>
+</html>

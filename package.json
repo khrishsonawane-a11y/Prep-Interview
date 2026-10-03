@@ -1,0 +1,36 @@
+{
+  "name": "ai-interview-preparation-system",
+  "version": "1.0.0",
+  "description": "Full-Stack AI Interview Preparation System",
+  "private": true,
+  "type": "module",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "test": "node --test backend/test_api.js",
+    "postinstall": "cd backend && npm install"
+  },
+  "keywords": [
+    "ai-interview",
+    "gemini",
+    "supabase",
+    "fullstack",
+    "dsa",
+    "voice-interview"
+  ],
+  "author": "AI Interview System Team",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^2.27.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "groq-sdk": "^0.15.0",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.23.1",
+    "ws": "^8.22.0"
+  }
+}

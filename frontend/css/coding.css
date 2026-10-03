@@ -1,0 +1,153 @@
+/* =========================================================================
+   CODING & DSA ROUND STYLES - CLEAN WHITE THEME
+   ========================================================================= */
+
+.coding-workbench {
+  display: grid;
+  grid-template-columns: 42% 58%;
+  gap: 1rem;
+  height: calc(100vh - 110px);
+  min-height: 600px;
+}
+
+/* Left Pane: Problem Specs */
+.problem-pane {
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.pane-header {
+  padding: 0.75rem 1.25rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pane-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.problem-description {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  margin-bottom: 1.25rem;
+}
+
+.example-box {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  margin-bottom: 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* Right Pane: Code Editor & Execution Console */
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+}
+
+.editor-wrapper {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.editor-toolbar {
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.code-textarea {
+  flex: 1;
+  width: 100%;
+  background: #ffffff;
+  color: #0f172a;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  padding: 1rem;
+  border: none;
+  outline: none;
+  resize: none;
+  line-height: 1.55;
+}
+
+/* Console & Test Cases */
+.console-wrapper {
+  height: 200px;
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.console-tabs {
+  display: flex;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 0.75rem;
+}
+
+.console-tab {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.console-tab.active {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.console-output {
+  flex: 1;
+  padding: 0.85rem;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.test-badge-pass {
+  color: #059669;
+  font-weight: 600;
+}
+
+.test-badge-fail {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .coding-workbench {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}

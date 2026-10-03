@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configure Interview | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/interview.css">
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div id="navbar-mount"></div>
+
+  <main class="container" style="padding: 3rem 1.5rem 5rem;">
+    <div class="setup-container">
+      <div class="setup-hero">
+        <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Step 1 of 2</span>
+        <h1>Configure Your AI Interview</h1>
+        <p>Select your target role and customize the rounds for a realistic hiring simulation.</p>
+      </div>
+
+      <!-- 1. Job Role Selection Grid -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 0.5rem;">1. Select Target Job Role</h3>
+        <p style="margin-bottom: 1.5rem;">The AI will generate questions, architectural scenarios, and coding challenges specific to this role.</p>
+
+        <div class="role-grid" id="roles-grid">
+          <!-- Dynamically populated from config.js -->
+        </div>
+      </div>
+
+      <!-- 2. Difficulty Level -->
+      <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 0.5rem;">2. Select Difficulty Level</h3>
+        <p style="margin-bottom: 1.5rem;">Calibrates the depth of system design, algorithmic complexity, and behavioral depth.</p>
+
+        <div class="difficulty-selector">
+          <div class="diff-btn" data-diff="Beginner">
+            <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">🌱 Beginner</div>
+            <div style="font-size: 0.78rem; font-weight: normal;">Intern / Junior Level</div>
+          </div>
+          <div class="diff-btn selected" data-diff="Intermediate">
+            <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">⚡ Intermediate</div>
+            <div style="font-size: 0.78rem; font-weight: normal;">Mid-level Engineer (1-4 yrs)</div>
+          </div>
+          <div class="diff-btn" data-diff="Advanced">
+            <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">🔥 Advanced</div>
+            <div style="font-size: 0.78rem; font-weight: normal;">Senior / Tech Lead Level</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Rounds Included -->
+      <div class="card" style="margin-bottom: 2.5rem;">
+        <h3 style="margin-bottom: 0.5rem;">3. Interview Rounds Included</h3>
+        <p style="margin-bottom: 1.5rem;">You can practice the full pipeline or select specific rounds.</p>
+
+        <div class="rounds-list">
+          <label class="round-checkbox-item">
+            <div class="round-info-wrap">
+              <div class="round-number-badge">1</div>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main);">Aptitude Round</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">Quantitative reasoning, logical puzzles, percentages, speed & work.</div>
+              </div>
+            </div>
+            <input type="checkbox" name="round-select" value="aptitude" checked style="transform: scale(1.3); cursor: pointer;">
+          </label>
+
+          <label class="round-checkbox-item">
+            <div class="round-info-wrap">
+              <div class="round-number-badge">2</div>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main);">Technical Architecture Round</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">Role-specific core CS, OOP, DBMS, REST/GraphQL, and system design.</div>
+              </div>
+            </div>
+            <input type="checkbox" name="round-select" value="technical" checked style="transform: scale(1.3); cursor: pointer;">
+          </label>
+
+          <label class="round-checkbox-item">
+            <div class="round-info-wrap">
+              <div class="round-number-badge">3</div>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main);">Coding & DSA Round</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">In-browser IDE, live test cases, and time/space complexity analysis.</div>
+              </div>
+            </div>
+            <input type="checkbox" name="round-select" value="coding" checked style="transform: scale(1.3); cursor: pointer;">
+          </label>
+
+          <label class="round-checkbox-item">
+            <div class="round-info-wrap">
+              <div class="round-number-badge">4</div>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main);">HR & Voice Behavioral Round</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted);">Voice or text answers evaluated on STAR structure, clarity, and relevance.</div>
+              </div>
+            </div>
+            <input type="checkbox" name="round-select" value="hr" checked style="transform: scale(1.3); cursor: pointer;">
+          </label>
+        </div>
+
+        <div style="text-align: center;">
+          <button id="start-interview-btn" class="btn btn-primary btn-lg" style="min-width: 260px;">
+            Start Interview 🚀
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/interview.js"></script>
+</body>
+</html>
