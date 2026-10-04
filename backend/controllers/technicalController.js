@@ -3,19 +3,76 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion, evaluateTechnicalAnswer as aiEvalTech } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
+/**
+ * Fisher-Yates shuffle algorithm to ensure uniform random distribution
+ */
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
 export const getTechnicalQuestion = async (req, res, next) => {
     try {
-        const { role = 'Software Developer', difficulty = 'Intermediate', topic, previousQuestions = [] } = req.body;
+        const { role = 'Software Developer', difficulty = 'Intermediate', topic, previousQuestions = [], dynamicAI = false } = req.body || {};
 
-        const question = await generateQuestion({
-            round: 'technical',
-            role,
-            difficulty,
-            topic,
-            previousQuestions
+        if (dynamicAI === true || dynamicAI === 'true') {
+            const aiQ = await generateQuestion({
+                round: 'technical',
+                role,
+                difficulty,
+                topic,
+                previousQuestions
+            });
+            return res.json({ success: true, question: aiQ });
+        }
+
+        // 1. Try fetching from Supabase Question Bank if configured
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            try {
+                let query = supabaseAdmin
+                    .from('technical_questions')
+                    .select('*')
+                    .limit(100);
+
+                const { data, error } = await query;
+                if (!error && data && data.length > 0) {
+                    let candidates = data;
+                    if (topic) {
+                        const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+                        if (topicMatches.length > 0) candidates = topicMatches;
+                    }
+
+                    // Exclude already asked questions in this session
+                    const unasked = candidates.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
+                    const pool = unasked.length > 0 ? unasked : candidates;
+                    const shuffled = shuffleArray(pool);
+                    return res.json({ success: true, question: shuffled[0] });
+                }
+            } catch (supErr) {
+                console.warn('Supabase technical questions fallback:', supErr.message);
+            }
+        }
+
+        // 2. Mock Store Fallback with 30+ Questions Pool
+        let questions = [...mockStore.technicalQuestions];
+        if (topic) {
+            const topicFiltered = questions.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+            if (topicFiltered.length > 0) questions = topicFiltered;
+        }
+
+        // Exclude previous questions in the active interview session
+        const unasked = questions.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
+        const pool = unasked.length > 0 ? unasked : questions;
+        const shuffled = shuffleArray(pool);
+
+        return res.json({
+            success: true,
+            question: shuffled[0]
         });
-
-        return res.json({ success: true, question });
     } catch (err) {
         next(err);
     }
@@ -23,7 +80,7 @@ export const getTechnicalQuestion = async (req, res, next) => {
 
 export const evaluateTechnicalAnswer = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user?.id || 'candidate-' + Date.now();
         const {
             interviewId,
             questionText,
@@ -31,7 +88,7 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             role = 'Software Developer',
             difficulty = 'Intermediate',
             timeTakenSeconds = 0
-        } = req.body;
+        } = req.body || {};
 
         if (!interviewId || !questionText || !answerText) {
             return res.status(400).json({ success: false, error: 'interviewId, questionText, and answerText are required.' });
@@ -60,13 +117,16 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
 
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const { data, error } = await supabaseAdmin
-                    .from('interview_answers')
-                    .insert([answerRecord])
-                    .select()
-                    .single();
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+                if (isUuid) {
+                    const { data, error } = await supabaseAdmin
+                        .from('interview_answers')
+                        .insert([answerRecord])
+                        .select()
+                        .single();
 
-                if (!error && data) return res.json({ success: true, evaluation, answer: data });
+                    if (!error && data) return res.json({ success: true, evaluation, answer: data });
+                }
             } catch (supErr) {
                 console.warn('Supabase technical answer fallback:', supErr.message);
             }

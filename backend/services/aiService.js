@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
+import { mockStore } from '../utils/memoryStore.js';
 
 dotenv.config();
 
@@ -168,7 +169,7 @@ Return ONLY a valid JSON object:
     }
 
     const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.6 });
-    return safeParseJSON(raw, getHeuristicQuestion(round, role, difficulty, topic));
+    return safeParseJSON(raw, getHeuristicQuestion(round, role, difficulty, topic, previousQuestions));
 };
 
 /**
@@ -318,54 +319,32 @@ Return ONLY a valid JSON object:
     return safeParseJSON(raw, getHeuristicFinalReport(interview, overallScore, aptAvg, techAvg, codeAvg, hrAvg, answers));
 };
 
-function getHeuristicQuestion(round, role, difficulty, topic) {
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+function getHeuristicQuestion(round, role, difficulty, topic, previousQuestions = []) {
     if (round === 'aptitude') {
-        return {
-            category: 'Quantitative Aptitude',
-            topic: topic || 'Percentages & Ratios',
-            difficulty: difficulty || 'Intermediate',
-            question: 'A product price is increased by 20% and then subsequently discounted by 20%. What is the net change in the price of the product?',
-            options: ['0% (No change)', '4% decrease', '4% increase', '2% decrease'],
-            correct_option: 1,
-            explanation: 'Let initial price = 100. After 20% increase = 120. After 20% discount on 120 = 120 - 24 = 96. Net change = 100 - 96 = 4% decrease.'
-        };
+        const pool = mockStore.aptitudeQuestions.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
+        const list = pool.length > 0 ? pool : mockStore.aptitudeQuestions;
+        return shuffleArray(list)[0];
     } else if (round === 'technical') {
-        return {
-            role: role,
-            topic: topic || 'Core Engineering & Architecture',
-            difficulty: difficulty || 'Intermediate',
-            question: `In a production ${role} environment, how do you handle asynchronous concurrency, race conditions, and error recovery?`,
-            expected_concepts: ['Async/Await & Promises', 'Mutex / Locking / Isolation', 'Error Boundaries & Retries', 'Idempotency'],
-            sample_answer: 'Concurrency is managed using asynchronous task queues, mutexes or database transaction isolation levels, with retry policies and idempotency.'
-        };
+        const pool = mockStore.technicalQuestions.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
+        const list = pool.length > 0 ? pool : mockStore.technicalQuestions;
+        return shuffleArray(list)[0];
     } else if (round === 'coding') {
-        return {
-            title: 'Two Sum',
-            role: role,
-            topic: 'Arrays & Hash Maps',
-            difficulty: difficulty || 'Beginner',
-            description: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.',
-            examples: [{ input: 'nums = [2,7,11,15], target = 9', output: '[0,1]', explanation: 'nums[0] + nums[1] == 9' }],
-            constraints: ['2 <= nums.length <= 10^4', '-10^9 <= nums[i] <= 10^9'],
-            starter_code: {
-                javascript: 'function twoSum(nums, target) {\n    // Write your solution here\n    \n}',
-                python: 'def two_sum(nums, target):\n    # Write your solution here\n    pass'
-            },
-            solution_code: {
-                javascript: 'function twoSum(nums, target) {\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (map.has(complement)) return [map.get(complement), i];\n        map.set(nums[i], i);\n    }\n    return [];\n}',
-                python: 'def two_sum(nums, target):\n    lookup = {}\n    for i, num in enumerate(nums):\n        if target - num in lookup:\n            return [lookup[target - num], i]\n        lookup[num] = i\n    return []'
-            },
-            test_cases: [
-                { input: 'nums = [2,7,11,15], target = 9', expected_output: '[0,1]', is_hidden: false },
-                { input: 'nums = [3,2,4], target = 6', expected_output: '[1,2]', is_hidden: false }
-            ]
-        };
+        const pool = mockStore.codingQuestions.filter(q => !previousQuestions.includes(q.title) && !previousQuestions.includes(q.id));
+        const list = pool.length > 0 ? pool : mockStore.codingQuestions;
+        return shuffleArray(list)[0];
     } else {
-        return {
-            category: 'Behavioral & Culture Fit',
-            question: `Tell me about a time when you received constructive feedback on your code or design. How did you react and what changes did you implement?`,
-            key_evaluation_points: ['Humility & receptiveness', 'Action-oriented improvement', 'Continuous learning mindset']
-        };
+        const pool = mockStore.hrQuestions.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
+        const list = pool.length > 0 ? pool : mockStore.hrQuestions;
+        return shuffleArray(list)[0];
     }
 }
 

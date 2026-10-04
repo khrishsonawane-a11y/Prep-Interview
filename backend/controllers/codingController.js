@@ -4,38 +4,92 @@ import { generateQuestion, evaluateCodingSubmission as aiEvalCode } from '../ser
 import { executeCode as runCodeService, submitCode as submitCodeService } from '../services/codeExecutionService.js';
 import { randomUUID } from 'crypto';
 
+/**
+ * Fisher-Yates shuffle algorithm to ensure uniform random distribution
+ */
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
 export const getCodingQuestion = async (req, res, next) => {
     try {
-        const { role = 'Software Developer', difficulty = 'Intermediate', topic = 'Arrays & Hash Maps' } = req.body;
+        const { role = 'Software Developer', difficulty = 'Intermediate', topic, previousQuestions = [], dynamicAI = false } = req.body || {};
 
+        if (dynamicAI === true || dynamicAI === 'true') {
+            const aiProblem = await generateQuestion({
+                round: 'coding',
+                role,
+                difficulty,
+                topic,
+                previousQuestions
+            });
+            const visibleCases = (aiProblem.test_cases || []).filter(tc => !tc.is_hidden);
+            return res.json({
+                success: true,
+                problem: {
+                    ...aiProblem,
+                    test_cases: visibleCases
+                }
+            });
+        }
+
+        // 1. Try fetching from Supabase Question Bank if configured
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const { data, error } = await supabaseAdmin
+                let query = supabaseAdmin
                     .from('coding_questions')
                     .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, solution_code, test_cases')
-                    .limit(1);
+                    .limit(100);
 
+                const { data, error } = await query;
                 if (!error && data && data.length > 0) {
-                    const p = data[0];
-                    const visibleCases = (p.test_cases || []).filter(tc => !tc.is_hidden);
+                    let candidates = data;
+                    if (topic) {
+                        const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+                        if (topicMatches.length > 0) candidates = topicMatches;
+                    }
+
+                    const unasked = candidates.filter(q => !previousQuestions.includes(q.title) && !previousQuestions.includes(q.id));
+                    const pool = unasked.length > 0 ? unasked : candidates;
+                    const shuffled = shuffleArray(pool);
+                    const chosen = shuffled[0];
+
+                    const visibleCases = (chosen.test_cases || []).filter(tc => !tc.is_hidden);
                     return res.json({
                         success: true,
                         problem: {
-                            ...p,
+                            ...chosen,
                             test_cases: visibleCases
                         }
                     });
                 }
-            } catch (supErr) {}
+            } catch (supErr) {
+                console.warn('Supabase coding questions fallback:', supErr.message);
+            }
         }
 
-        // Return from mock problems
-        const mockP = mockStore.codingQuestions[0];
+        // 2. Mock Store Fallback with 30+ Coding Problems Pool
+        let problems = [...mockStore.codingQuestions];
+        if (topic) {
+            const topicMatches = problems.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+            if (topicMatches.length > 0) problems = topicMatches;
+        }
+
+        const unasked = problems.filter(q => !previousQuestions.includes(q.title) && !previousQuestions.includes(q.id));
+        const pool = unasked.length > 0 ? unasked : problems;
+        const shuffled = shuffleArray(pool);
+        const mockP = shuffled[0] || mockStore.codingQuestions[0];
+
         return res.json({
             success: true,
             problem: {
                 ...mockP,
-                test_cases: mockP.test_cases.filter(tc => !tc.is_hidden)
+                test_cases: (mockP.test_cases || []).filter(tc => !tc.is_hidden)
             }
         });
     } catch (err) {
@@ -45,7 +99,7 @@ export const getCodingQuestion = async (req, res, next) => {
 
 export const runCode = async (req, res, next) => {
     try {
-        const { code, language = 'javascript', testCases = [], problemId } = req.body;
+        const { code, language = 'javascript', testCases = [], problemId } = req.body || {};
 
         const runResult = await runCodeService({
             code,
@@ -62,22 +116,23 @@ export const runCode = async (req, res, next) => {
 
 export const submitCode = async (req, res, next) => {
     try {
-        const userId = req.user.id;
+        const userId = req.user?.id || 'candidate-' + Date.now();
         const {
             interviewId,
             problem,
             code,
             language = 'javascript',
             timeTakenSeconds = 0
-        } = req.body;
+        } = req.body || {};
 
         if (!interviewId || !problem || !code) {
             return res.status(400).json({ success: false, error: 'interviewId, problem, and code are required.' });
         }
 
+        // Find complete problem including hidden test cases
         let fullTestCases = problem.test_cases || [];
-        if (fullTestCases.length === 0) {
-            const matching = mockStore.codingQuestions.find(q => q.title === problem.title) || mockStore.codingQuestions[0];
+        const matching = mockStore.codingQuestions.find(q => q.id === problem.id || q.title === problem.title);
+        if (matching && matching.test_cases && matching.test_cases.length > 0) {
             fullTestCases = matching.test_cases;
         }
 
@@ -116,14 +171,17 @@ export const submitCode = async (req, res, next) => {
 
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const { data, error } = await supabaseAdmin
-                    .from('interview_answers')
-                    .insert([answerRecord])
-                    .select()
-                    .single();
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+                if (isUuid) {
+                    const { data, error } = await supabaseAdmin
+                        .from('interview_answers')
+                        .insert([answerRecord])
+                        .select()
+                        .single();
 
-                if (!error && data) {
-                    return res.json({ success: true, evaluation: aiReview, execution: executionResult, answer: data });
+                    if (!error && data) {
+                        return res.json({ success: true, evaluation: aiReview, execution: executionResult, answer: data });
+                    }
                 }
             } catch (supErr) {
                 console.warn('Supabase code submit fallback:', supErr.message);
