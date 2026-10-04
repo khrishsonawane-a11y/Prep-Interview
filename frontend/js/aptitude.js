@@ -139,10 +139,21 @@ function renderPalette() {
 function setupNavigationButtons() {
     const prevBtn = document.getElementById('prev-q-btn');
     const nextBtn = document.getElementById('next-q-btn');
+    const skipBtn = document.getElementById('skip-apt-btn');
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
             if (currentIndex > 0) renderQuestion(currentIndex - 1);
+        });
+    }
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            if (currentIndex < questions.length - 1) {
+                renderQuestion(currentIndex + 1);
+            } else {
+                finishAptitudeRound();
+            }
         });
     }
 

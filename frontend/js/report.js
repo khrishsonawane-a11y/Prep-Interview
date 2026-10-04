@@ -123,7 +123,13 @@ function renderReportHeader(interview, results) {
         (results?.coding_summary?.correct || 26) +
         (results?.hr_summary?.correct || 25)
     );
-    const wrongQ = overallPerf.wrong ?? Math.max(0, totalQ - correctQ);
+    const skippedQ = overallPerf.skipped ?? (
+        (results?.aptitude_summary?.skipped || 0) +
+        (results?.technical_summary?.skipped || 0) +
+        (results?.coding_summary?.skipped || 0) +
+        (results?.hr_summary?.skipped || 0)
+    );
+    const wrongQ = overallPerf.wrong ?? Math.max(0, totalQ - correctQ - skippedQ);
     const impStr = overallPerf.improvement || '+0%';
 
     const perfScoreElem = document.getElementById('perf-score');
@@ -138,15 +144,18 @@ function renderReportHeader(interview, results) {
     const perfWrongElem = document.getElementById('perf-wrong');
     if (perfWrongElem) perfWrongElem.textContent = wrongQ;
 
+    const perfSkippedElem = document.getElementById('perf-skipped');
+    if (perfSkippedElem) perfSkippedElem.textContent = skippedQ;
+
     const perfImpElem = document.getElementById('perf-improvement');
     if (perfImpElem) perfImpElem.textContent = impStr;
 }
 
 function renderRoundsBreakdown(results, answers) {
-    const aptSummary = results?.aptitude_summary || { score: 80, total_questions: 30, correct: 24, wrong: 6, improvement: '+0%', strengths: ['Quick calculations'], improvements: ['Speed math'] };
-    const techSummary = results?.technical_summary || { score: 75, total_questions: 30, correct: 22, wrong: 8, improvement: '+0%', strengths: ['Core CS grasp'], improvements: ['Production trade-offs'] };
-    const codeSummary = results?.coding_summary || { score: 85, total_questions: 30, correct: 26, wrong: 4, improvement: '+0%', strengths: ['Clean algorithmic approach'], improvements: ['Edge cases'] };
-    const hrSummary = results?.hr_summary || { score: 80, total_questions: 30, correct: 25, wrong: 5, improvement: '+0%', strengths: ['Clear articulate delivery'], improvements: ['Quantifiable metrics'] };
+    const aptSummary = results?.aptitude_summary || { score: 80, total_questions: 30, correct: 24, wrong: 6, skipped: 0, improvement: '+0%', strengths: ['Quick calculations'], improvements: ['Speed math'] };
+    const techSummary = results?.technical_summary || { score: 75, total_questions: 30, correct: 22, wrong: 8, skipped: 0, improvement: '+0%', strengths: ['Core CS grasp'], improvements: ['Production trade-offs'] };
+    const codeSummary = results?.coding_summary || { score: 85, total_questions: 30, correct: 26, wrong: 4, skipped: 0, improvement: '+0%', strengths: ['Clean algorithmic approach'], improvements: ['Edge cases'] };
+    const hrSummary = results?.hr_summary || { score: 80, total_questions: 30, correct: 25, wrong: 5, skipped: 0, improvement: '+0%', strengths: ['Clear articulate delivery'], improvements: ['Quantifiable metrics'] };
 
     // Aptitude Card
     const aptScoreElem = document.getElementById('apt-score-badge');
@@ -159,6 +168,8 @@ function renderRoundsBreakdown(results, answers) {
     if (aptCorrElem) aptCorrElem.textContent = aptSummary.correct ?? 24;
     const aptWrongElem = document.getElementById('apt-stat-wrong');
     if (aptWrongElem) aptWrongElem.textContent = aptSummary.wrong ?? 6;
+    const aptSkipElem = document.getElementById('apt-stat-skipped');
+    if (aptSkipElem) aptSkipElem.textContent = aptSummary.skipped ?? 0;
 
     document.getElementById('apt-strengths').innerHTML = (aptSummary.strengths || ['Good reasoning']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('apt-improvements').innerHTML = (aptSummary.improvements || ['Practice time limits']).map(i => `<li>• ${i}</li>`).join('');
@@ -174,6 +185,8 @@ function renderRoundsBreakdown(results, answers) {
     if (techCorrElem) techCorrElem.textContent = techSummary.correct ?? 22;
     const techWrongElem = document.getElementById('tech-stat-wrong');
     if (techWrongElem) techWrongElem.textContent = techSummary.wrong ?? 8;
+    const techSkipElem = document.getElementById('tech-stat-skipped');
+    if (techSkipElem) techSkipElem.textContent = techSummary.skipped ?? 0;
 
     document.getElementById('tech-strengths').innerHTML = (techSummary.strengths || ['Architecture fundamentals']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('tech-improvements').innerHTML = (techSummary.improvements || ['Deepen DBMS isolation levels']).map(i => `<li>• ${i}</li>`).join('');
@@ -189,6 +202,8 @@ function renderRoundsBreakdown(results, answers) {
     if (codeCorrElem) codeCorrElem.textContent = codeSummary.correct ?? 26;
     const codeWrongElem = document.getElementById('code-stat-wrong');
     if (codeWrongElem) codeWrongElem.textContent = codeSummary.wrong ?? 4;
+    const codeSkipElem = document.getElementById('code-stat-skipped');
+    if (codeSkipElem) codeSkipElem.textContent = codeSummary.skipped ?? 0;
 
     document.getElementById('code-strengths').innerHTML = (codeSummary.strengths || ['Optimal complexity']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('code-improvements').innerHTML = (codeSummary.improvements || ['Boundary cases validation']).map(i => `<li>• ${i}</li>`).join('');
@@ -204,6 +219,8 @@ function renderRoundsBreakdown(results, answers) {
     if (hrCorrElem) hrCorrElem.textContent = hrSummary.correct ?? 25;
     const hrWrongElem = document.getElementById('hr-stat-wrong');
     if (hrWrongElem) hrWrongElem.textContent = hrSummary.wrong ?? 5;
+    const hrSkipElem = document.getElementById('hr-stat-skipped');
+    if (hrSkipElem) hrSkipElem.textContent = hrSummary.skipped ?? 0;
 
     document.getElementById('hr-strengths').innerHTML = (hrSummary.strengths || ['Professional delivery']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('hr-improvements').innerHTML = (hrSummary.improvements || ['Use STAR framework explicitly']).map(i => `<li>• ${i}</li>`).join('');

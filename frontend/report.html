@@ -9,8 +9,15 @@
   <link rel="stylesheet" href="css/report.css">
   <!-- html2pdf.js for client-side PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
   <style>
-    /* PDF Export Container Styling (Clean White / Formal Appraisal Layout) */
+    /* PDF Export Container Styling (Formal Appraisal Layout) */
     .pdf-printable-area {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
@@ -76,7 +83,7 @@
       <!-- Question-Level Performance & Improvement Summary -->
       <div style="margin-bottom: 2.25rem;">
         <h3 style="font-size: 1.1rem; margin-bottom: 0.85rem;">Overall Interview Performance</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
           <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 0.75rem; text-align: center;">
             <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.35rem; font-weight: 600;">Overall Score</div>
             <div style="font-size: 1.65rem; font-weight: 800; color: #38bdf8;" id="perf-score">0%</div>
@@ -92,6 +99,10 @@
           <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 0.75rem; text-align: center;">
             <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.35rem; font-weight: 600;">Wrong</div>
             <div style="font-size: 1.65rem; font-weight: 800; color: #f87171;" id="perf-wrong">0</div>
+          </div>
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 0.75rem; text-align: center;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.35rem; font-weight: 600;">Skipped</div>
+            <div style="font-size: 1.65rem; font-weight: 800; color: var(--text-dim);" id="perf-skipped">0</div>
           </div>
           <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.1rem 0.75rem; text-align: center;">
             <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.35rem; font-weight: 600;">Improvement</div>
@@ -114,10 +125,11 @@
                 <span class="badge badge-purple" id="apt-imp-badge">+0%</span>
               </div>
             </div>
-            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.25); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.15); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.78rem;">
               <span>Total: <strong id="apt-stat-total" style="color:var(--text-main);">30</strong></span>
               <span>Correct: <strong id="apt-stat-correct" style="color:#34d399;">24</strong></span>
               <span>Wrong: <strong id="apt-stat-wrong" style="color:#f87171;">6</strong></span>
+              <span>Skipped: <strong id="apt-stat-skipped" style="color:var(--text-dim);">0</strong></span>
             </div>
             <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
             <ul id="apt-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
@@ -134,10 +146,11 @@
                 <span class="badge badge-primary" id="tech-imp-badge">+0%</span>
               </div>
             </div>
-            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.25); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.15); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.78rem;">
               <span>Total: <strong id="tech-stat-total" style="color:var(--text-main);">30</strong></span>
               <span>Correct: <strong id="tech-stat-correct" style="color:#34d399;">22</strong></span>
               <span>Wrong: <strong id="tech-stat-wrong" style="color:#f87171;">8</strong></span>
+              <span>Skipped: <strong id="tech-stat-skipped" style="color:var(--text-dim);">0</strong></span>
             </div>
             <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
             <ul id="tech-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
@@ -145,19 +158,20 @@
             <ul id="tech-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
           </div>
 
-          <!-- Coding -->
+          <!-- Coding / DSA -->
           <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
               <span style="font-weight: 700; font-size: 1rem;">Coding & DSA</span>
               <div style="display: flex; gap: 0.35rem;">
-                <span class="badge badge-primary" id="code-score-badge">85%</span>
+                <span class="badge badge-success" id="code-score-badge">85%</span>
                 <span class="badge badge-purple" id="code-imp-badge">+0%</span>
               </div>
             </div>
-            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.25); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.15); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.78rem;">
               <span>Total: <strong id="code-stat-total" style="color:var(--text-main);">30</strong></span>
               <span>Correct: <strong id="code-stat-correct" style="color:#34d399;">26</strong></span>
               <span>Wrong: <strong id="code-stat-wrong" style="color:#f87171;">4</strong></span>
+              <span>Skipped: <strong id="code-stat-skipped" style="color:var(--text-dim);">0</strong></span>
             </div>
             <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
             <ul id="code-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
@@ -165,24 +179,24 @@
             <ul id="code-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
           </div>
 
-          <!-- HR -->
+          <!-- HR & Behavioral -->
           <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
               <span style="font-weight: 700; font-size: 1rem;">HR & Behavioral</span>
               <div style="display: flex; gap: 0.35rem;">
-                <span class="badge badge-purple" id="hr-score-badge">80%</span>
-                <span class="badge badge-primary" id="hr-imp-badge">+0%</span>
+                <span class="badge badge-warning" id="hr-score-badge">80%</span>
+                <span class="badge badge-purple" id="hr-imp-badge">+0%</span>
               </div>
             </div>
-            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.25); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.15); padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.75rem; font-size: 0.78rem;">
               <span>Total: <strong id="hr-stat-total" style="color:var(--text-main);">30</strong></span>
               <span>Correct: <strong id="hr-stat-correct" style="color:#34d399;">25</strong></span>
               <span>Wrong: <strong id="hr-stat-wrong" style="color:#f87171;">5</strong></span>
+              <span>Skipped: <strong id="hr-stat-skipped" style="color:var(--text-dim);">0</strong></span>
             </div>
             <div style="font-size: 0.78rem; text-transform: uppercase; color: #6ee7b7; font-weight: 600; margin-top: 0.5rem;">Strengths:</div>
             <ul id="hr-strengths" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
             <div style="font-size: 0.78rem; text-transform: uppercase; color: #fcd34d; font-weight: 600; margin-top: 0.5rem;">Improvements:</div>
-            <ul id="hr-improvements" style="list-style: none; font-size: 0.82rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;"></ul>
           </div>
         </div>
       </div>

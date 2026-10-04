@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/aptitude.css">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 </head>
 <body>
   <div class="ambient-bg"></div>
@@ -24,7 +31,7 @@
 
       <div class="timer-box">
         <span>⏱️</span>
-        <span id="aptitude-timer">10:00</span>
+        <span id="aptitude-timer">30:00</span>
       </div>
     </div>
 
@@ -34,7 +41,7 @@
       <div class="question-box">
         <div class="question-meta">
           <span class="badge badge-purple" id="question-topic-badge">Percentages</span>
-          <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-number-display">Question 1 of 5</span>
+          <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-number-display">Question 1 of 30</span>
         </div>
 
         <div class="question-text" id="question-text">
@@ -45,9 +52,12 @@
           <!-- Populated by aptitude.js -->
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
           <button id="prev-q-btn" class="btn btn-secondary">← Previous</button>
-          <button id="next-q-btn" class="btn btn-secondary">Next Question →</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="skip-apt-btn" class="btn btn-secondary">Skip Question ↷</button>
+            <button id="next-q-btn" class="btn btn-primary">Next Question →</button>
+          </div>
         </div>
       </div>
 

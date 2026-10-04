@@ -196,7 +196,39 @@ function stopRecording() {
 
 function setupButtons() {
     const submitBtn = document.getElementById('submit-answer-btn');
+    const skipBtn = document.getElementById('skip-question-btn');
     const nextBtn = document.getElementById('next-stage-btn');
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', async () => {
+            stopRecording();
+            baseTranscript = '';
+            const textarea = document.getElementById('tech-answer-input');
+            if (textarea) textarea.value = '';
+
+            try {
+                skipBtn.disabled = true;
+                await window.API.evaluateTechnicalAnswer({
+                    interviewId,
+                    questionText: currentQuestion?.question || 'Technical Question',
+                    answerText: '[SKIPPED]',
+                    role: currentRole,
+                    difficulty: currentDifficulty
+                });
+                window.Toast.info('Question skipped.');
+            } catch (e) {
+                console.warn('Skip record warning:', e);
+            } finally {
+                skipBtn.disabled = false;
+            }
+
+            if (questionCount < MAX_QUESTIONS) {
+                await fetchNextTechnicalQuestion();
+            } else {
+                finishTechnicalRound();
+            }
+        });
+    }
 
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
@@ -236,6 +268,10 @@ function setupButtons() {
 
     if (nextBtn) {
         nextBtn.addEventListener('click', async () => {
+            baseTranscript = '';
+            const textarea = document.getElementById('tech-answer-input');
+            if (textarea) textarea.value = '';
+
             if (questionCount < MAX_QUESTIONS) {
                 await fetchNextTechnicalQuestion();
             } else {

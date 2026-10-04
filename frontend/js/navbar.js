@@ -1,6 +1,18 @@
 /**
- * Dynamic Navbar Component
+ * Dynamic Navbar Component with Light/Dark Theme Controller & Navigation
  */
+
+// Initialize theme immediately to prevent UI flicker
+(function initTheme() {
+    const savedTheme = localStorage.getItem('app_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     renderNavbar();
 });
@@ -12,6 +24,7 @@ function renderNavbar() {
     const isAuth = window.authManager?.isAuthenticated();
     const user = window.authManager?.getUser();
     const currentPath = window.location.pathname;
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
 
     const navHtml = `
     <nav class="navbar">
@@ -35,6 +48,9 @@ function renderNavbar() {
             <li class="nav-item ${currentPath.includes('interview') ? 'active' : ''}">
               <a href="interview.html">Interview</a>
             </li>
+            <li class="nav-item ${currentPath.includes('preparation') ? 'active' : ''}">
+              <a href="preparation.html">Preparation Guide</a>
+            </li>
             <li class="nav-item ${currentPath.includes('history') ? 'active' : ''}">
               <a href="history.html">History</a>
             </li>
@@ -42,12 +58,20 @@ function renderNavbar() {
               <a href="profile.html">Profile</a>
             </li>
           ` : `
+            <li class="nav-item ${currentPath.includes('preparation') ? 'active' : ''}">
+              <a href="preparation.html">Role Guides</a>
+            </li>
             <li class="nav-item"><a href="index.html#features">Features</a></li>
             <li class="nav-item"><a href="index.html#process">Interview Process</a></li>
           `}
         </ul>
 
         <div class="nav-auth">
+          <!-- Theme Toggle Button -->
+          <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Light/Dark Theme" title="Toggle Light/Dark Theme">
+            ${currentTheme === 'dark' ? '☀️' : '🌙'}
+          </button>
+
           ${isAuth ? `
             <div class="user-profile-menu">
               <div class="user-avatar" title="${user?.email || 'Candidate'}">
@@ -66,6 +90,25 @@ function renderNavbar() {
     `;
 
     navPlaceholder.innerHTML = navHtml;
+
+    // Theme Toggle Handler
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const nowTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const nextTheme = nowTheme === 'dark' ? 'light' : 'dark';
+
+            document.documentElement.setAttribute('data-theme', nextTheme);
+            if (nextTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeBtn.innerHTML = '☀️';
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeBtn.innerHTML = '🌙';
+            }
+            localStorage.setItem('app_theme', nextTheme);
+        });
+    }
 
     // Mobile Toggle
     const toggleBtn = document.getElementById('nav-toggle-btn');

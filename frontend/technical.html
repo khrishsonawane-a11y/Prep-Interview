@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/technical.css">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 </head>
 <body>
   <div class="ambient-bg"></div>
@@ -22,7 +29,7 @@
         </h2>
       </div>
       <div>
-        <span class="badge badge-primary" id="tech-q-counter">Question 1 of 2</span>
+        <span class="badge badge-primary" id="tech-q-counter">Question 1 of 30</span>
       </div>
     </div>
 
@@ -66,7 +73,10 @@
 
       <textarea id="tech-answer-input" class="form-control" style="min-height: 160px;" placeholder="Explain your design, terminology, architectural mechanisms, trade-offs, and practical considerations here..."></textarea>
 
-      <div style="display: flex; justify-content: flex-end; margin-top: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem;">
+        <button id="skip-question-btn" type="button" class="btn btn-secondary">
+          Skip Question ↷
+        </button>
         <button id="submit-answer-btn" class="btn btn-primary btn-lg">
           Submit Answer & Evaluate 🤖
         </button>

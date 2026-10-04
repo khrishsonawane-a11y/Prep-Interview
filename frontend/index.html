@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Interview Preparation System | Professional Mock Interviews</title>
   <meta name="description" content="Structured interview preparation platform with aptitude tests, technical architecture discussions, sandboxed coding practice, and voice HR rounds.">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <style>

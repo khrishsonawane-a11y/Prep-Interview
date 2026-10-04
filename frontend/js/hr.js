@@ -206,7 +206,38 @@ function stopVoiceRecording() {
 
 function setupButtons() {
     const submitBtn = document.getElementById('submit-hr-btn');
+    const skipBtn = document.getElementById('skip-hr-btn');
     const nextBtn = document.getElementById('next-hr-stage-btn');
+
+    if (skipBtn) {
+        skipBtn.addEventListener('click', async () => {
+            stopVoiceRecording();
+            baseTranscript = '';
+            const textarea = document.getElementById('hr-transcript-input');
+            if (textarea) textarea.value = '';
+
+            try {
+                skipBtn.disabled = true;
+                await window.API.evaluateHRAnswer({
+                    interviewId,
+                    questionText: currentQuestion?.question || 'HR Behavioral Question',
+                    answerText: '[SKIPPED]',
+                    role: currentRole
+                });
+                window.Toast.info('Behavioral question skipped.');
+            } catch (e) {
+                console.warn('HR skip warning:', e);
+            } finally {
+                skipBtn.disabled = false;
+            }
+
+            if (questionCount < MAX_HR_QUESTIONS) {
+                await fetchNextHRQuestion();
+            } else {
+                finalizeFullInterview();
+            }
+        });
+    }
 
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
@@ -252,6 +283,10 @@ function setupButtons() {
 
     if (nextBtn) {
         nextBtn.addEventListener('click', async () => {
+            baseTranscript = '';
+            const textarea = document.getElementById('hr-transcript-input');
+            if (textarea) textarea.value = '';
+
             if (questionCount < MAX_HR_QUESTIONS) {
                 await fetchNextHRQuestion();
             } else {

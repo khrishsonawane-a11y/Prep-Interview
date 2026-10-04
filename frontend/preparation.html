@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Role Preparation Guide & Roadmap | AI Interview Preparation System</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/navbar.css">
+  <link rel="stylesheet" href="css/interview.css">
+  <style>
+    .prep-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .prep-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .role-switcher-wrap {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .role-pill {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-full);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .role-pill:hover {
+      border-color: var(--border-focus);
+      color: var(--text-main);
+    }
+    .role-pill.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .roadmap-timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .roadmap-phase-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+    .phase-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .phase-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 0.65rem;
+    }
+    .phase-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .phase-items li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.45rem;
+    }
+    .phase-items li::before {
+      content: "•";
+      color: var(--accent-blue);
+      font-weight: bold;
+    }
+
+    .curriculum-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+    .curriculum-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+    }
+    .curriculum-card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-main);
+    }
+    .curriculum-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .curriculum-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .cta-banner {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 2.25rem 2rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .cta-banner h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .cta-banner p {
+      max-width: 550px;
+      margin: 0 auto 1.5rem;
+    }
+  </style>
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+</head>
+<body>
+  <div id="navbar-mount"></div>
+
+  <main class="container" style="padding: 2.5rem 1.5rem 5rem;">
+    <!-- Header -->
+    <div class="prep-header">
+      <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Role Preparation Blueprint</span>
+      <h1 id="prep-page-title">How to Prepare for Software Developer</h1>
+      <p id="prep-page-subtitle">A comprehensive learning curriculum, 6-phase preparation roadmap, and high-frequency interview strategies tailored for this role.</p>
+    </div>
+
+    <!-- Role Switcher Pills -->
+    <div class="role-switcher-wrap" id="role-switcher">
+      <!-- Dynamically populated -->
+    </div>
+
+    <!-- 6-Phase Preparation Roadmap -->
+    <div class="section-title-wrap" style="margin-bottom: 1.25rem;">
+      <div>
+        <h2>6-Phase Progressive Learning Roadmap</h2>
+        <p>Follow this phased trajectory from foundational concepts to job-ready mock simulations.</p>
+      </div>
+    </div>
+    <div class="roadmap-timeline" id="roadmap-container">
+      <!-- Dynamically generated phases -->
+    </div>
+
+    <!-- Deep-Dive Curriculum Domains -->
+    <div class="section-title-wrap" style="margin-bottom: 1.25rem;">
+      <div>
+        <h2>Core Competency Curriculum</h2>
+        <p>Essential domains tested in real technical interviews for this role.</p>
+      </div>
+    </div>
+    <div class="curriculum-grid" id="curriculum-container">
+      <!-- Dynamically generated curriculum cards -->
+    </div>
+
+    <!-- Call to Action Banner -->
+    <div class="cta-banner">
+      <h2>Ready to Test Your Skills?</h2>
+      <p>Simulate the full 4-round interview loop (Aptitude, Technical, Coding, HR) with 30 questions per round tailored specifically to this role.</p>
+      <a href="interview.html" class="btn btn-primary btn-lg" id="prep-start-interview-btn">
+        Start AI Mock Interview 🚀
+      </a>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/preparation.js"></script>
+</body>
+</html>

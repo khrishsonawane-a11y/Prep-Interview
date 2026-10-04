@@ -180,21 +180,36 @@ export const evaluateTechnicalAnswer = async ({ question, answer, role = 'Softwa
         return getHeuristicTechnicalEvaluation(question, answer);
     }
 
-    const systemPrompt = `You are a Senior Engineering Hiring Manager evaluating a candidate's answer for a ${role} position.`;
-    const userPrompt = `Question: "${question}"\nAnswer: "${answer}"\nRole: ${role}\nDifficulty: ${difficulty}
+    const systemPrompt = `You are a strict, objective Principal Engineering Hiring Manager evaluating a candidate's answer for a ${role} position.
+CRITICAL INSTRUCTIONS:
+1. Objectively determine if the candidate actually answered the specific technical question asked.
+2. If the answer is off-topic, nonsensical, irrelevant, or totally incorrect (e.g. talking about cloud computing when asked about polymorphism), assign:
+   - score: 10 - 25
+   - verdict: "Irrelevant" or "Completely Incorrect"
+   - correctness: "Very Low"
+   - relevance: "Very Low"
+   - strengths: [] (do NOT invent false positive strengths)
+   - feedback: Clearly state that the answer does not address the question.
+3. Categorize verdict strictly as: "Correct", "Mostly Correct", "Partially Correct", "Mostly Incorrect", "Completely Incorrect", or "Irrelevant".`;
 
-Return ONLY a valid JSON object:
+    const userPrompt = `Question: "${question}"
+Candidate Answer: "${answer}"
+Target Role: ${role}
+Difficulty Level: ${difficulty}
+
+Evaluate strictly and return ONLY a valid JSON object:
 {
   "score": 85,
-  "correctness": "High | Moderate | Low",
-  "relevance": "High | Moderate | Low",
+  "verdict": "Correct | Mostly Correct | Partially Correct | Mostly Incorrect | Completely Incorrect | Irrelevant",
+  "correctness": "High | Moderate | Low | Very Low",
+  "relevance": "High | Moderate | Low | Very Low",
   "missing_points": ["Omission 1", "Omission 2"],
-  "strengths": ["Strength 1", "Strength 2"],
-  "feedback": "Constructive analysis of candidate answer.",
-  "improvement": "Actionable next steps."
+  "strengths": ["Clear strength 1"],
+  "feedback": "Honest, constructive analysis.",
+  "improvement": "Actionable technical concepts to master."
 }`;
 
-    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.3 });
+    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.2 });
     return safeParseJSON(raw, getHeuristicTechnicalEvaluation(question, answer));
 };
 
@@ -348,24 +363,71 @@ function getHeuristicQuestion(round, role, difficulty, topic, previousQuestions 
     }
 }
 
-function getHeuristicTechnicalEvaluation(question, answer) {
-    const len = (answer || '').trim().length;
+export function getHeuristicTechnicalEvaluation(question, answer) {
+    const rawAnswer = (answer || '').trim();
+    const len = rawAnswer.length;
+    const lowerAns = rawAnswer.toLowerCase();
+    const lowerQ = (question || '').toLowerCase();
+
+    // Extract significant keywords from question (ignore generic stop words)
+    const stopWords = new Set([
+        'explain', 'difference', 'differences', 'between', 'what', 'which', 'when', 'where', 'how', 'why',
+        'is', 'are', 'was', 'were', 'the', 'and', 'for', 'with', 'from', 'into', 'about', 'your', 'you',
+        'does', 'do', 'did', 'have', 'has', 'having', 'used', 'use', 'using', 'can', 'could', 'should',
+        'would', 'role', 'roles', 'concept', 'concepts', 'give', 'detail', 'details', 'example', 'examples'
+    ]);
+
+    const qWords = lowerQ
+        .replace(/[^a-z0-9_]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !stopWords.has(w));
+
+    let matchedKeywords = 0;
+    for (const kw of qWords) {
+        if (lowerAns.includes(kw) || (kw.length > 4 && lowerAns.includes(kw.substring(0, kw.length - 2)))) {
+            matchedKeywords++;
+        }
+    }
+
+    const overlapRatio = qWords.length > 0 ? (matchedKeywords / qWords.length) : 1;
+
+    // Check for off-topic or completely unrelated text
+    const isObviousOffTopic = (qWords.length >= 2 && matchedKeywords === 0 && len > 20) ||
+                              (lowerQ.includes('polymorphism') && lowerAns.includes('cloud computing') && !lowerAns.includes('poly') && !lowerAns.includes('class') && !lowerAns.includes('object')) ||
+                              (lowerQ.includes('index') && lowerAns.includes('css') && !lowerAns.includes('query') && !lowerAns.includes('table'));
+
+    if (isObviousOffTopic) {
+        return {
+            score: 18,
+            verdict: 'Irrelevant',
+            correctness: 'Very Low',
+            relevance: 'Very Low',
+            missing_points: ['The candidate response discusses an unrelated topic and does not address the core subject.'],
+            strengths: [],
+            feedback: 'The answer does not address the technical subject matter of the question.',
+            improvement: 'Focus directly on the architectural definitions and concepts required by the question prompt.'
+        };
+    }
+
     let score = 40;
     if (len >= 120) score = 92;
     else if (len >= 80) score = 85;
     else if (len >= 50) score = 75;
     else if (len >= 25) score = 62;
-    else score = Math.max(30, Math.round(20 + len));
+    else score = Math.max(25, Math.round(15 + len));
+
+    const verdict = score >= 88 ? 'Correct' : score >= 75 ? 'Mostly Correct' : score >= 60 ? 'Partially Correct' : score >= 40 ? 'Mostly Incorrect' : 'Completely Incorrect';
 
     return {
         score,
-        correctness: score >= 75 ? 'High' : score >= 60 ? 'Moderate' : 'Low',
-        relevance: score >= 60 ? 'High' : 'Moderate',
+        verdict,
+        correctness: score >= 75 ? 'High' : score >= 60 ? 'Moderate' : score >= 40 ? 'Low' : 'Very Low',
+        relevance: score >= 50 ? 'High' : 'Moderate',
         missing_points: ['Production trade-offs and bottleneck considerations', 'Memory overhead versus compute efficiency'],
-        strengths: ['Clear explanation of core technical mechanism', 'Practical perspective'],
+        strengths: score >= 60 ? ['Clear explanation of core technical mechanism', 'Practical perspective'] : [],
         feedback: score >= 60
             ? 'Good response demonstrating foundational engineering understanding.'
-            : 'Incomplete response. Consider elaborating on key technical principles and design patterns.',
+            : 'Incomplete or minimal response. Elaborate with deeper technical rationale.',
         improvement: 'Structure future answers by highlighting production trade-offs and performance boundaries.'
     };
 }

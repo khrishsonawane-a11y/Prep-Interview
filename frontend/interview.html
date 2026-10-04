@@ -7,107 +7,194 @@
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/interview.css">
+  <script>
+    // Immediate theme bootstrap
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 </head>
 <body>
-  <div class="ambient-bg"></div>
   <div id="navbar-mount"></div>
 
-  <main class="container" style="padding: 3rem 1.5rem 5rem;">
+  <main class="container" style="padding: 2.5rem 1.5rem 5rem;">
     <div class="setup-container">
-      <div class="setup-hero">
-        <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Step 1 of 2</span>
-        <h1>Configure Your AI Interview</h1>
-        <p>Select your target role and customize the rounds for a realistic hiring simulation.</p>
+
+      <!-- Step Indicator Header -->
+      <div class="step-indicator-wrapper">
+        <div class="step-badge" id="step-badge-indicator">Step 1 of 3</div>
+        <div class="step-progress-bar">
+          <div class="step-item active" id="step-indicator-1" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-label">Target Role</div>
+          </div>
+          <div class="step-connector" id="connector-1-2"></div>
+          <div class="step-item" id="step-indicator-2" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-label">Difficulty</div>
+          </div>
+          <div class="step-connector" id="connector-2-3"></div>
+          <div class="step-item" id="step-indicator-3" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-label">Interview Rounds</div>
+          </div>
+        </div>
       </div>
 
-      <!-- 1. Job Role Selection Grid -->
-      <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 0.5rem;">1. Select Target Job Role</h3>
-        <p style="margin-bottom: 1.5rem;">The AI will generate questions, architectural scenarios, and coding challenges specific to this role.</p>
+      <!-- ============================================================
+           STEP 1: TARGET JOB ROLE
+           ============================================================ -->
+      <section class="wizard-step card" id="wizard-step-1">
+        <div class="step-header">
+          <h2>Select Target Job Role</h2>
+          <p>Choose the engineering role you want to practice. The AI calibrates architectural questions, coding challenges, and behavioral metrics specifically for this domain.</p>
+        </div>
 
         <div class="role-grid" id="roles-grid">
           <!-- Dynamically populated from config.js -->
         </div>
-      </div>
 
-      <!-- 2. Difficulty Level -->
-      <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 0.5rem;">2. Select Difficulty Level</h3>
-        <p style="margin-bottom: 1.5rem;">Calibrates the depth of system design, algorithmic complexity, and behavioral depth.</p>
+        <!-- Role Preparation Banner -->
+        <div class="prep-hint-banner" id="prep-hint-banner">
+          <div class="prep-hint-info">
+            <div class="prep-hint-title">🎯 Prepare for Your Target Role</div>
+            <div class="prep-hint-desc" id="prep-hint-role-desc">Explore the detailed curriculum, roadmap, and core topics recommended for <strong>Software Developer</strong>.</div>
+          </div>
+          <a href="#" class="btn btn-secondary btn-sm" id="view-role-prep-btn">
+            View Preparation Guide →
+          </a>
+        </div>
 
-        <div class="difficulty-selector">
-          <div class="diff-btn" data-diff="Beginner">
-            <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">🌱 Beginner</div>
-            <div style="font-size: 0.78rem; font-weight: normal;">Intern / Junior Level</div>
+        <div class="step-actions right-align">
+          <button class="btn btn-primary btn-lg" id="step1-next-btn">
+            Next: Select Difficulty →
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           STEP 2: DIFFICULTY LEVEL
+           ============================================================ -->
+      <section class="wizard-step card" id="wizard-step-2" style="display: none;">
+        <div class="step-header">
+          <h2>Select Difficulty Level</h2>
+          <p>Calibrates algorithmic complexity, system scalability constraints, and behavioral depth for <strong id="step2-role-display" style="color:var(--accent-blue);">Software Developer</strong>.</p>
+        </div>
+
+        <div class="difficulty-grid">
+          <div class="diff-card" data-diff="Beginner">
+            <div class="diff-icon">🌱</div>
+            <div class="diff-title">Beginner</div>
+            <div class="diff-subtitle">Intern / Junior Engineer (0 - 1 years)</div>
+            <div class="diff-desc">Focuses on programming fundamentals, clean syntax, core data structures, basic SQL queries, and foundational engineering communication.</div>
           </div>
-          <div class="diff-btn selected" data-diff="Intermediate">
-            <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">⚡ Intermediate</div>
-            <div style="font-size: 0.78rem; font-weight: normal;">Mid-level Engineer (1-4 yrs)</div>
+
+          <div class="diff-card selected" data-diff="Intermediate">
+            <div class="diff-badge-rec">Recommended</div>
+            <div class="diff-icon">⚡</div>
+            <div class="diff-title">Intermediate</div>
+            <div class="diff-subtitle">Mid-Level Software Engineer (1 - 4 years)</div>
+            <div class="diff-desc">Tests algorithmic efficiency, system design patterns, database indexing, caching strategies, and STAR behavioral scenarios.</div>
           </div>
-          <div class="diff-btn" data-diff="Advanced">
-            <div style="font-size: 1.1rem; margin-bottom: 0.25rem;">🔥 Advanced</div>
-            <div style="font-size: 0.78rem; font-weight: normal;">Senior / Tech Lead Level</div>
+
+          <div class="diff-card" data-diff="Advanced">
+            <div class="diff-icon">🔥</div>
+            <div class="diff-title">Advanced</div>
+            <div class="diff-subtitle">Senior Engineer / Tech Lead (5+ years)</div>
+            <div class="diff-desc">High-concurrency system architecture, distributed bottlenecks, complex dynamic programming, technical leadership, and trade-off defense.</div>
           </div>
         </div>
-      </div>
 
-      <!-- 3. Rounds Included -->
-      <div class="card" style="margin-bottom: 2.5rem;">
-        <h3 style="margin-bottom: 0.5rem;">3. Interview Rounds Included</h3>
-        <p style="margin-bottom: 1.5rem;">You can practice the full pipeline or select specific rounds.</p>
+        <div class="step-actions split-align">
+          <button class="btn btn-secondary btn-lg" id="step2-back-btn">
+            ← Back to Job Role
+          </button>
+          <button class="btn btn-primary btn-lg" id="step2-next-btn">
+            Next: Choose Rounds →
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           STEP 3: INTERVIEW ROUNDS
+           ============================================================ -->
+      <section class="wizard-step card" id="wizard-step-3" style="display: none;">
+        <div class="step-header">
+          <h2>Choose Interview Rounds</h2>
+          <p>Select which interview stages to include in this simulation. Each selected round contains 30 comprehensive questions drawn from 30+ question pools.</p>
+        </div>
 
         <div class="rounds-list">
-          <label class="round-checkbox-item">
+          <label class="round-card-item">
             <div class="round-info-wrap">
               <div class="round-number-badge">1</div>
               <div>
-                <div style="font-weight: 700; color: var(--text-main);">Aptitude Round</div>
-                <div style="font-size: 0.82rem; color: var(--text-muted);">Quantitative reasoning, logical puzzles, percentages, speed & work.</div>
+                <div class="round-card-title">Aptitude & Quantitative Reasoning</div>
+                <div class="round-card-desc">30 questions covering number systems, profit & loss, time-speed-distance, probability, logic, and quantitative problem solving.</div>
               </div>
             </div>
-            <input type="checkbox" name="round-select" value="aptitude" checked style="transform: scale(1.3); cursor: pointer;">
+            <input type="checkbox" name="round-select" value="aptitude" checked class="round-checkbox">
           </label>
 
-          <label class="round-checkbox-item">
+          <label class="round-card-item">
             <div class="round-info-wrap">
               <div class="round-number-badge">2</div>
               <div>
-                <div style="font-weight: 700; color: var(--text-main);">Technical Architecture Round</div>
-                <div style="font-size: 0.82rem; color: var(--text-muted);">Role-specific core CS, OOP, DBMS, REST/GraphQL, and system design.</div>
+                <div class="round-card-title">Technical Architecture Round</div>
+                <div class="round-card-desc">30 questions evaluating role-specific CS fundamentals, system design, database indexing, REST APIs, concurrency, and trade-offs.</div>
               </div>
             </div>
-            <input type="checkbox" name="round-select" value="technical" checked style="transform: scale(1.3); cursor: pointer;">
+            <input type="checkbox" name="round-select" value="technical" checked class="round-checkbox">
           </label>
 
-          <label class="round-checkbox-item">
+          <label class="round-card-item">
             <div class="round-info-wrap">
               <div class="round-number-badge">3</div>
               <div>
-                <div style="font-weight: 700; color: var(--text-main);">Coding & DSA Round</div>
-                <div style="font-size: 0.82rem; color: var(--text-muted);">In-browser IDE, live test cases, and time/space complexity analysis.</div>
+                <div class="round-card-title">Coding & DSA Round</div>
+                <div class="round-card-desc">30 algorithmic coding challenges with in-browser editor, hidden test case execution, and automated time/space complexity analysis.</div>
               </div>
             </div>
-            <input type="checkbox" name="round-select" value="coding" checked style="transform: scale(1.3); cursor: pointer;">
+            <input type="checkbox" name="round-select" value="coding" checked class="round-checkbox">
           </label>
 
-          <label class="round-checkbox-item">
+          <label class="round-card-item">
             <div class="round-info-wrap">
               <div class="round-number-badge">4</div>
               <div>
-                <div style="font-weight: 700; color: var(--text-main);">HR & Voice Behavioral Round</div>
-                <div style="font-size: 0.82rem; color: var(--text-muted);">Voice or text answers evaluated on STAR structure, clarity, and relevance.</div>
+                <div class="round-card-title">HR & Voice Behavioral Round</div>
+                <div class="round-card-desc">30 behavioral questions with voice dictation or text input, evaluated on STAR methodology, leadership clarity, and relevance.</div>
               </div>
             </div>
-            <input type="checkbox" name="round-select" value="hr" checked style="transform: scale(1.3); cursor: pointer;">
+            <input type="checkbox" name="round-select" value="hr" checked class="round-checkbox">
           </label>
         </div>
 
-        <div style="text-align: center;">
-          <button id="start-interview-btn" class="btn btn-primary btn-lg" style="min-width: 260px;">
+        <!-- Summary Summary Card -->
+        <div class="config-summary-box">
+          <div class="summary-line">
+            <span>Target Role:</span> <strong id="summary-role-val">Software Developer</strong>
+          </div>
+          <div class="summary-line">
+            <span>Difficulty Level:</span> <strong id="summary-diff-val">Intermediate</strong>
+          </div>
+          <div class="summary-line">
+            <span>Rounds Selected:</span> <strong id="summary-rounds-val">4 Rounds (120 Questions)</strong>
+          </div>
+        </div>
+
+        <div class="step-actions split-align">
+          <button class="btn btn-secondary btn-lg" id="step3-back-btn">
+            ← Back to Difficulty
+          </button>
+          <button class="btn btn-primary btn-lg" id="start-interview-btn">
             Start Interview 🚀
           </button>
         </div>
-      </div>
+      </section>
+
     </div>
   </main>
 

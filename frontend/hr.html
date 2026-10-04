@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/hr.css">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 </head>
 <body>
   <div class="ambient-bg"></div>
@@ -20,7 +27,7 @@
         <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Communication & Cultural Fit</h2>
       </div>
       <div>
-        <span class="badge badge-purple" id="hr-q-counter">Question 1 of 2</span>
+        <span class="badge badge-purple" id="hr-q-counter">Question 1 of 30</span>
       </div>
     </div>
 
@@ -63,7 +70,10 @@
         <textarea id="hr-transcript-input" class="transcript-area" placeholder="Your voice transcription or typed answer will appear here... Speak using the STAR method (Situation, Task, Action, Result)."></textarea>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+        <button id="skip-hr-btn" type="button" class="btn btn-secondary">
+          Skip Question ↷
+        </button>
         <button id="submit-hr-btn" class="btn btn-primary btn-lg">
           Submit & Review Answer 🎯
         </button>

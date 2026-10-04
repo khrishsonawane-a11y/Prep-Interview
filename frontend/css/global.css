@@ -5,12 +5,12 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-:root {
+:root, [data-theme="light"] {
   /* Clean White Palette */
   --bg-primary: #f8fafc;       /* Slate 50 ultra-clean background */
   --bg-secondary: #ffffff;     /* Pure White */
   --bg-card: #ffffff;          /* Pure White Card */
-  --bg-card-hover: #f8fafc;
+  --bg-card-hover: #f1f5f9;
   --bg-input: #ffffff;
   --border-subtle: #e2e8f0;    /* Slate 200 crisp border */
   --border-card: #e2e8f0;
@@ -46,6 +46,35 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 
   --transition: all 0.15s ease-in-out;
+}
+
+[data-theme="dark"], html.dark {
+  /* Sophisticated Slate Dark Palette */
+  --bg-primary: #0b0f17;       /* Deep Slate background */
+  --bg-secondary: #131b2e;     /* Elevated Slate */
+  --bg-card: #131b2e;          /* Card Slate */
+  --bg-card-hover: #1e293b;
+  --bg-input: #0b0f17;
+  --border-subtle: #243047;    /* Subtle Dark Slate border */
+  --border-card: #243047;
+  --border-focus: #3b82f6;     /* Sky blue focus ring */
+
+  --primary: #3b82f6;          /* Vibrant Electric Blue */
+  --primary-hover: #2563eb;
+  --primary-subtle: #1e293b;
+  --accent-blue: #60a5fa;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+
+  --text-main: #f8fafc;        /* Slate 50 crisp high-contrast */
+  --text-muted: #94a3b8;       /* Slate 400 readable muted */
+  --text-dim: #64748b;         /* Slate 500 */
+  --text-inverse: #0b0f17;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
 }
 
 /* Base Reset */
@@ -147,15 +176,15 @@ a:hover {
 }
 
 .btn-secondary {
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   color: var(--text-main);
   border-color: var(--border-subtle);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #f8fafc;
-  border-color: #cbd5e1;
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-subtle);
   color: var(--text-main);
 }
 
@@ -189,7 +218,7 @@ a:hover {
   font-weight: 600;
 }
 
-/* Clean White Cards */
+/* Clean Cards */
 .card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -200,10 +229,10 @@ a:hover {
 }
 
 .card:hover {
-  border-color: #cbd5e1;
+  border-color: var(--border-focus);
 }
 
-/* Clean Badges */
+/* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -215,11 +244,11 @@ a:hover {
   letter-spacing: 0.01em;
 }
 
-.badge-primary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
-.badge-success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-.badge-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.badge-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.badge-purple { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+.badge-primary { background: var(--bg-card-hover); color: var(--text-main); border: 1px solid var(--border-subtle); }
+.badge-success { background: rgba(5, 150, 105, 0.12); color: var(--accent-emerald); border: 1px solid rgba(5, 150, 105, 0.25); }
+.badge-warning { background: rgba(217, 119, 6, 0.12); color: var(--accent-amber); border: 1px solid rgba(217, 119, 6, 0.25); }
+.badge-danger { background: rgba(220, 38, 38, 0.12); color: var(--accent-rose); border: 1px solid rgba(220, 38, 38, 0.25); }
+.badge-purple { background: rgba(124, 58, 237, 0.12); color: #8b5cf6; border: 1px solid rgba(124, 58, 237, 0.25); }
 
 /* Form Controls */
 .form-group {
@@ -255,7 +284,7 @@ a:hover {
 }
 
 .form-control::placeholder {
-  color: #94a3b8;
+  color: var(--text-dim);
 }
 
 textarea.form-control {
@@ -277,8 +306,8 @@ textarea.form-control {
 }
 
 .toast {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   color: var(--text-main);
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
@@ -298,7 +327,7 @@ textarea.form-control {
 .spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -313,7 +342,7 @@ textarea.form-control {
 footer {
   margin-top: auto;
   border-top: 1px solid var(--border-subtle);
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   padding: 2rem 0 1.5rem;
   font-size: 0.85rem;
 }

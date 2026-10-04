@@ -193,6 +193,32 @@ function setupExecutionButtons() {
         });
     }
 
+    const skipBtn = document.getElementById('skip-code-btn');
+    if (skipBtn) {
+        skipBtn.addEventListener('click', async () => {
+            try {
+                skipBtn.disabled = true;
+                await window.API.submitCode({
+                    interviewId,
+                    problem: currentProblem,
+                    code: '// [SKIPPED]',
+                    language: currentLanguage
+                });
+                window.Toast.info('Coding problem skipped.');
+            } catch (e) {
+                console.warn('Skip code warning:', e);
+            } finally {
+                skipBtn.disabled = false;
+            }
+
+            if (problemCount < MAX_CODING_QUESTIONS) {
+                await fetchNextCodingProblem();
+            } else {
+                finishCodingRound();
+            }
+        });
+    }
+
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
             const code = document.getElementById('code-editor-textarea').value;

@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/navbar.css">
   <link rel="stylesheet" href="css/coding.css">
+  <script>
+    (function() {
+      const theme = localStorage.getItem('app_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
 </head>
 <body>
   <div id="navbar-mount"></div>
@@ -60,6 +67,7 @@
               </select>
             </div>
             <div style="display: flex; gap: 0.5rem;">
+              <button id="skip-code-btn" class="btn btn-secondary btn-sm" title="Skip this problem">Skip Problem ↷</button>
               <button id="reset-code-btn" class="btn btn-secondary btn-sm" title="Reset starter template">↺ Reset</button>
               <button id="run-code-btn" class="btn btn-secondary btn-sm">▶ Run Tests</button>
               <button id="submit-code-btn" class="btn btn-primary btn-sm">Submit Solution</button>

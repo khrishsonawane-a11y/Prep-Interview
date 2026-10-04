@@ -1,24 +1,39 @@
 /**
- * Interview Setup & Role Selector Controller
+ * Three-Step Interview Configuration Wizard Controller
+ * State Machine: Step 1 (Role) -> Step 2 (Difficulty) -> Step 3 (Rounds) -> Launch
  */
+
+let currentStep = 1;
+let selectedRole = 'Software Developer';
+let selectedDifficulty = 'Intermediate';
+let selectedRounds = ['aptitude', 'technical', 'coding', 'hr'];
+
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
 
-    renderRoleCards();
-    setupDifficultyButtons();
-    setupStartButton();
-
-    // Check if resume parameter is present
+    // Read pre-selected parameters from URL if any
     const params = new URLSearchParams(window.location.search);
+    const roleParam = params.get('role');
+    if (roleParam) {
+        selectedRole = roleParam;
+    }
+
     const resumeId = params.get('resume');
     if (resumeId) {
         resumeInterviewSession(resumeId);
+        return;
     }
+
+    renderRoleCards();
+    setupDifficultyCards();
+    setupRoundsCheckboxes();
+    setupStepNavigation();
+    updateStepUI();
 });
 
-let selectedRole = 'Software Developer';
-let selectedDifficulty = 'Intermediate';
-
+/**
+ * 1. Render Step 1 Role Cards
+ */
 function renderRoleCards() {
     const container = document.getElementById('roles-grid');
     if (!container) return;
@@ -26,9 +41,16 @@ function renderRoleCards() {
     const roles = window.CONFIG?.JOB_ROLES || [];
     container.innerHTML = roles.map(r => `
         <div class="role-card ${r.id === selectedRole ? 'selected' : ''}" data-role="${r.id}">
-            <div class="role-card-icon">${r.icon}</div>
-            <div class="role-card-title">${r.title}</div>
-            <div style="font-size:0.8rem; color:var(--text-dim); margin-top:0.4rem;">${r.desc}</div>
+            <div class="role-card-header">
+                <div class="role-card-icon">${r.icon}</div>
+                <div class="role-card-title">${r.title}</div>
+            </div>
+            <div class="role-card-desc">${r.desc}</div>
+            ${r.skills && r.skills.length > 0 ? `
+                <div class="role-skill-tags">
+                    ${r.skills.slice(0, 3).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                </div>
+            ` : ''}
         </div>
     `).join('');
 
@@ -37,72 +59,220 @@ function renderRoleCards() {
             container.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             selectedRole = card.getAttribute('data-role');
+            updateRoleDependentUI();
+        });
+    });
+
+    updateRoleDependentUI();
+}
+
+function updateRoleDependentUI() {
+    const roleDesc = document.getElementById('prep-hint-role-desc');
+    const prepBtn = document.getElementById('view-role-prep-btn');
+    const step2RoleDisplay = document.getElementById('step2-role-display');
+    const summaryRoleVal = document.getElementById('summary-role-val');
+
+    if (roleDesc) {
+        roleDesc.innerHTML = `Explore the detailed curriculum, roadmap, and core topics recommended for <strong>${selectedRole}</strong>.`;
+    }
+    if (prepBtn) {
+        prepBtn.href = `preparation.html?role=${encodeURIComponent(selectedRole)}`;
+    }
+    if (step2RoleDisplay) {
+        step2RoleDisplay.textContent = selectedRole;
+    }
+    if (summaryRoleVal) {
+        summaryRoleVal.textContent = selectedRole;
+    }
+}
+
+/**
+ * 2. Setup Step 2 Difficulty Cards
+ */
+function setupDifficultyCards() {
+    const diffCards = document.querySelectorAll('.diff-card');
+    diffCards.forEach(card => {
+        card.addEventListener('click', () => {
+            diffCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedDifficulty = card.getAttribute('data-diff');
+
+            const summaryDiffVal = document.getElementById('summary-diff-val');
+            if (summaryDiffVal) summaryDiffVal.textContent = selectedDifficulty;
         });
     });
 }
 
-function setupDifficultyButtons() {
-    const diffButtons = document.querySelectorAll('.diff-btn');
-    diffButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            diffButtons.forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedDifficulty = btn.getAttribute('data-diff');
+/**
+ * 3. Setup Step 3 Rounds Checkboxes
+ */
+function setupRoundsCheckboxes() {
+    const checkboxes = document.querySelectorAll('input[name="round-select"]');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            updateSelectedRounds();
         });
     });
+    updateSelectedRounds();
 }
 
-function getSelectedRounds() {
+function updateSelectedRounds() {
     const checkboxes = document.querySelectorAll('input[name="round-select"]:checked');
-    const selected = Array.from(checkboxes).map(cb => cb.value);
-    return selected.length > 0 ? selected : ['aptitude', 'technical', 'coding', 'hr'];
+    selectedRounds = Array.from(checkboxes).map(cb => cb.value);
+
+    const summaryRoundsVal = document.getElementById('summary-rounds-val');
+    if (summaryRoundsVal) {
+        const totalQ = selectedRounds.length * 30;
+        summaryRoundsVal.textContent = `${selectedRounds.length} Rounds (${totalQ} Questions)`;
+    }
 }
 
-function setupStartButton() {
-    const startBtn = document.getElementById('start-interview-btn');
-    if (!startBtn) return;
-
-    startBtn.addEventListener('click', async () => {
-        const rounds = getSelectedRounds();
-
-        try {
-            startBtn.disabled = true;
-            startBtn.innerHTML = '<span class="spinner"></span> Initializing AI Interview Session...';
-
-            const res = await window.API.createInterview({
-                role: selectedRole,
-                difficulty: selectedDifficulty,
-                rounds: rounds
-            });
-
-            if (res.success && res.interview) {
-                window.Toast.success('Interview session created! Launching Round 1...');
-
-                const firstRound = rounds[0];
-                setTimeout(() => {
-                    window.location.href = `${firstRound}.html?id=${res.interview.id}&role=${encodeURIComponent(selectedRole)}&difficulty=${selectedDifficulty}`;
-                }, 800);
+/**
+ * 4. Step Navigation Management (Next / Back / State Validation)
+ */
+function setupStepNavigation() {
+    // Step 1 -> Step 2
+    const step1Next = document.getElementById('step1-next-btn');
+    if (step1Next) {
+        step1Next.addEventListener('click', () => {
+            if (!selectedRole) {
+                window.Toast.warning('Please select a target job role.');
+                return;
             }
-        } catch (err) {
-            console.error('Failed to create interview:', err);
-            window.Toast.error(err.message || 'Failed to start interview.');
-            startBtn.disabled = false;
-            startBtn.innerHTML = 'Start Interview 🚀';
-        }
-    });
+            goToStep(2);
+        });
+    }
+
+    // Step 2 -> Step 1 (Back)
+    const step2Back = document.getElementById('step2-back-btn');
+    if (step2Back) {
+        step2Back.addEventListener('click', () => {
+            goToStep(1);
+        });
+    }
+
+    // Step 2 -> Step 3 (Next)
+    const step2Next = document.getElementById('step2-next-btn');
+    if (step2Next) {
+        step2Next.addEventListener('click', () => {
+            if (!selectedDifficulty) {
+                window.Toast.warning('Please select a difficulty level.');
+                return;
+            }
+            goToStep(3);
+        });
+    }
+
+    // Step 3 -> Step 2 (Back)
+    const step3Back = document.getElementById('step3-back-btn');
+    if (step3Back) {
+        step3Back.addEventListener('click', () => {
+            goToStep(2);
+        });
+    }
+
+    // Step 3 -> Start Interview
+    const startBtn = document.getElementById('start-interview-btn');
+    if (startBtn) {
+        startBtn.addEventListener('click', async () => {
+            updateSelectedRounds();
+            if (!selectedRounds || selectedRounds.length === 0) {
+                window.Toast.warning('Please select at least one interview round.');
+                return;
+            }
+
+            try {
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<span class="spinner"></span> Initializing AI Interview Session...';
+
+                const res = await window.API.createInterview({
+                    role: selectedRole,
+                    difficulty: selectedDifficulty,
+                    rounds: selectedRounds
+                });
+
+                if (res.success && res.interview) {
+                    window.Toast.success('Interview session configured! Launching Round 1...');
+
+                    const firstRound = selectedRounds[0];
+                    setTimeout(() => {
+                        window.location.href = `${firstRound}.html?id=${res.interview.id}&role=${encodeURIComponent(selectedRole)}&difficulty=${selectedDifficulty}`;
+                    }, 800);
+                }
+            } catch (err) {
+                console.error('Failed to create interview:', err);
+                window.Toast.error(err.message || 'Failed to start interview.');
+                startBtn.disabled = false;
+                startBtn.innerHTML = 'Start Interview 🚀';
+            }
+        });
+    }
 }
 
+function goToStep(stepNumber) {
+    currentStep = stepNumber;
+    updateStepUI();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateStepUI() {
+    // 1. Toggle Step Panels
+    for (let i = 1; i <= 3; i++) {
+        const stepEl = document.getElementById(`wizard-step-1`);
+        const step2El = document.getElementById(`wizard-step-2`);
+        const step3El = document.getElementById(`wizard-step-3`);
+
+        if (stepEl) stepEl.style.display = currentStep === 1 ? 'block' : 'none';
+        if (step2El) step2El.style.display = currentStep === 2 ? 'block' : 'none';
+        if (step3El) step3El.style.display = currentStep === 3 ? 'block' : 'none';
+    }
+
+    // 2. Update Step Badge
+    const badge = document.getElementById('step-badge-indicator');
+    if (badge) {
+        badge.textContent = `Step ${currentStep} of 3`;
+    }
+
+    // 3. Update Progress Step Icons & Connectors
+    for (let i = 1; i <= 3; i++) {
+        const ind = document.getElementById(`step-indicator-${i}`);
+        if (ind) {
+            ind.classList.remove('active', 'completed');
+            if (i === currentStep) {
+                ind.classList.add('active');
+            } else if (i < currentStep) {
+                ind.classList.add('completed');
+            }
+        }
+    }
+
+    const conn1 = document.getElementById('connector-1-2');
+    const conn2 = document.getElementById('connector-2-3');
+    if (conn1) conn1.classList.toggle('active', currentStep >= 2);
+    if (conn2) conn2.classList.toggle('active', currentStep >= 3);
+
+    // 4. Update Summaries
+    const summaryRole = document.getElementById('summary-role-val');
+    const summaryDiff = document.getElementById('summary-diff-val');
+    if (summaryRole) summaryRole.textContent = selectedRole;
+    if (summaryDiff) summaryDiff.textContent = selectedDifficulty;
+}
+
+/**
+ * Resume Session Helper
+ */
 async function resumeInterviewSession(interviewId) {
     try {
         const res = await window.API.getInterviewById(interviewId);
         if (res.success && res.interview) {
-            const { rounds_config, current_round_index, status } = res.interview;
+            const { rounds_config, current_round_index, status, role, difficulty } = res.interview;
             if (status === 'completed') {
                 window.location.href = `report.html?id=${interviewId}`;
                 return;
             }
-            const activeRound = rounds_config[current_round_index] || rounds_config[0];
-            window.location.href = `${activeRound}.html?id=${interviewId}&role=${encodeURIComponent(res.interview.role)}&difficulty=${res.interview.difficulty}`;
+            const rounds = rounds_config || ['aptitude', 'technical', 'coding', 'hr'];
+            const targetRound = rounds[current_round_index || 0] || 'aptitude';
+            window.location.href = `${targetRound}.html?id=${interviewId}&role=${encodeURIComponent(role || 'Software Developer')}&difficulty=${difficulty || 'Intermediate'}`;
         }
     } catch (err) {
         console.error('Failed to resume interview:', err);

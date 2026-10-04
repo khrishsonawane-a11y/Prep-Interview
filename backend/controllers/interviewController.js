@@ -327,15 +327,25 @@ export const finalizeInterview = async (req, res, next) => {
             const roundAns = answers.filter(a => a.round_type === roundType);
             const total = roundAns.length > 0 ? roundAns.length : defaultCount;
             let correct = 0;
+            let skipped = 0;
             let totalScore = 0;
+            let evaluatedCount = 0;
+
             for (const a of roundAns) {
-                const isCorr = a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60);
-                if (isCorr) correct++;
-                totalScore += Number(a.score) || (isCorr ? 100 : 0);
+                const isSkip = a.is_skipped === true || a.user_answer === '[SKIPPED]' || a.selectedOptionIndex === -1;
+                if (isSkip) {
+                    skipped++;
+                } else {
+                    const isCorr = a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60);
+                    if (isCorr) correct++;
+                    totalScore += Number(a.score) || (isCorr ? 100 : 0);
+                    evaluatedCount++;
+                }
             }
-            const wrong = Math.max(0, total - correct);
-            const score = roundAns.length > 0 ? Math.round(totalScore / roundAns.length) : (correct > 0 ? Math.round((correct / total) * 100) : 0);
-            return { total_questions: total, correct, wrong, score, hasAnswers: roundAns.length > 0 };
+
+            const wrong = Math.max(0, total - correct - skipped);
+            const score = evaluatedCount > 0 ? Math.round(totalScore / evaluatedCount) : (correct > 0 ? Math.round((correct / total) * 100) : 0);
+            return { total_questions: total, correct, wrong, skipped, score, hasAnswers: roundAns.length > 0 };
         };
 
         const aptMetrics = computeRound('aptitude', 30);
@@ -348,6 +358,7 @@ export const finalizeInterview = async (req, res, next) => {
 
         const totalQuestions = metricsToUse.reduce((acc, m) => acc + m.total_questions, 0);
         const totalCorrect = metricsToUse.reduce((acc, m) => acc + m.correct, 0);
+        const totalSkipped = metricsToUse.reduce((acc, m) => acc + (m.skipped || 0), 0);
         const totalWrong = metricsToUse.reduce((acc, m) => acc + m.wrong, 0);
         const overallScore = Math.round(metricsToUse.reduce((acc, m) => acc + m.score, 0) / metricsToUse.length);
 
@@ -375,6 +386,7 @@ export const finalizeInterview = async (req, res, next) => {
                 total_questions: totalQuestions,
                 correct: totalCorrect,
                 wrong: totalWrong,
+                skipped: totalSkipped,
                 score: overallScore,
                 improvement: overallImprovement
             },
@@ -384,6 +396,7 @@ export const finalizeInterview = async (req, res, next) => {
                 total_questions: aptMetrics.total_questions,
                 correct: aptMetrics.correct,
                 wrong: aptMetrics.wrong,
+                skipped: aptMetrics.skipped,
                 score: aptMetrics.score,
                 improvement: aptImprovement
             },
@@ -392,6 +405,7 @@ export const finalizeInterview = async (req, res, next) => {
                 total_questions: techMetrics.total_questions,
                 correct: techMetrics.correct,
                 wrong: techMetrics.wrong,
+                skipped: techMetrics.skipped,
                 score: techMetrics.score,
                 improvement: techImprovement
             },
@@ -400,6 +414,7 @@ export const finalizeInterview = async (req, res, next) => {
                 total_questions: codeMetrics.total_questions,
                 correct: codeMetrics.correct,
                 wrong: codeMetrics.wrong,
+                skipped: codeMetrics.skipped,
                 score: codeMetrics.score,
                 improvement: codeImprovement
             },
@@ -408,6 +423,7 @@ export const finalizeInterview = async (req, res, next) => {
                 total_questions: hrMetrics.total_questions,
                 correct: hrMetrics.correct,
                 wrong: hrMetrics.wrong,
+                skipped: hrMetrics.skipped,
                 score: hrMetrics.score,
                 improvement: hrImprovement
             },
