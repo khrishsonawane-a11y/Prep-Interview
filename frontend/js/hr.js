@@ -34,6 +34,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function fetchNextHRQuestion() {
+    stopVoiceRecording();
+    baseTranscript = '';
+
     const loading = document.getElementById('hr-loading-state');
     const questionCard = document.getElementById('hr-question-container');
     const evalPanel = document.getElementById('hr-eval-panel');
@@ -91,6 +94,8 @@ function speakQuestion(text) {
     }
 }
 
+let baseTranscript = '';
+
 function setupSpeechRecognition() {
     const micBtn = document.getElementById('mic-record-btn');
     const statusText = document.getElementById('voice-status-indicator');
@@ -109,13 +114,31 @@ function setupSpeechRecognition() {
     speechRecognition.lang = 'en-US';
 
     speechRecognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
+        let interimTranscript = '';
+        let sessionFinalTranscript = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
+            const result = event.results[i];
+            const text = result[0].transcript.trim();
+            if (result.isFinal) {
+                sessionFinalTranscript = sessionFinalTranscript ? `${sessionFinalTranscript} ${text}` : text;
+            } else {
+                interimTranscript = interimTranscript ? `${interimTranscript} ${text}` : text;
+            }
         }
+
+        const currentSessionText = sessionFinalTranscript && interimTranscript
+            ? `${sessionFinalTranscript} ${interimTranscript}`
+            : (sessionFinalTranscript || interimTranscript);
+
+        const fullText = baseTranscript
+            ? (currentSessionText ? `${baseTranscript} ${currentSessionText}` : baseTranscript)
+            : currentSessionText;
+
         const textarea = document.getElementById('hr-transcript-input');
         if (textarea) {
-            textarea.value = (textarea.value + ' ' + transcript).trim();
+            textarea.value = fullText;
+            textarea.dispatchEvent(new Event('input'));
         }
     };
 
@@ -138,7 +161,10 @@ function setupSpeechRecognition() {
 }
 
 function startVoiceRecording() {
-    if (!speechRecognition) return;
+    if (!speechRecognition || isRecording) return;
+    const textarea = document.getElementById('hr-transcript-input');
+    baseTranscript = textarea ? textarea.value.trim() : '';
+
     try {
         speechRecognition.start();
         isRecording = true;
@@ -153,16 +179,21 @@ function startVoiceRecording() {
         }
         window.Toast.info('Microphone recording active. Speak clearly.');
     } catch (e) {
-        console.warn(e);
+        console.warn('Speech start error:', e);
     }
 }
 
 function stopVoiceRecording() {
     if (!speechRecognition) return;
-    try {
-        speechRecognition.stop();
-    } catch (e) {}
+    if (isRecording) {
+        try {
+            speechRecognition.stop();
+        } catch (e) {}
+    }
     isRecording = false;
+    const textarea = document.getElementById('hr-transcript-input');
+    baseTranscript = textarea ? textarea.value.trim() : '';
+
     const micBtn = document.getElementById('mic-record-btn');
     const statusText = document.getElementById('voice-status-indicator');
 

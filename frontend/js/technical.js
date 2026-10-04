@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function fetchNextTechnicalQuestion() {
+    stopRecording();
+    baseTranscript = '';
+
     const questionCard = document.getElementById('ai-question-card');
     const loadingState = document.getElementById('question-loading-state');
     const evalPanel = document.getElementById('ai-eval-panel');
@@ -90,6 +93,8 @@ function setupCharCounter() {
     });
 }
 
+let baseTranscript = '';
+
 function setupSpeechRecognition() {
     const voiceBtn = document.getElementById('voice-dictate-btn');
     if (!voiceBtn) return;
@@ -106,13 +111,30 @@ function setupSpeechRecognition() {
     speechRecognition.lang = 'en-US';
 
     speechRecognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
+        let interimTranscript = '';
+        let sessionFinalTranscript = '';
+
+        for (let i = 0; i < event.results.length; ++i) {
+            const result = event.results[i];
+            const text = result[0].transcript.trim();
+            if (result.isFinal) {
+                sessionFinalTranscript = sessionFinalTranscript ? `${sessionFinalTranscript} ${text}` : text;
+            } else {
+                interimTranscript = interimTranscript ? `${interimTranscript} ${text}` : text;
+            }
         }
+
+        const currentSessionText = sessionFinalTranscript && interimTranscript
+            ? `${sessionFinalTranscript} ${interimTranscript}`
+            : (sessionFinalTranscript || interimTranscript);
+
+        const fullText = baseTranscript
+            ? (currentSessionText ? `${baseTranscript} ${currentSessionText}` : baseTranscript)
+            : currentSessionText;
+
         const textarea = document.getElementById('tech-answer-input');
         if (textarea) {
-            textarea.value = (textarea.value + ' ' + transcript).trim();
+            textarea.value = fullText;
             textarea.dispatchEvent(new Event('input'));
         }
     };
@@ -136,7 +158,10 @@ function setupSpeechRecognition() {
 }
 
 function startRecording() {
-    if (!speechRecognition) return;
+    if (!speechRecognition || isRecording) return;
+    const textarea = document.getElementById('tech-answer-input');
+    baseTranscript = textarea ? textarea.value.trim() : '';
+
     try {
         speechRecognition.start();
         isRecording = true;
@@ -153,10 +178,15 @@ function startRecording() {
 
 function stopRecording() {
     if (!speechRecognition) return;
-    try {
-        speechRecognition.stop();
-    } catch (e) {}
+    if (isRecording) {
+        try {
+            speechRecognition.stop();
+        } catch (e) {}
+    }
     isRecording = false;
+    const textarea = document.getElementById('tech-answer-input');
+    baseTranscript = textarea ? textarea.value.trim() : '';
+
     const btn = document.getElementById('voice-dictate-btn');
     if (btn) {
         btn.classList.remove('recording');

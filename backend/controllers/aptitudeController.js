@@ -3,10 +3,22 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
+/**
+ * Fisher-Yates shuffle algorithm to ensure uniform random distribution
+ */
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
 export const getAptitudeQuestions = async (req, res, next) => {
     try {
         const { count = 5, difficulty = 'Intermediate', topic, dynamicAI = false, role = 'Software Developer' } = req.query;
-        const limit = Math.min(10, Math.max(1, parseInt(count, 10) || 5));
+        const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 5));
 
         if (dynamicAI === 'true') {
             const aiQ = await generateQuestion({
@@ -23,28 +35,30 @@ export const getAptitudeQuestions = async (req, res, next) => {
                 let query = supabaseAdmin
                     .from('aptitude_questions')
                     .select('*')
-                    .limit(limit);
+                    .limit(100);
 
                 if (topic) query = query.eq('topic', topic);
 
                 const { data, error } = await query;
                 if (!error && data && data.length > 0) {
-                    return res.json({ success: true, questions: data });
+                    const shuffled = shuffleArray(data);
+                    return res.json({ success: true, questions: shuffled.slice(0, limit) });
                 }
             } catch (supErr) {
                 console.warn('Supabase questions fallback:', supErr.message);
             }
         }
 
-        // Mock store fallback
+        // Mock store fallback with 35+ question pool
         let questions = [...mockStore.aptitudeQuestions];
         if (topic) {
             questions = questions.filter(q => q.topic.toLowerCase() === topic.toLowerCase());
         }
 
+        const shuffled = shuffleArray(questions);
         return res.json({
             success: true,
-            questions: questions.slice(0, limit)
+            questions: shuffled.slice(0, limit)
         });
     } catch (err) {
         next(err);
@@ -53,8 +67,8 @@ export const getAptitudeQuestions = async (req, res, next) => {
 
 export const submitAptitudeAnswer = async (req, res, next) => {
     try {
-        const userId = req.user.id;
-        const { interviewId, questionId, questionText, selectedOptionIndex, correctOptionIndex, explanation, timeTakenSeconds = 0 } = req.body;
+        const userId = req.user?.id || 'candidate-' + Date.now();
+        const { interviewId, questionId, questionText, selectedOptionIndex, correctOptionIndex, explanation, timeTakenSeconds = 0 } = req.body || {};
 
         const isCorrect = selectedOptionIndex === correctOptionIndex;
         const score = isCorrect ? 100 : 0;
@@ -80,14 +94,19 @@ export const submitAptitudeAnswer = async (req, res, next) => {
 
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const { data, error } = await supabaseAdmin
-                    .from('interview_answers')
-                    .insert([answerRecord])
-                    .select()
-                    .single();
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+                if (isUuid) {
+                    const { data, error } = await supabaseAdmin
+                        .from('interview_answers')
+                        .insert([answerRecord])
+                        .select()
+                        .single();
 
-                if (!error && data) return res.json({ success: true, isCorrect, score, answer: data });
-            } catch (supErr) {}
+                    if (!error && data) return res.json({ success: true, isCorrect, score, answer: data });
+                }
+            } catch (supErr) {
+                console.warn('Supabase answer insert fallback:', supErr.message);
+            }
         }
 
         mockStore.answers.set(answerRecord.id, answerRecord);
