@@ -101,6 +101,9 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             difficulty
         });
 
+        const score = evaluation.score || 75;
+        const isCorrect = score >= 60;
+
         const answerRecord = {
             id: randomUUID(),
             interview_id: interviewId,
@@ -109,7 +112,8 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             question_id: 'tech-dyn-' + Date.now(),
             question_text: questionText,
             user_answer: answerText,
-            score: evaluation.score || 75,
+            is_correct: isCorrect,
+            score: score,
             ai_evaluation: evaluation,
             time_taken_seconds: timeTakenSeconds,
             created_at: new Date().toISOString()

@@ -36,16 +36,16 @@ function updateStatCards(stats = {}) {
     const completedElem = document.getElementById('stat-completed');
     const attemptedElem = document.getElementById('stat-attempted');
     const avgScoreElem = document.getElementById('stat-avg-score');
-    const lastInterviewElem = document.getElementById('stat-last-interview');
+    const correctElem = document.getElementById('stat-correct-count');
+    const wrongElem = document.getElementById('stat-wrong-count');
+    const impElem = document.getElementById('stat-improvement');
 
     if (completedElem) completedElem.textContent = stats.interviewsCompleted ?? 0;
     if (attemptedElem) attemptedElem.textContent = stats.interviewsAttempted ?? 0;
     if (avgScoreElem) avgScoreElem.textContent = `${stats.averageScore ?? 0}%`;
-    if (lastInterviewElem) {
-        lastInterviewElem.textContent = stats.lastInterviewRole
-            ? `${stats.lastInterviewRole}`
-            : 'No interviews yet';
-    }
+    if (correctElem) correctElem.textContent = stats.totalCorrect ?? 0;
+    if (wrongElem) wrongElem.textContent = stats.totalWrong ?? 0;
+    if (impElem) impElem.textContent = stats.latestImprovement || '+0%';
 }
 
 function renderRecentInterviews(interviews) {

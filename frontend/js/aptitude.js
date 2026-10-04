@@ -8,7 +8,7 @@ let questions = [];
 let currentIndex = 0;
 let userAnswers = {}; // { [index]: selectedOptionIndex }
 let timerInterval = null;
-let secondsRemaining = 600; // 10 minutes
+let secondsRemaining = 1800; // 30 minutes for 30 questions
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
@@ -52,7 +52,7 @@ function startTimer() {
 
 async function loadQuestions() {
     try {
-        const res = await window.API.getAptitudeQuestions({ count: 5, difficulty: currentDifficulty });
+        const res = await window.API.getAptitudeQuestions({ count: 30, difficulty: currentDifficulty });
         if (res.success && res.questions && res.questions.length > 0) {
             questions = res.questions;
             renderQuestion(0);
@@ -177,7 +177,7 @@ async function finishAptitudeRound() {
                 selectedOptionIndex: chosen,
                 correctOptionIndex: q.correct_option,
                 explanation: q.explanation,
-                timeTakenSeconds: 600 - secondsRemaining
+                timeTakenSeconds: 1800 - secondsRemaining
             });
         }
 

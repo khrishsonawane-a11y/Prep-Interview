@@ -6,6 +6,9 @@ let currentRole = 'Software Developer';
 let currentDifficulty = 'Intermediate';
 let currentProblem = null;
 let currentLanguage = 'javascript';
+let askedProblems = [];
+let problemCount = 0;
+const MAX_CODING_QUESTIONS = 30;
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
@@ -95,11 +98,25 @@ async function loadProblem() {
     try {
         const res = await window.API.getCodingQuestion({
             role: currentRole,
-            difficulty: currentDifficulty
+            difficulty: currentDifficulty,
+            previousQuestions: askedProblems
         });
 
         if (res.success && res.problem) {
             currentProblem = res.problem;
+            askedProblems.push(currentProblem.title);
+            problemCount++;
+
+            const counterElem = document.getElementById('coding-q-counter');
+            if (counterElem) {
+                counterElem.textContent = `Problem ${problemCount} of ${MAX_CODING_QUESTIONS}`;
+            }
+
+            const consoleOutput = document.getElementById('console-output-pane');
+            if (consoleOutput) {
+                consoleOutput.innerHTML = '<span style="color: var(--text-dim);">Click \'Run Tests\' to compile and test against sample test cases.</span>';
+            }
+
             renderProblemDetails(currentProblem);
         }
     } catch (err) {
@@ -252,12 +269,20 @@ function displayAIReviewModal(evaluation) {
 
     const nextBtn = document.getElementById('proceed-to-hr-btn');
     if (nextBtn) {
-        nextBtn.onclick = () => finishCodingRound();
+        nextBtn.textContent = problemCount < MAX_CODING_QUESTIONS ? 'Next Coding Problem →' : 'Proceed to HR Round →';
+        nextBtn.onclick = async () => {
+            modal.style.display = 'none';
+            if (problemCount < MAX_CODING_QUESTIONS) {
+                await loadProblem();
+            } else {
+                finishCodingRound();
+            }
+        };
     }
 }
 
 async function finishCodingRound() {
-    window.Toast.success('Coding Round submitted! Advancing to HR Round...');
+    window.Toast.success('Coding Round completed! Advancing to HR Round...');
 
     try {
         const intRes = await window.API.getInterviewById(interviewId);

@@ -101,6 +101,9 @@ export const evaluateHRAnswer = async (req, res, next) => {
             voiceMetrics
         });
 
+        const score = evaluation.score || 80;
+        const isCorrect = score >= 60;
+
         const answerRecord = {
             id: randomUUID(),
             interview_id: interviewId,
@@ -109,7 +112,8 @@ export const evaluateHRAnswer = async (req, res, next) => {
             question_id: 'hr-dyn-' + Date.now(),
             question_text: questionText,
             user_answer: answerText,
-            score: evaluation.score || 80,
+            is_correct: isCorrect,
+            score: score,
             ai_evaluation: {
                 ...evaluation,
                 voiceMetrics: voiceMetrics || null

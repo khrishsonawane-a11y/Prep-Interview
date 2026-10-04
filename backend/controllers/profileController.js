@@ -42,13 +42,38 @@ export const getProfile = async (req, res, next) => {
             interviews = Array.from(mockStore.interviews.values()).filter(i => i.user_id === userId);
         }
 
+        // Fetch user answers to calculate question-level aggregates
+        let allAnswers = [];
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            try {
+                const { data: ansData } = await supabaseAdmin
+                    .from('interview_answers')
+                    .select('is_correct, score')
+                    .eq('user_id', userId);
+                if (ansData) allAnswers = ansData;
+            } catch (supErr) {}
+        }
+        if (allAnswers.length === 0) {
+            allAnswers = Array.from(mockStore.answers.values()).filter(a => a.user_id === userId);
+        }
+
+        const totalQuestions = allAnswers.length;
+        const totalCorrect = allAnswers.filter(a => a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60)).length;
+        const totalWrong = Math.max(0, totalQuestions - totalCorrect);
+
         // Calculate statistics
-        const completed = interviews.filter(i => i.status === 'completed');
+        const completed = interviews.filter(i => i.status === 'completed').sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         const attempted = interviews.length;
         const avgScore = completed.length > 0
             ? Math.round(completed.reduce((acc, curr) => acc + (Number(curr.overall_score) || 0), 0) / completed.length)
             : 80;
-        const lastInterview = interviews.length > 0 ? interviews[0] : null;
+        const lastInterview = completed.length > 0 ? completed[0] : (interviews.length > 0 ? interviews[0] : null);
+
+        let latestImprovement = '+0%';
+        if (completed.length >= 2) {
+            const diff = (Number(completed[0].overall_score) || 0) - (Number(completed[1].overall_score) || 0);
+            latestImprovement = diff >= 0 ? `+${diff}%` : `${diff}%`;
+        }
 
         return res.json({
             success: true,
@@ -57,6 +82,10 @@ export const getProfile = async (req, res, next) => {
                 interviewsAttempted: attempted,
                 interviewsCompleted: completed.length,
                 averageScore: avgScore,
+                totalQuestions: totalQuestions,
+                totalCorrect: totalCorrect,
+                totalWrong: totalWrong,
+                latestImprovement: latestImprovement,
                 lastInterviewDate: lastInterview?.created_at || null,
                 lastInterviewRole: lastInterview?.role || 'Software Developer'
             }

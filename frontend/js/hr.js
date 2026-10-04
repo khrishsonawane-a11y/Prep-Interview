@@ -7,7 +7,7 @@ let currentDifficulty = 'Intermediate';
 let currentQuestion = null;
 let askedQuestions = [];
 let questionCount = 0;
-const MAX_HR_QUESTIONS = 2;
+const MAX_HR_QUESTIONS = 30; // 30 HR / Behavioral questions per session
 
 let speechRecognition = null;
 let isRecording = false;

@@ -292,20 +292,127 @@ export const finalizeInterview = async (req, res, next) => {
             } catch (supErr) {}
         }
 
+        // Look up previous completed interview for this user to compute improvement
+        let prevInterview = null;
+        let prevResult = null;
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            try {
+                const { data: prevList } = await supabaseAdmin
+                    .from('interviews')
+                    .select('*, interview_results(*)')
+                    .eq('user_id', userId)
+                    .eq('status', 'completed')
+                    .neq('id', id)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                if (prevList && prevList.length > 0) {
+                    prevInterview = prevList[0];
+                    prevResult = prevList[0].interview_results?.[0] || prevList[0].interview_results;
+                }
+            } catch (supErr) {}
+        }
+
+        if (!prevInterview) {
+            const allUserInterviews = Array.from(mockStore.interviews.values())
+                .filter(i => i.user_id === userId && i.status === 'completed' && i.id !== id)
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            if (allUserInterviews.length > 0) {
+                prevInterview = allUserInterviews[0];
+                prevResult = mockStore.results.get(prevInterview.id) || null;
+            }
+        }
+
+        // Calculate Round Metrics based on actual user answers
+        const computeRound = (roundType, defaultCount = 30) => {
+            const roundAns = answers.filter(a => a.round_type === roundType);
+            const total = roundAns.length > 0 ? roundAns.length : defaultCount;
+            let correct = 0;
+            let totalScore = 0;
+            for (const a of roundAns) {
+                const isCorr = a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60);
+                if (isCorr) correct++;
+                totalScore += Number(a.score) || (isCorr ? 100 : 0);
+            }
+            const wrong = Math.max(0, total - correct);
+            const score = roundAns.length > 0 ? Math.round(totalScore / roundAns.length) : (correct > 0 ? Math.round((correct / total) * 100) : 0);
+            return { total_questions: total, correct, wrong, score, hasAnswers: roundAns.length > 0 };
+        };
+
+        const aptMetrics = computeRound('aptitude', 30);
+        const techMetrics = computeRound('technical', 30);
+        const codeMetrics = computeRound('coding', 30);
+        const hrMetrics = computeRound('hr', 30);
+
+        const activeMetrics = [aptMetrics, techMetrics, codeMetrics, hrMetrics].filter(m => m.hasAnswers);
+        const metricsToUse = activeMetrics.length > 0 ? activeMetrics : [aptMetrics, techMetrics, codeMetrics, hrMetrics];
+
+        const totalQuestions = metricsToUse.reduce((acc, m) => acc + m.total_questions, 0);
+        const totalCorrect = metricsToUse.reduce((acc, m) => acc + m.correct, 0);
+        const totalWrong = metricsToUse.reduce((acc, m) => acc + m.wrong, 0);
+        const overallScore = Math.round(metricsToUse.reduce((acc, m) => acc + m.score, 0) / metricsToUse.length);
+
+        // Improvement calculation against previous attempt
+        const formatDiff = (curr, prev) => {
+            if (prev === null || prev === undefined || isNaN(prev)) return '+0%';
+            const diff = curr - prev;
+            return diff >= 0 ? `+${diff}%` : `${diff}%`;
+        };
+
+        const overallImprovement = prevInterview ? formatDiff(overallScore, prevInterview.overall_score) : '+0%';
+        const aptImprovement = prevResult?.aptitude_summary ? formatDiff(aptMetrics.score, prevResult.aptitude_summary.score) : '+0%';
+        const techImprovement = prevResult?.technical_summary ? formatDiff(techMetrics.score, prevResult.technical_summary.score) : '+0%';
+        const codeImprovement = prevResult?.coding_summary ? formatDiff(codeMetrics.score, prevResult.coding_summary.score) : '+0%';
+        const hrImprovement = prevResult?.hr_summary ? formatDiff(hrMetrics.score, prevResult.hr_summary.score) : '+0%';
+
         const aiReport = await generateFinalReport({ interview, answers });
 
         const resultRecord = {
             id: randomUUID(),
             interview_id: id,
             user_id: userId,
-            overall_score: aiReport.overall_score || 80,
+            overall_score: overallScore,
+            overall_performance: {
+                total_questions: totalQuestions,
+                correct: totalCorrect,
+                wrong: totalWrong,
+                score: overallScore,
+                improvement: overallImprovement
+            },
             overall_summary: aiReport.overall_summary,
-            aptitude_summary: aiReport.aptitude_summary,
-            technical_summary: aiReport.technical_summary,
-            coding_summary: aiReport.coding_summary,
-            hr_summary: aiReport.hr_summary,
+            aptitude_summary: {
+                ...(aiReport.aptitude_summary || {}),
+                total_questions: aptMetrics.total_questions,
+                correct: aptMetrics.correct,
+                wrong: aptMetrics.wrong,
+                score: aptMetrics.score,
+                improvement: aptImprovement
+            },
+            technical_summary: {
+                ...(aiReport.technical_summary || {}),
+                total_questions: techMetrics.total_questions,
+                correct: techMetrics.correct,
+                wrong: techMetrics.wrong,
+                score: techMetrics.score,
+                improvement: techImprovement
+            },
+            coding_summary: {
+                ...(aiReport.coding_summary || {}),
+                total_questions: codeMetrics.total_questions,
+                correct: codeMetrics.correct,
+                wrong: codeMetrics.wrong,
+                score: codeMetrics.score,
+                improvement: codeImprovement
+            },
+            hr_summary: {
+                ...(aiReport.hr_summary || {}),
+                total_questions: hrMetrics.total_questions,
+                correct: hrMetrics.correct,
+                wrong: hrMetrics.wrong,
+                score: hrMetrics.score,
+                improvement: hrImprovement
+            },
             recommended_topics: aiReport.recommended_topics || [],
-            readiness_rating: aiReport.readiness_rating || 'Interview Ready',
+            readiness_rating: aiReport.readiness_rating || (overallScore >= 80 ? 'Interview Ready' : overallScore >= 65 ? 'Nearly Ready' : 'Developing'),
             created_at: new Date().toISOString()
         };
 
@@ -323,7 +430,9 @@ export const finalizeInterview = async (req, res, next) => {
                 await supabaseAdmin
                     .from('interview_results')
                     .upsert([resultRecord], { onConflict: 'interview_id' });
-            } catch (supErr) {}
+            } catch (supErr) {
+                console.warn('Supabase finalize error:', supErr.message);
+            }
         }
 
         interview.status = 'completed';

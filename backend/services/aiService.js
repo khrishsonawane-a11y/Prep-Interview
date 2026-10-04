@@ -350,29 +350,45 @@ function getHeuristicQuestion(round, role, difficulty, topic, previousQuestions 
 
 function getHeuristicTechnicalEvaluation(question, answer) {
     const len = (answer || '').trim().length;
-    const score = Math.min(95, Math.max(40, Math.round(40 + (len / 14))));
+    let score = 40;
+    if (len >= 120) score = 92;
+    else if (len >= 80) score = 85;
+    else if (len >= 50) score = 75;
+    else if (len >= 25) score = 62;
+    else score = Math.max(30, Math.round(20 + len));
+
     return {
         score,
-        correctness: len > 80 ? 'High' : len > 30 ? 'Moderate' : 'Low',
-        relevance: len > 40 ? 'High' : 'Moderate',
+        correctness: score >= 75 ? 'High' : score >= 60 ? 'Moderate' : 'Low',
+        relevance: score >= 60 ? 'High' : 'Moderate',
         missing_points: ['Production trade-offs and bottleneck considerations', 'Memory overhead versus compute efficiency'],
         strengths: ['Clear explanation of core technical mechanism', 'Practical perspective'],
-        feedback: 'Good response demonstrating foundational engineering understanding.',
+        feedback: score >= 60
+            ? 'Good response demonstrating foundational engineering understanding.'
+            : 'Incomplete response. Consider elaborating on key technical principles and design patterns.',
         improvement: 'Structure future answers by highlighting production trade-offs and performance boundaries.'
     };
 }
 
 function getHeuristicHREvaluation(question, answer) {
     const len = (answer || '').trim().length;
-    const score = Math.min(92, Math.max(45, Math.round(50 + (len / 12))));
+    let score = 45;
+    if (len >= 120) score = 92;
+    else if (len >= 80) score = 85;
+    else if (len >= 50) score = 75;
+    else if (len >= 25) score = 65;
+    else score = Math.max(35, Math.round(25 + len));
+
     return {
         score,
         relevance: 'High',
-        clarity: len > 60 ? 'High' : 'Moderate',
-        structure: len > 100 ? 'Strong STAR adherence' : 'Moderately structured',
+        clarity: score >= 75 ? 'High' : 'Moderate',
+        structure: score >= 80 ? 'Strong STAR adherence' : 'Moderately structured',
         strengths: ['Authentic communication', 'Clear situational context'],
         missing_points: ['Include quantifiable metrics (e.g., % latency reduced, team hours saved)'],
-        feedback: 'The response demonstrates professional maturity and clear articulation.',
+        feedback: score >= 60
+            ? 'The response demonstrates professional maturity and clear articulation.'
+            : 'The answer is brief. Elaborate with concrete examples using the STAR approach.',
         improvement: 'Apply the STAR technique explicitly to highlight quantifiable business impact.'
     };
 }

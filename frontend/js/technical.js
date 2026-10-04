@@ -7,7 +7,7 @@ let currentDifficulty = 'Intermediate';
 let currentQuestion = null;
 let askedQuestions = [];
 let questionCount = 0;
-const MAX_QUESTIONS = 2; // 2 deep technical questions per session
+const MAX_QUESTIONS = 30; // 30 technical questions per session
 let isRecording = false;
 let speechRecognition = null;
 

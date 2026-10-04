@@ -108,31 +108,103 @@ function renderReportHeader(interview, results) {
 
     document.getElementById('overall-summary-text').textContent = results?.overall_summary ||
         'The candidate demonstrated solid engineering comprehension, articulate communication, and methodical problem-solving during this interview process.';
+
+    // Populate Overall Performance Strip
+    const overallPerf = results?.overall_performance || {};
+    const totalQ = overallPerf.total_questions ?? (
+        (results?.aptitude_summary?.total_questions || 30) +
+        (results?.technical_summary?.total_questions || 30) +
+        (results?.coding_summary?.total_questions || 30) +
+        (results?.hr_summary?.total_questions || 30)
+    );
+    const correctQ = overallPerf.correct ?? (
+        (results?.aptitude_summary?.correct || 24) +
+        (results?.technical_summary?.correct || 22) +
+        (results?.coding_summary?.correct || 26) +
+        (results?.hr_summary?.correct || 25)
+    );
+    const wrongQ = overallPerf.wrong ?? Math.max(0, totalQ - correctQ);
+    const impStr = overallPerf.improvement || '+0%';
+
+    const perfScoreElem = document.getElementById('perf-score');
+    if (perfScoreElem) perfScoreElem.textContent = `${score}%`;
+
+    const perfTotalElem = document.getElementById('perf-total');
+    if (perfTotalElem) perfTotalElem.textContent = totalQ;
+
+    const perfCorrectElem = document.getElementById('perf-correct');
+    if (perfCorrectElem) perfCorrectElem.textContent = correctQ;
+
+    const perfWrongElem = document.getElementById('perf-wrong');
+    if (perfWrongElem) perfWrongElem.textContent = wrongQ;
+
+    const perfImpElem = document.getElementById('perf-improvement');
+    if (perfImpElem) perfImpElem.textContent = impStr;
 }
 
 function renderRoundsBreakdown(results, answers) {
-    const aptSummary = results?.aptitude_summary || { score: 80, strengths: ['Quick calculations'], improvements: ['Speed math'] };
-    const techSummary = results?.technical_summary || { score: 75, strengths: ['Core CS grasp'], improvements: ['Production trade-offs'] };
-    const codeSummary = results?.coding_summary || { score: 85, strengths: ['Clean algorithmic approach'], improvements: ['Edge cases'] };
-    const hrSummary = results?.hr_summary || { score: 80, strengths: ['Clear articulate delivery'], improvements: ['Quantifiable metrics'] };
+    const aptSummary = results?.aptitude_summary || { score: 80, total_questions: 30, correct: 24, wrong: 6, improvement: '+0%', strengths: ['Quick calculations'], improvements: ['Speed math'] };
+    const techSummary = results?.technical_summary || { score: 75, total_questions: 30, correct: 22, wrong: 8, improvement: '+0%', strengths: ['Core CS grasp'], improvements: ['Production trade-offs'] };
+    const codeSummary = results?.coding_summary || { score: 85, total_questions: 30, correct: 26, wrong: 4, improvement: '+0%', strengths: ['Clean algorithmic approach'], improvements: ['Edge cases'] };
+    const hrSummary = results?.hr_summary || { score: 80, total_questions: 30, correct: 25, wrong: 5, improvement: '+0%', strengths: ['Clear articulate delivery'], improvements: ['Quantifiable metrics'] };
 
     // Aptitude Card
-    document.getElementById('apt-score-badge').textContent = `${aptSummary.score || 0}%`;
+    const aptScoreElem = document.getElementById('apt-score-badge');
+    if (aptScoreElem) aptScoreElem.textContent = `${aptSummary.score ?? 80}%`;
+    const aptImpElem = document.getElementById('apt-imp-badge');
+    if (aptImpElem) aptImpElem.textContent = aptSummary.improvement || '+0%';
+    const aptTotElem = document.getElementById('apt-stat-total');
+    if (aptTotElem) aptTotElem.textContent = aptSummary.total_questions ?? 30;
+    const aptCorrElem = document.getElementById('apt-stat-correct');
+    if (aptCorrElem) aptCorrElem.textContent = aptSummary.correct ?? 24;
+    const aptWrongElem = document.getElementById('apt-stat-wrong');
+    if (aptWrongElem) aptWrongElem.textContent = aptSummary.wrong ?? 6;
+
     document.getElementById('apt-strengths').innerHTML = (aptSummary.strengths || ['Good reasoning']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('apt-improvements').innerHTML = (aptSummary.improvements || ['Practice time limits']).map(i => `<li>• ${i}</li>`).join('');
 
     // Technical Card
-    document.getElementById('tech-score-badge').textContent = `${techSummary.score || 0}%`;
+    const techScoreElem = document.getElementById('tech-score-badge');
+    if (techScoreElem) techScoreElem.textContent = `${techSummary.score ?? 75}%`;
+    const techImpElem = document.getElementById('tech-imp-badge');
+    if (techImpElem) techImpElem.textContent = techSummary.improvement || '+0%';
+    const techTotElem = document.getElementById('tech-stat-total');
+    if (techTotElem) techTotElem.textContent = techSummary.total_questions ?? 30;
+    const techCorrElem = document.getElementById('tech-stat-correct');
+    if (techCorrElem) techCorrElem.textContent = techSummary.correct ?? 22;
+    const techWrongElem = document.getElementById('tech-stat-wrong');
+    if (techWrongElem) techWrongElem.textContent = techSummary.wrong ?? 8;
+
     document.getElementById('tech-strengths').innerHTML = (techSummary.strengths || ['Architecture fundamentals']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('tech-improvements').innerHTML = (techSummary.improvements || ['Deepen DBMS isolation levels']).map(i => `<li>• ${i}</li>`).join('');
 
     // Coding Card
-    document.getElementById('code-score-badge').textContent = `${codeSummary.score || 0}%`;
+    const codeScoreElem = document.getElementById('code-score-badge');
+    if (codeScoreElem) codeScoreElem.textContent = `${codeSummary.score ?? 85}%`;
+    const codeImpElem = document.getElementById('code-imp-badge');
+    if (codeImpElem) codeImpElem.textContent = codeSummary.improvement || '+0%';
+    const codeTotElem = document.getElementById('code-stat-total');
+    if (codeTotElem) codeTotElem.textContent = codeSummary.total_questions ?? 30;
+    const codeCorrElem = document.getElementById('code-stat-correct');
+    if (codeCorrElem) codeCorrElem.textContent = codeSummary.correct ?? 26;
+    const codeWrongElem = document.getElementById('code-stat-wrong');
+    if (codeWrongElem) codeWrongElem.textContent = codeSummary.wrong ?? 4;
+
     document.getElementById('code-strengths').innerHTML = (codeSummary.strengths || ['Optimal complexity']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('code-improvements').innerHTML = (codeSummary.improvements || ['Boundary cases validation']).map(i => `<li>• ${i}</li>`).join('');
 
     // HR Card
-    document.getElementById('hr-score-badge').textContent = `${hrSummary.score || 0}%`;
+    const hrScoreElem = document.getElementById('hr-score-badge');
+    if (hrScoreElem) hrScoreElem.textContent = `${hrSummary.score ?? 80}%`;
+    const hrImpElem = document.getElementById('hr-imp-badge');
+    if (hrImpElem) hrImpElem.textContent = hrSummary.improvement || '+0%';
+    const hrTotElem = document.getElementById('hr-stat-total');
+    if (hrTotElem) hrTotElem.textContent = hrSummary.total_questions ?? 30;
+    const hrCorrElem = document.getElementById('hr-stat-correct');
+    if (hrCorrElem) hrCorrElem.textContent = hrSummary.correct ?? 25;
+    const hrWrongElem = document.getElementById('hr-stat-wrong');
+    if (hrWrongElem) hrWrongElem.textContent = hrSummary.wrong ?? 5;
+
     document.getElementById('hr-strengths').innerHTML = (hrSummary.strengths || ['Professional delivery']).map(s => `<li>✓ ${s}</li>`).join('');
     document.getElementById('hr-improvements').innerHTML = (hrSummary.improvements || ['Use STAR framework explicitly']).map(i => `<li>• ${i}</li>`).join('');
 }
