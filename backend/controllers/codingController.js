@@ -184,7 +184,8 @@ export const submitCode = async (req, res, next) => {
         }
 
         const executionResult = isSkipped ? {
-            success: true,
+            success: false,
+            status: 'Did Not Answer',
             passedCount: 0,
             totalCount: fullTestCases.length,
             isComplete: false,
@@ -200,12 +201,13 @@ export const submitCode = async (req, res, next) => {
             problem,
             code,
             language,
-            testResults: executionResult.results || []
+            testResults: executionResult.results || [],
+            execution: executionResult
         });
 
-        const score = isSkipped ? 0 : (aiReview.score || (executionResult.isComplete ? 95 : 60));
-        const isCorrect = !isSkipped && executionResult.isComplete;
-        const errorType = isSkipped ? 'Did Not Answer' : (executionResult.isComplete ? 'None (Correct)' : (executionResult.error ? 'Syntax/Implementation Error' : 'Edge Case Missed'));
+        const score = isSkipped ? 0 : (aiReview.score !== undefined ? aiReview.score : (executionResult.isComplete ? 95 : 35));
+        const isCorrect = !isSkipped && executionResult.isComplete === true;
+        const errorType = isSkipped ? 'Did Not Answer' : (aiReview.error_type || (executionResult.isComplete ? 'None (Correct)' : 'Wrong Logic'));
 
         const answerRecord = {
             id: randomUUID(),
@@ -226,6 +228,7 @@ export const submitCode = async (req, res, next) => {
             ai_evaluation: {
                 ...aiReview,
                 score,
+                status: executionResult.status || (isCorrect ? 'Accepted' : 'Wrong Answer'),
                 error_type: errorType,
                 execution: executionResult
             },

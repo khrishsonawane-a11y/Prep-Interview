@@ -189,39 +189,63 @@
 
   <!-- AI Review Modal -->
   <div id="ai-review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
-    <div class="card" style="max-width: 620px; width: 100%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card);">
+    <div class="card" style="max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card);">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
         <div>
-          <span class="badge badge-success" style="margin-bottom: 0.25rem;">Code Evaluated</span>
-          <h2 style="font-size: 1.4rem; margin: 0;">AI Algorithmic Code Review</h2>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <span class="badge" id="code-status-badge">Accepted</span>
+            <span class="badge badge-primary" id="code-perf-badge">3 / 3 Passed</span>
+          </div>
+          <h2 style="font-size: 1.3rem; margin: 0;">Algorithmic Submission Review</h2>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 1.6rem; font-weight: 700; color: #34d399;" id="code-eval-score">90/100</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #34d399;" id="code-eval-score">95/100</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim);" id="code-eval-score-label">Score</div>
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
-        <div style="background: var(--bg-primary); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">Time Complexity</div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.65rem; margin-bottom: 1rem;">
+        <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Time Complexity</div>
           <div id="code-time-comp" style="font-size: 0.95rem; font-weight: 600; color: #93c5fd;">O(N)</div>
         </div>
-        <div style="background: var(--bg-primary); padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim);">Space Complexity</div>
+        <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Space Complexity</div>
           <div id="code-space-comp" style="font-size: 0.95rem; font-weight: 600; color: #a78bfa;">O(1)</div>
+        </div>
+        <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Code Quality</div>
+          <div id="code-quality-badge" style="font-size: 0.95rem; font-weight: 600; color: #34d399;">Clean Code</div>
         </div>
       </div>
 
-      <div style="margin-bottom: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <strong style="font-size: 0.9rem; color: var(--text-main);">Code Quality & Structure:</strong>
-          <span class="badge badge-primary" id="code-quality-badge">Clean Code</span>
-        </div>
+      <!-- What Went Right -->
+      <div class="review-feedback-card review-card-strengths" id="code-strengths-box">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">✅ What Went Right</div>
+        <ul id="code-strengths-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--text-main);"></ul>
+      </div>
+
+      <!-- What Went Wrong -->
+      <div class="review-feedback-card review-card-mistakes" id="code-mistakes-box">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #ef4444; margin-bottom: 0.35rem;">❌ Issues & Failing Cases</div>
+        <ul id="code-mistakes-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--text-main);"></ul>
+      </div>
+
+      <!-- How to Improve -->
+      <div class="review-feedback-card review-card-improvements" id="code-improvements-box">
+        <div style="font-size: 0.85rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.35rem;">💡 How to Fix / Improve</div>
+        <ul id="code-improvements-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--text-main);"></ul>
+      </div>
+
+      <div style="margin-top: 0.75rem;">
+        <strong style="font-size: 0.85rem; color: var(--text-main);">Summary Feedback:</strong>
         <p id="code-feedback-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;">
-          Good algorithmic approach.
+          Detailed algorithmic analysis based on real test execution.
         </p>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <button id="close-review-btn" class="btn btn-secondary btn-sm">Close Review</button>
         <button id="proceed-to-hr-btn" class="btn btn-primary btn-lg">Next Coding Problem →</button>
       </div>
     </div>

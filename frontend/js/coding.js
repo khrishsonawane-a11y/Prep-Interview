@@ -403,7 +403,7 @@ function setupExecutionButtons() {
                 });
 
                 if (res.success && res.execution) {
-                    displayExecutionConsole(res.execution);
+                    displayExecutionConsole(res.execution, true);
                 }
             } catch (err) {
                 console.error('Run code error:', err);
@@ -479,7 +479,7 @@ function setupExecutionButtons() {
                     submissions[currentIndex] = { execution: res.execution, evaluation: res.evaluation };
                     delete skippedProblems[currentIndex];
                     renderPalette();
-                    displayExecutionConsole(res.execution);
+                    displayExecutionConsole(res.execution, false);
                     displayAIReviewModal(res.evaluation);
                 }
             } catch (err) {
@@ -513,34 +513,70 @@ function setupExecutionButtons() {
     }
 }
 
-function displayExecutionConsole(execution) {
+function displayExecutionConsole(execution, isRun = true) {
     const consoleOutput = document.getElementById('console-output-pane');
     if (!consoleOutput) return;
 
-    let html = `<div style="margin-bottom:0.6rem; color:var(--text-main); font-weight:600; font-size:0.85rem;">
-        ${execution.passedCount || 0} / ${execution.totalCount || 0} Test Cases Passed (${execution.executionTimeMs || 0}ms) — Language: ${getLanguageName(currentLanguage)}
-    </div>`;
+    const status = execution.status || (execution.passedCount === execution.totalCount && execution.totalCount > 0 ? 'Accepted' : 'Wrong Answer');
+    const passedCount = execution.passedCount || 0;
+    const totalCount = execution.totalCount || 0;
+    const isAccepted = status === 'Accepted';
+    const isCompError = status === 'Compilation Error';
+    const isRuntimeError = status === 'Runtime Error';
+    const isTLE = status === 'Time Limit Exceeded';
 
-    if (execution.error) {
-        html += `<div style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444; padding: 0.6rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 0.5rem; white-space: pre-wrap;">${execution.error}</div>`;
+    let bannerClass = 'exec-banner-wrong';
+    let bannerTitle = `✗ ${isRun ? 'Run Results' : 'Submission'}: WRONG ANSWER`;
+    if (isAccepted) {
+        bannerClass = 'exec-banner-accepted';
+        bannerTitle = `✓ ${isRun ? 'Run Results' : 'Submission'}: ACCEPTED`;
+    } else if (isCompError) {
+        bannerClass = 'exec-banner-error';
+        bannerTitle = `✕ COMPILATION ERROR`;
+    } else if (isRuntimeError) {
+        bannerClass = 'exec-banner-error';
+        bannerTitle = `✕ RUNTIME ERROR`;
+    } else if (isTLE) {
+        bannerClass = 'exec-banner-error';
+        bannerTitle = `⏱ TIME LIMIT EXCEEDED`;
     }
 
-    (execution.results || []).forEach(r => {
-        const passBadge = r.passed ? '<span class="test-badge-pass">✓ PASSED</span>' : '<span class="test-badge-fail">✕ FAILED</span>';
-        html += `
-            <div style="background:var(--bg-primary); padding:0.5rem 0.75rem; border-radius:4px; margin-bottom:0.4rem; border:1px solid var(--border-subtle);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:0.15rem; font-size:0.8rem;">
-                    <span>Test Case #${r.testCaseNumber} ${r.is_hidden ? '(Hidden)' : ''}</span>
-                    ${passBadge}
+    let html = `
+        <div class="exec-banner ${bannerClass}">
+            <span>${bannerTitle}</span>
+            <span>${isCompError ? 'Build Failed' : `${passedCount} / ${totalCount} Test Cases Passed`} (${execution.executionTimeMs || 15}ms)</span>
+        </div>
+    `;
+
+    if (execution.error) {
+        html += `<div style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.75rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 0.65rem; white-space: pre-wrap;">${execution.error}</div>`;
+    }
+
+    if (execution.results && execution.results.length > 0) {
+        execution.results.forEach(r => {
+            const passBadge = r.passed 
+                ? '<span class="test-badge-pass">✓ PASSED</span>' 
+                : '<span class="test-badge-fail">✕ FAILED</span>';
+            
+            html += `
+                <div class="testcase-card">
+                    <div class="testcase-header">
+                        <span>Test Case #${r.testCaseNumber} ${r.is_hidden ? '(Hidden)' : ''}</span>
+                        ${passBadge}
+                    </div>
+                    ${!r.is_hidden ? `
+                        <div class="testcase-body">
+                            <div><span style="color:var(--text-dim); font-weight:600;">Input:</span> <code style="color:var(--text-main);">${r.input}</code></div>
+                            <div><span style="color:var(--text-dim); font-weight:600;">Expected:</span> <code style="color:#10b981;">${r.expected}</code></div>
+                            <div><span style="color:var(--text-dim); font-weight:600;">Actual:</span> <code style="color:${r.passed ? '#10b981' : '#ef4444'};">${r.actual}</code></div>
+                        </div>
+                    ` : `
+                        <div style="font-size:0.75rem; color:var(--text-dim);">Hidden evaluation test case</div>
+                    `}
                 </div>
-                ${!r.is_hidden ? `
-                    <div style="font-size:0.75rem; color:var(--text-dim);">Input: ${r.input}</div>
-                    <div style="font-size:0.75rem; color:var(--text-dim);">Expected: ${r.expected}</div>
-                    <div style="font-size:0.75rem; color:var(--text-main);">Output: ${r.actual}</div>
-                ` : ''}
-            </div>
-        `;
-    });
+            `;
+        });
+    }
 
     consoleOutput.innerHTML = html;
     consoleOutputs[currentIndex] = html;
@@ -552,11 +588,87 @@ function displayAIReviewModal(evaluation) {
 
     modal.style.display = 'flex';
 
-    document.getElementById('code-eval-score').textContent = `${evaluation.score || 85}/100`;
+    const status = evaluation.status || 'Accepted';
+    const statusBadge = document.getElementById('code-status-badge');
+    if (statusBadge) {
+        statusBadge.textContent = status;
+        if (status === 'Accepted') {
+            statusBadge.className = 'badge badge-success';
+        } else if (status === 'Wrong Answer') {
+            statusBadge.className = 'badge badge-warning';
+        } else {
+            statusBadge.className = 'badge badge-danger';
+        }
+    }
+
+    const perfBadge = document.getElementById('code-perf-badge');
+    if (perfBadge) {
+        perfBadge.textContent = evaluation.correctness || `${evaluation.passedCount || 0} / ${evaluation.totalCount || 0} Passed`;
+    }
+
+    const scoreEl = document.getElementById('code-eval-score');
+    if (scoreEl) {
+        scoreEl.textContent = `${evaluation.score !== undefined ? evaluation.score : 80}/100`;
+        scoreEl.style.color = evaluation.score >= 70 ? '#10b981' : (evaluation.score >= 40 ? '#f59e0b' : '#ef4444');
+    }
+
     document.getElementById('code-time-comp').textContent = evaluation.time_complexity || 'O(N)';
     document.getElementById('code-space-comp').textContent = evaluation.space_complexity || 'O(1)';
-    document.getElementById('code-quality-badge').textContent = evaluation.code_quality || 'Clean Code';
-    document.getElementById('code-feedback-text').textContent = evaluation.feedback || 'Good algorithmic logic.';
+    
+    const qualEl = document.getElementById('code-quality-badge');
+    if (qualEl) {
+        qualEl.textContent = evaluation.code_quality || 'Clean Code';
+        qualEl.style.color = evaluation.code_quality === 'Clean Code' ? '#10b981' : (evaluation.code_quality === 'Needs Optimization' ? '#f59e0b' : '#ef4444');
+    }
+
+    // Strengths
+    const strengthsList = document.getElementById('code-strengths-list');
+    const strengthsBox = document.getElementById('code-strengths-box');
+    const strengths = evaluation.strengths || [];
+    if (strengthsList) {
+        if (strengths.length > 0) {
+            strengthsList.innerHTML = strengths.map(s => `<li>✓ ${s}</li>`).join('');
+            if (strengthsBox) strengthsBox.style.display = 'block';
+        } else {
+            strengthsList.innerHTML = `<li>No algorithmic strengths recorded.</li>`;
+        }
+    }
+
+    // Mistakes / Issues
+    const mistakesList = document.getElementById('code-mistakes-list');
+    const mistakesBox = document.getElementById('code-mistakes-box');
+    const mistakes = evaluation.mistakes || [];
+    if (mistakesList) {
+        if (mistakes.length > 0) {
+            mistakesList.innerHTML = mistakes.map(m => `<li>❌ ${m}</li>`).join('');
+            if (mistakesBox) mistakesBox.style.display = 'block';
+        } else {
+            if (mistakesBox) mistakesBox.style.display = 'none';
+        }
+    }
+
+    // Improvements
+    const improveList = document.getElementById('code-improvements-list');
+    const improveBox = document.getElementById('code-improvements-box');
+    const improvements = evaluation.improvements || [];
+    if (improveList) {
+        if (improvements.length > 0) {
+            improveList.innerHTML = improvements.map(i => `<li>💡 ${i}</li>`).join('');
+            if (improveBox) improveBox.style.display = 'block';
+        } else {
+            if (improveBox) improveBox.style.display = 'none';
+        }
+    }
+
+    document.getElementById('code-feedback-text').textContent = evaluation.feedback || 'Algorithmic review completed.';
+
+    // Close button
+    const closeBtn = document.getElementById('close-review-btn');
+    if (closeBtn) {
+        closeBtn.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
 
     const nextBtn = document.getElementById('proceed-to-hr-btn');
     if (nextBtn) {

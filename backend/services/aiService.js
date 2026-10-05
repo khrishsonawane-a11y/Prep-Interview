@@ -251,57 +251,162 @@ Return ONLY a valid JSON object:
 /**
  * 4. Evaluate Coding Submission
  */
-export const evaluateCodingSubmission = async ({ problem, code, language = 'java', testResults = [] }) => {
-    const passedCount = testResults.filter(t => t.passed).length;
-    const totalCount = testResults.length || 1;
-    const isSkipped = code.trim() === '// [SKIPPED]';
+export const evaluateCodingSubmission = async ({ problem, code, language = 'java', testResults = [], execution = {} }) => {
+    const passedCount = execution.passedCount !== undefined ? execution.passedCount : testResults.filter(t => t.passed).length;
+    const totalCount = execution.totalCount || testResults.length || 1;
+    const isSkipped = code.trim() === '// [SKIPPED]' || execution.status === 'Did Not Answer';
+    const execStatus = execution.status || (passedCount === totalCount && totalCount > 0 ? 'Accepted' : 'Wrong Answer');
+    const isAccepted = execStatus === 'Accepted' && passedCount === totalCount;
+    const isCompilationError = execStatus === 'Compilation Error' || Boolean(execution.error && execution.error.includes('Compilation'));
+    const isRuntimeError = execStatus === 'Runtime Error' || Boolean(execution.error && execution.error.includes('Runtime'));
+    const isTLE = execStatus === 'Time Limit Exceeded' || Boolean(execution.error && execution.error.includes('Time Limit'));
 
     if (isSkipped) {
         return {
             score: 0,
+            status: "Did Not Answer",
             error_type: "Did Not Answer",
             correctness: "Skipped",
             time_complexity: "N/A",
             space_complexity: "N/A",
             code_quality: "Unattempted",
             strengths: [],
+            mistakes: ["Question was skipped without code submission."],
             improvements: ["Practice standard algorithmic templates in " + (language.toUpperCase())],
             feedback: "Problem was skipped by candidate."
         };
     }
 
-    const systemPrompt = `You are a Principal Software Engineer reviewing a candidate code submission in ${language.toUpperCase()}.`;
+    // Determine deterministic fallback review based on real execution results
+    let score = 0;
+    let error_type = 'None (Correct)';
+    let correctness = `${passedCount}/${totalCount} Passed`;
+    let code_quality = 'Clean Code';
+    let strengths = [];
+    let mistakes = [];
+    let improvements = [];
+    let feedback = '';
+
+    if (isAccepted) {
+        score = 95;
+        error_type = 'None (Correct)';
+        correctness = 'All Test Cases Passed';
+        code_quality = 'Clean Code';
+        strengths = [
+            'Optimal algorithmic approach passing all functional and boundary test cases.',
+            'Clean control flow and memory management in ' + language.toUpperCase() + '.'
+        ];
+        mistakes = [];
+        improvements = ['Consider minor micro-optimizations or concise inline helper structures.'];
+        feedback = `Excellent solution! All ${totalCount} test cases passed cleanly with optimal time and space complexity.`;
+    } else if (isCompilationError) {
+        score = 15;
+        error_type = 'Syntax/Implementation Error';
+        correctness = 'Compilation Failed';
+        code_quality = 'Syntax Errors';
+        strengths = ['Attempted solution structure in ' + language.toUpperCase()];
+        mistakes = [execution.error || 'Syntax error encountered during compilation.'];
+        improvements = ['Check syntax, matching brackets, type declarations, and required semicolons.'];
+        feedback = `Code failed to compile: ${execution.error || 'Syntax errors detected'}. Fix syntax errors before execution.`;
+    } else if (isRuntimeError) {
+        score = 25;
+        error_type = 'Runtime Crash';
+        correctness = 'Runtime Crash';
+        code_quality = 'Needs Optimization';
+        strengths = ['Code compiled successfully'];
+        mistakes = [execution.error || 'Encountered runtime exception or segmentation fault.'];
+        improvements = ['Add boundary checks for null pointers, array index boundaries, and division by zero.'];
+        feedback = `Program crashed during test execution: ${execution.error || 'Exception thrown'}. Ensure safe array indexing and pointer checks.`;
+    } else if (isTLE) {
+        score = 35;
+        error_type = 'Time Limit Exceeded';
+        correctness = 'Time Limit Exceeded';
+        code_quality = 'Needs Optimization';
+        strengths = ['Correct algorithmic direction'];
+        mistakes = ['Execution exceeded 2000ms limit due to infinite loop or exponential O(2^N) complexity.'];
+        improvements = ['Ensure loop termination conditions are met and optimize algorithm from exponential to polynomial time (e.g. O(N) or O(N log N)).'];
+        feedback = 'Execution exceeded time limit. Verify loop termination conditions and optimize time complexity.';
+    } else {
+        // Wrong Answer
+        score = Math.max(20, Math.round((passedCount / totalCount) * 65 + 10));
+        error_type = passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic';
+        correctness = `${passedCount}/${totalCount} Test Cases Passed`;
+        code_quality = 'Needs Optimization';
+        strengths = passedCount > 0 ? [`Passed ${passedCount} test case(s). Core algorithmic structure is present.`] : ['Code compiled and ran without fatal syntax errors.'];
+        
+        const firstFailed = (execution.results || testResults).find(r => !r.passed);
+        if (firstFailed) {
+            mistakes = [`Failed Test Case #${firstFailed.testCaseNumber} (Input: ${firstFailed.input}). Expected output was ${firstFailed.expected}, but received ${firstFailed.actual}.`];
+        } else {
+            mistakes = ['One or more boundary or hidden test cases produced an incorrect output.'];
+        }
+        improvements = [
+            problem.approach ? `Review recommended approach: ${problem.approach}` : 'Trace code against failing test cases and handle edge cases.',
+            'Verify boundary conditions (empty inputs, single elements, duplicate values, extreme bounds).'
+        ];
+        feedback = `Solution achieved partial pass (${passedCount}/${totalCount} test cases). Address edge cases and logical discrepancies identified in the failed test cases.`;
+    }
+
+    const fallbackReview = {
+        score,
+        status: execStatus,
+        error_type,
+        correctness,
+        time_complexity: isAccepted ? (problem.time_complexity || 'O(N)') : 'Suboptimal / Incomplete',
+        space_complexity: isAccepted ? (problem.space_complexity || 'O(1)') : 'O(N)',
+        code_quality,
+        strengths,
+        mistakes,
+        improvements,
+        feedback
+    };
+
+    const systemPrompt = `You are a strict Principal Software Engineer reviewing a candidate code submission in ${language.toUpperCase()}.
+CRITICAL RULES:
+1. FUNCTIONAL CORRECTNESS IS DETERMINED ENTIRELY BY ACTUAL TEST EXECUTION:
+   - Status: ${execStatus}
+   - Passed: ${passedCount}/${totalCount} test cases
+   - Errors: ${execution.error || 'None'}
+2. If the solution failed test cases (Status: ${execStatus}), YOU MUST NOT CALL IT CORRECT.
+3. Diagnose the exact bug based on the failed test case outputs and candidate code.
+4. If the solution passed all test cases, verify if time complexity and space complexity are optimal.`;
+
     const userPrompt = `Problem: ${problem.title}
 Language: ${language}
-Code:
+Execution Status: ${execStatus}
+Test Results: ${passedCount}/${totalCount} test cases passed
+Error message: ${execution.error || 'None'}
+Submitted Code:
 ${code}
-Passed: ${passedCount}/${totalCount} test cases.
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object matching this schema:
 {
-  "score": ${Math.round((passedCount / totalCount) * 75 + (code.length > 30 ? 20 : 10))},
-  "error_type": "${passedCount === totalCount ? 'None (Correct)' : passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic'}",
-  "correctness": "${passedCount === totalCount ? 'All Test Cases Passed' : 'Partial Pass'}",
-  "time_complexity": "O(N) with explanation",
-  "space_complexity": "O(1) with explanation",
-  "code_quality": "Clean Code | Needs Optimization | Syntax Errors",
-  "strengths": ["Optimal algorithmic approach"],
-  "improvements": ["Boundary case handling"],
-  "feedback": "Code review summary."
+  "score": ${score},
+  "status": "${execStatus}",
+  "error_type": "${error_type}",
+  "correctness": "${correctness}",
+  "time_complexity": "${fallbackReview.time_complexity}",
+  "space_complexity": "${fallbackReview.space_complexity}",
+  "code_quality": "${code_quality}",
+  "strengths": ${JSON.stringify(strengths)},
+  "mistakes": ${JSON.stringify(mistakes)},
+  "improvements": ${JSON.stringify(improvements)},
+  "feedback": "${feedback.replace(/"/g, '\\"')}"
 }`;
 
-    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.3 });
-    return safeParseJSON(raw, {
-        score: Math.round((passedCount / totalCount) * 85 + 10),
-        error_type: passedCount === totalCount ? 'None (Correct)' : passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic',
-        correctness: passedCount === totalCount ? 'All Test Cases Passed' : `${passedCount}/${totalCount} Passed`,
-        time_complexity: 'O(N)',
-        space_complexity: 'O(1)',
-        code_quality: passedCount === totalCount ? 'Clean Code' : 'Needs Optimization',
-        strengths: passedCount === totalCount ? ['Optimal algorithmic time complexity', 'Clean syntax structure'] : ['Attempted core logic'],
-        improvements: ['Account for edge cases and boundary constraints'],
-        feedback: passedCount === totalCount ? 'Excellent implementation passing all test suites.' : 'Solution passed partial cases. Review boundary checks.'
-    });
+    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.2 });
+    const parsed = safeParseJSON(raw, fallbackReview);
+
+    // Enforce consistency: AI cannot overturn actual execution status
+    parsed.status = execStatus;
+    if (!isAccepted && (parsed.error_type === 'None (Correct)' || parsed.score > 75)) {
+        parsed.error_type = error_type;
+        parsed.score = score;
+    }
+    if (!parsed.mistakes) parsed.mistakes = mistakes;
+    if (!parsed.improvements) parsed.improvements = improvements;
+
+    return parsed;
 };
 
 /**
