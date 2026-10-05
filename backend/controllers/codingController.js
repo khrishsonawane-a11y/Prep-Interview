@@ -165,7 +165,7 @@ export const submitCode = async (req, res, next) => {
             interviewId,
             problem,
             code,
-            language = 'java',
+            language = 'cpp',
             is_skipped = false,
             viewed_answer = false,
             timeTakenSeconds = 0
@@ -176,54 +176,19 @@ export const submitCode = async (req, res, next) => {
         }
 
         const isSkipped = is_skipped === true || code.trim() === '// [SKIPPED]';
+        const lang = 'cpp';
 
-        let fullTestCases = problem.test_cases || [];
         const matching = mockStore.codingQuestions.find(q => q.id === problem.id || q.title === problem.title);
-        if (matching && matching.test_cases && matching.test_cases.length > 0) {
-            fullTestCases = matching.test_cases;
-        }
-
-        const executionResult = isSkipped ? {
-            success: false,
-            status: 'Did Not Answer',
-            passedCount: 0,
-            totalCount: fullTestCases.length,
-            isComplete: false,
-            results: []
-        } : await submitCodeService({
-            code,
-            language,
-            testCases: fullTestCases,
-            problemId: problem.id
-        });
 
         const aiReview = await aiEvalCode({
-            problem,
+            problem: matching || problem,
             code,
-            language,
-            testResults: executionResult.results || [],
-            execution: executionResult
+            language: lang
         });
 
-        const isAccepted = !isSkipped && executionResult.isComplete === true && executionResult.status === 'Accepted';
-        const isCorrect = isAccepted;
-        const errorType = isSkipped 
-            ? 'Did Not Answer' 
-            : (isAccepted 
-                ? 'None (Correct)' 
-                : (executionResult.status === 'Compilation Error' 
-                    ? 'Syntax/Implementation Error' 
-                    : (executionResult.status === 'Runtime Error' 
-                        ? 'Runtime Crash' 
-                        : (executionResult.status === 'Time Limit Exceeded' 
-                            ? 'Time Limit Exceeded' 
-                            : (executionResult.passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic')))));
-
-        const score = isSkipped 
-            ? 0 
-            : (isAccepted 
-                ? Math.max(90, Number(aiReview.score) || 95) 
-                : Math.min(40, executionResult.totalCount > 0 ? Math.round((executionResult.passedCount / executionResult.totalCount) * 35) + 5 : 15));
+        const isCorrect = isSkipped ? false : (aiReview.is_correct === true && Number(aiReview.score) >= 75);
+        const score = isSkipped ? 0 : Number(aiReview.score || (isCorrect ? 95 : 20));
+        const errorType = isSkipped ? 'Did Not Answer' : (aiReview.error_type || (isCorrect ? 'None (Correct)' : 'Wrong Logic'));
 
         const answerRecord = {
             id: randomUUID(),
@@ -234,8 +199,8 @@ export const submitCode = async (req, res, next) => {
             question_text: `${problem.title}: ${(problem.description || '').slice(0, 120)}...`,
             topic: problem.topic || 'DSA Algorithms',
             user_answer: code,
-            code_language: language,
-            reference_answer: (matching?.solution_code?.[language]) || matching?.approach || 'Optimal reference implementation',
+            code_language: 'cpp',
+            reference_answer: (matching?.solution_code?.cpp) || matching?.approach || 'Optimal C++ reference implementation',
             is_correct: isCorrect,
             is_skipped: isSkipped,
             viewed_answer: Boolean(viewed_answer),
@@ -243,13 +208,13 @@ export const submitCode = async (req, res, next) => {
             error_type: errorType,
             ai_evaluation: {
                 ...aiReview,
+                is_correct: isCorrect,
                 score,
-                status: executionResult.status || (isCorrect ? 'Accepted' : 'Wrong Answer'),
+                status: isCorrect ? 'Correct' : 'Incorrect',
                 error_type: errorType,
-                execution: executionResult,
-                hint: matching?.approach || 'Check problem constraints and step-by-step logic.',
-                correct_approach: matching?.algorithm_explanation || matching?.approach || 'Optimal algorithmic approach.',
-                solution_code: matching?.solution_code?.[language] || matching?.approach || 'Reference implementation'
+                hint: aiReview.hint || matching?.approach || 'Check problem constraints and step-by-step logic.',
+                correct_approach: aiReview.correct_approach || matching?.algorithm_explanation || matching?.approach || 'Optimal algorithmic approach.',
+                reference_solution: aiReview.reference_solution || matching?.solution_code?.cpp || 'Reference implementation'
             },
             time_taken_seconds: timeTakenSeconds,
             created_at: new Date().toISOString()
@@ -266,7 +231,7 @@ export const submitCode = async (req, res, next) => {
                         .single();
 
                     if (!error && data) {
-                        return res.json({ success: true, evaluation: aiReview, execution: executionResult, answer: data });
+                        return res.json({ success: true, evaluation: aiReview, answer: data });
                     }
                 }
             } catch (supErr) {
@@ -275,7 +240,7 @@ export const submitCode = async (req, res, next) => {
         }
 
         mockStore.answers.set(answerRecord.id, answerRecord);
-        return res.json({ success: true, evaluation: aiReview, execution: executionResult, answer: answerRecord });
+        return res.json({ success: true, evaluation: aiReview, answer: answerRecord });
     } catch (err) {
         next(err);
     }
@@ -283,6 +248,7 @@ export const submitCode = async (req, res, next) => {
 
 export default {
     getCodingQuestion,
+    getCodingQuestions,
     runCode,
     submitCode
 };

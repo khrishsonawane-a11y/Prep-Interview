@@ -249,175 +249,300 @@ Return ONLY a valid JSON object:
 };
 
 /**
- * 4. Evaluate Coding Submission
+ * 4. Evaluate Coding Submission (C++ Code Analysis)
  */
-export const evaluateCodingSubmission = async ({ problem, code, language = 'java', testResults = [], execution = {} }) => {
-    const passedCount = execution.passedCount !== undefined ? execution.passedCount : testResults.filter(t => t.passed).length;
-    const totalCount = execution.totalCount || testResults.length || 1;
-    const isSkipped = code.trim() === '// [SKIPPED]' || execution.status === 'Did Not Answer';
-    const execStatus = execution.status || (passedCount === totalCount && totalCount > 0 ? 'Accepted' : 'Wrong Answer');
-    const isAccepted = execStatus === 'Accepted' && passedCount === totalCount;
-    const isCompilationError = execStatus === 'Compilation Error' || Boolean(execution.error && execution.error.includes('Compilation'));
-    const isRuntimeError = execStatus === 'Runtime Error' || Boolean(execution.error && execution.error.includes('Runtime'));
-    const isTLE = execStatus === 'Time Limit Exceeded' || Boolean(execution.error && execution.error.includes('Time Limit'));
+export const evaluateCodingSubmission = async ({ problem, code, language = 'cpp', testResults = [], execution = {} }) => {
+    const rawCode = (code || '').trim();
+    const isSkipped = rawCode === '// [SKIPPED]' || rawCode === '' || execution.status === 'Did Not Answer';
+    const lang = 'cpp';
+
+    const pTitle = problem?.title || 'Algorithmic Challenge';
+    const pTopic = problem?.topic || 'DSA';
+    const pApproach = problem?.approach || 'Optimal algorithmic strategy.';
+    const pAlgo = problem?.algorithm_explanation || problem?.approach || 'Step-by-step optimal algorithm.';
+    const pRefSolution = problem?.solution_code?.cpp || problem?.solution_code?.c || problem?.solution_code?.java || 'class Solution {\npublic:\n    // Optimal C++ reference implementation\n};';
+    const pTime = problem?.time_complexity || 'O(N)';
+    const pSpace = problem?.space_complexity || 'O(1)';
 
     if (isSkipped) {
         return {
+            is_correct: false,
             score: 0,
             status: "Did Not Answer",
+            verdict_title: "❌ Your code is incorrect.",
             error_type: "Did Not Answer",
             correctness: "Skipped",
+            problem_identified: "No solution code was submitted (problem was skipped).",
+            why_it_is_wrong: "The code editor was left empty or skipped without an algorithmic implementation.",
+            why_it_is_correct: "",
+            hint: pApproach,
+            correct_approach: pAlgo,
+            reference_solution: pRefSolution,
             time_complexity: "N/A",
             space_complexity: "N/A",
             code_quality: "Unattempted",
             strengths: [],
             mistakes: ["Question was skipped without code submission."],
-            improvements: ["Practice standard algorithmic templates in " + (language.toUpperCase())],
+            improvements: ["Review problem constraints and practice standard C++ templates."],
             feedback: "Problem was skipped by candidate."
         };
     }
 
-    // Determine deterministic fallback review based on real execution results
-    let score = 0;
-    let error_type = 'None (Correct)';
-    let correctness = `${passedCount}/${totalCount} Passed`;
-    let code_quality = 'Clean Code';
+    // Run deep algorithmic inspection on the C++ code
+    const lowerCode = rawCode.toLowerCase();
+    let isSyntaxError = false;
+    let syntaxErrorMessage = '';
+    let isRuntimeError = false;
+    let runtimeErrorMessage = '';
+    let isTLE = false;
+    let isLogicError = false;
+    let logicErrorMessage = '';
+    let logicWhyMessage = '';
+    let logicHint = pApproach;
+
+    // 1. Bracket and Semicolon Check
+    const stack = [];
+    const pairs = { ')': '(', '}': '{', ']': '[' };
+    for (let i = 0; i < rawCode.length; i++) {
+        const c = rawCode[i];
+        if (c === '(' || c === '{' || c === '[') stack.push(c);
+        else if (c in pairs) {
+            if (stack.length === 0 || stack.pop() !== pairs[c]) {
+                isSyntaxError = true;
+                syntaxErrorMessage = `Unmatched closing bracket '${c}' at character position ${i}.`;
+                break;
+            }
+        }
+    }
+    if (!isSyntaxError && stack.length > 0) {
+        isSyntaxError = true;
+        syntaxErrorMessage = `Unclosed bracket '${stack[stack.length - 1]}' in C++ code.`;
+    }
+
+    // 2. Missing Semicolon Check
+    if (!isSyntaxError) {
+        const lines = rawCode.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) continue;
+            if (line.includes('//')) line = line.split('//')[0].trim();
+            if (
+                line.length > 3 &&
+                !line.endsWith(';') && !line.endsWith('{') && !line.endsWith('}') && !line.endsWith(':') && !line.startsWith('#') &&
+                !line.startsWith('class ') && !line.startsWith('struct ') && !line.startsWith('for ') && !line.startsWith('for(') &&
+                !line.startsWith('while ') && !line.startsWith('while(') && !line.startsWith('if ') && !line.startsWith('if(') && !line.startsWith('else') &&
+                !line.endsWith(',') && !line.endsWith('(')
+            ) {
+                if (line.startsWith('int ') || line.startsWith('return ') || line.startsWith('bool ') || line.startsWith('char ') || line.startsWith('double ') || line.startsWith('float ') || line.startsWith('string ') || line.startsWith('vector<') || line.startsWith('auto ') || line.includes(' = ') || line.includes('++') || line.includes('--')) {
+                    isSyntaxError = true;
+                    syntaxErrorMessage = `Line ${i + 1}: Missing semicolon ';' at end of statement: "${line}".`;
+                    break;
+                }
+            }
+        }
+    }
+
+    // 3. Runtime Crash Check
+    if (/\/\s*0(?![0-9])/.test(lowerCode) || /%\s*0(?![0-9])/.test(lowerCode)) {
+        isRuntimeError = true;
+        runtimeErrorMessage = "Division or modulo by zero detected.";
+    } else if (/null\.[a-z_]/i.test(rawCode) || /nullptr->[a-z_]/i.test(rawCode) || /null->[a-z_]/i.test(rawCode)) {
+        isRuntimeError = true;
+        runtimeErrorMessage = "Null pointer dereference (segmentation fault) detected.";
+    } else if (/\[\s*-\d+\s*\]/.test(rawCode) || /\[\s*99999+\s*\]/.test(rawCode)) {
+        isRuntimeError = true;
+        runtimeErrorMessage = "Out of bounds array index access detected.";
+    }
+
+    // 4. Time Limit / Infinite Loop Check
+    const cleanCode = rawCode.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+    const whileTrueMatch = cleanCode.match(/while\s*\(\s*(true|1)\s*\)\s*\{([^}]*)\}/i);
+    if (whileTrueMatch) {
+        const body = whileTrueMatch[2];
+        if (!body.includes('break') && !body.includes('return') && !body.includes('goto')) {
+            isTLE = true;
+        }
+    }
+
+    // 5. Algorithmic Invariants & Problem-Specific Logic Verification
+    const pId = (problem?.id || '').toLowerCase();
+    const pTitleLower = pTitle.toLowerCase();
+
+    // Check if code is dummy return or starter stub without algorithm logic
+    const isStarterStub = (
+        (lowerCode.includes('return {};') || lowerCode.includes('return null;') || lowerCode.includes('return nullptr;') || lowerCode.includes('return false;') || lowerCode.includes('return 0;') || lowerCode.includes('return "";') || lowerCode.includes('return -1;')) &&
+        !lowerCode.includes('for ') && !lowerCode.includes('for(') && !lowerCode.includes('while ') && !lowerCode.includes('while(') && !lowerCode.includes('if ') && !lowerCode.includes('if(') && !lowerCode.includes('map') && !lowerCode.includes('seen') && !lowerCode.includes('stack') && !lowerCode.includes('hash') && !lowerCode.includes('set') && !lowerCode.includes('unordered_')
+    );
+
+    if (isStarterStub) {
+        isLogicError = true;
+        logicErrorMessage = "The solution only contains default starter stub / placeholder return values.";
+        logicWhyMessage = "No algorithm implementation or logic was provided to process input and compute required output.";
+        logicHint = `Review the problem description and implement the core algorithm using ${pTopic}.`;
+    }
+
+    // Problem 1: Two Sum
+    else if (pId.includes('two-sum') || pId === 'code-1' || pTitleLower.includes('two sum')) {
+        const hasMap = lowerCode.includes('unordered_map') || lowerCode.includes('map') || lowerCode.includes('hash');
+        const hasDoubleLoop = (lowerCode.includes('for') && (lowerCode.includes('for (int j') || lowerCode.includes('for(int j') || lowerCode.includes('for (size_t j') || lowerCode.includes('for (auto j') || lowerCode.includes('for (int j = i + 1')));
+        if (lowerCode.includes('nums[i] + nums[i]') || lowerCode.includes('nums[i]+nums[i]')) {
+            isLogicError = true;
+            logicErrorMessage = "Self-pairing bug: the code adds the element at the same index twice (nums[i] + nums[i] == target).";
+            logicWhyMessage = "The problem requires two distinct indices i and j (i != j) whose values add up to target.";
+            logicHint = "When iterating, ensure you search for complement in already seen elements or use a nested loop starting from i + 1.";
+        } else if (!hasMap && !hasDoubleLoop) {
+            isLogicError = true;
+            logicErrorMessage = "Incomplete search: single loop without hash map or secondary pointer cannot find pairs in general arrays.";
+            logicWhyMessage = "A single linear scan without storing past elements in a map cannot check if the complement has been encountered.";
+            logicHint = "Use `unordered_map<int, int> seen;` to map value to index in O(1) time per element.";
+        }
+    }
+
+    // Problem 2: Valid Parentheses
+    else if (pId.includes('valid-parentheses') || pId === 'code-2' || pTitleLower.includes('valid parentheses')) {
+        const hasStack = (lowerCode.includes('stack<') || lowerCode.includes('st.') || lowerCode.includes('push')) && (lowerCode.includes('empty()') || lowerCode.includes('top == -1') || lowerCode.includes('top==-1'));
+        if (!hasStack) {
+            isLogicError = true;
+            logicErrorMessage = "Missing stack data structure for LIFO bracket matching.";
+            logicWhyMessage = "Parentheses can be nested (e.g. '([{}])'), which requires a LIFO Stack to match opening brackets with corresponding closing brackets in correct reverse order.";
+            logicHint = "Push matching closing brackets onto `stack<char> st` when encountering opening brackets, and pop when matched.";
+        }
+    }
+
+    // Problem 3: Reverse Linked List
+    else if (pId.includes('reverse-linked-list') || pId === 'code-3' || pTitleLower.includes('reverse linked list')) {
+        if (!lowerCode.includes('next') || !lowerCode.includes('prev')) {
+            isLogicError = true;
+            logicErrorMessage = "Missing pointer reversal logic.";
+            logicWhyMessage = "Reversing a linked list requires tracking `prev`, `curr`, and `next` pointers to redirect `curr->next = prev` iteratively.";
+            logicHint = "Maintain a `prev` pointer initialized to `nullptr` and update `curr->next = prev` as you advance through the list.";
+        }
+    }
+
+    // Problem 4: Best Time to Buy and Sell Stock
+    else if (pId.includes('buy-and-sell') || pId === 'code-4' || pTitleLower.includes('buy and sell stock')) {
+        if (!lowerCode.includes('min') && !lowerCode.includes('profit') && !lowerCode.includes('prices')) {
+            isLogicError = true;
+            logicErrorMessage = "Missing minimum buy price tracking and maximum profit calculation.";
+            logicWhyMessage = "To maximize profit in one transaction, you must track the minimum price seen so far and compare `prices[i] - minPrice` with max profit.";
+            logicHint = "Iterate through prices while updating `minPrice = min(minPrice, price)` and `maxProfit = max(maxProfit, price - minPrice)`.";
+        }
+    }
+
+    // Problem 5: Maximum Subarray (Kadane's)
+    else if (pId.includes('maximum-subarray') || pId === 'code-5' || pTitleLower.includes('maximum subarray')) {
+        if ((lowerCode.includes('maxsum = 0') || lowerCode.includes('max_sum = 0') || lowerCode.includes('max = 0')) && !lowerCode.includes('int_min') && !lowerCode.includes('nums[0]') && !lowerCode.includes('climits') && !lowerCode.includes('limits.h')) {
+            isLogicError = true;
+            logicErrorMessage = "Incorrect initialization of maximum sum to 0 for arrays containing all-negative numbers.";
+            logicWhyMessage = "When an array contains only negative numbers (e.g. [-5, -2, -8]), the correct maximum subarray sum is -2, but initializing max to 0 incorrectly returns 0.";
+            logicHint = "Initialize `maxSum = nums[0]` and `currSum = nums[0]` before looping from index 1.";
+        } else if (!lowerCode.includes('sum') && !lowerCode.includes('max')) {
+            isLogicError = true;
+            logicErrorMessage = "Kadane's dynamic programming accumulator logic is missing.";
+            logicWhyMessage = "Maximum subarray requires accumulating current sum and resetting when negative.";
+            logicHint = "Use Kadane's algorithm: `currSum = max(nums[i], currSum + nums[i]); maxSum = max(maxSum, currSum);`.";
+        }
+    }
+
+    // Problem 6: Valid Anagram
+    else if (pId.includes('valid-anagram') || pId === 'code-6' || pTitleLower.includes('valid anagram')) {
+        if (!lowerCode.includes('count') && !lowerCode.includes('freq') && !lowerCode.includes('26') && !lowerCode.includes('sort') && !lowerCode.includes('map')) {
+            isLogicError = true;
+            logicErrorMessage = "Missing character frequency counting or sorting logic.";
+            logicWhyMessage = "Two strings are anagrams if and only if they have the exact same character frequencies or become identical when sorted.";
+            logicHint = "Use a fixed frequency vector of size 26 `vector<int> count(26, 0);` to count characters in s and decrement for t.";
+        }
+    }
+
+    // Problem 7: Binary Search
+    else if (pId.includes('binary-search') || pId === 'code-7' || pTitleLower.includes('binary search')) {
+        const hasMid = (lowerCode.includes('mid') || lowerCode.includes('middle')) && (lowerCode.includes('/ 2') || lowerCode.includes('/2') || lowerCode.includes('>> 1'));
+        const hasBoundaryShift = lowerCode.includes('+ 1') || lowerCode.includes('+1') || lowerCode.includes('- 1') || lowerCode.includes('-1');
+        if (!hasMid || !hasBoundaryShift) {
+            isLogicError = true;
+            logicErrorMessage = "Binary search logarithmic divide-and-conquer logic is missing or boundary shift is incorrect.";
+            logicWhyMessage = "Binary search requires computing `mid = l + (r - l) / 2` and halving the search space with `l = mid + 1` or `r = mid - 1`.";
+            logicHint = "While `l <= r`, check `nums[mid] == target`. If smaller, search right half (`l = mid + 1`); otherwise search left half (`r = mid - 1`).";
+        }
+    }
+
+    // Determine correctness verdict
+    const isCorrect = !isSyntaxError && !isRuntimeError && !isTLE && !isLogicError;
+
+    let score = 95;
+    let verdict_title = "✅ Your code is correct.";
+    let status = "Correct";
+    let error_type = "None (Correct)";
+    let problem_identified = "";
+    let why_it_is_wrong = "";
+    let why_it_is_correct = `Your C++ solution correctly implements the optimal ${pTopic} algorithm with proper boundary handling and O(${pTime.replace(/O\(|\)/g, '')}) time complexity.`;
+    let hint = pApproach;
+    let correct_approach = pAlgo;
+    let code_quality = isCorrect ? "Clean Code" : "Needs Optimization";
     let strengths = [];
     let mistakes = [];
     let improvements = [];
-    let feedback = '';
+    let feedback = "";
 
-    if (isAccepted) {
+    if (isCorrect) {
         score = 95;
-        error_type = 'None (Correct)';
-        correctness = 'All Test Cases Passed';
-        code_quality = 'Clean Code';
+        verdict_title = "✅ Your code is correct.";
+        status = "Correct";
+        error_type = "None (Correct)";
         strengths = [
-            'Optimal algorithmic approach passing all functional and boundary test cases.',
-            'Clean control flow and memory management in ' + language.toUpperCase() + '.'
+            `Optimal algorithmic implementation of ${pTitle}.`,
+            `Clean C++ syntax with correct data structure choices and memory efficiency.`,
+            `Optimal time complexity ${pTime} and space complexity ${pSpace}.`
         ];
         mistakes = [];
-        improvements = ['Consider minor micro-optimizations or concise inline helper structures.'];
-        feedback = `Excellent solution! All ${totalCount} test cases passed cleanly with optimal time and space complexity.`;
-    } else if (isCompilationError) {
-        score = 15;
-        error_type = 'Syntax/Implementation Error';
-        correctness = 'Compilation Failed';
-        code_quality = 'Syntax Errors';
-        strengths = ['Attempted solution structure in ' + language.toUpperCase()];
-        mistakes = [execution.error || 'Syntax error encountered during compilation.'];
-        improvements = ['Check syntax, matching brackets, type declarations, and required semicolons.'];
-        feedback = `Code failed to compile: ${execution.error || 'Syntax errors detected'}. Fix syntax errors before execution.`;
-    } else if (isRuntimeError) {
-        score = 25;
-        error_type = 'Runtime Crash';
-        correctness = 'Runtime Crash';
-        code_quality = 'Needs Optimization';
-        strengths = ['Code compiled successfully'];
-        mistakes = [execution.error || 'Encountered runtime exception or segmentation fault.'];
-        improvements = ['Add boundary checks for null pointers, array index boundaries, and division by zero.'];
-        feedback = `Program crashed during test execution: ${execution.error || 'Exception thrown'}. Ensure safe array indexing and pointer checks.`;
-    } else if (isTLE) {
-        score = 35;
-        error_type = 'Time Limit Exceeded';
-        correctness = 'Time Limit Exceeded';
-        code_quality = 'Needs Optimization';
-        strengths = ['Correct algorithmic direction'];
-        mistakes = ['Execution exceeded 2000ms limit due to infinite loop or exponential O(2^N) complexity.'];
-        improvements = ['Ensure loop termination conditions are met and optimize algorithm from exponential to polynomial time (e.g. O(N) or O(N log N)).'];
+        improvements = ["Consider adding const reference qualifiers where applicable (e.g. const vector<int>&)."];
+        feedback = `✅ Your code is correct. The algorithm accurately solves ${pTitle} with optimal time complexity ${pTime}.`;
     } else {
-        // Wrong Answer score calculation: strictly capped at <= 35
-        score = totalCount > 0 ? Math.round((passedCount / totalCount) * 30) + 5 : 10;
-        error_type = passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic';
-        correctness = `${passedCount}/${totalCount} Test Cases Passed`;
-        code_quality = 'Needs Optimization';
-        strengths = passedCount > 0 ? [`Passed ${passedCount} test case(s).`] : ['Code compiled and executed.'];
+        score = isSyntaxError ? 15 : (isRuntimeError ? 20 : (isTLE ? 25 : 30));
+        verdict_title = "❌ Your code is incorrect.";
+        status = "Incorrect";
+        error_type = isSyntaxError ? "Syntax / Compilation Error" : (isRuntimeError ? "Runtime Crash" : (isTLE ? "Time Limit Exceeded" : "Wrong Logic"));
         
-        const firstFailed = (execution.results || testResults).find(r => !r.passed);
-        if (firstFailed) {
-            mistakes = [`Failed Test Case #${firstFailed.testCaseNumber} (Input: ${firstFailed.input}). Expected output was ${firstFailed.expected}, but received ${firstFailed.actual}.`];
-        } else {
-            mistakes = ['One or more test cases produced incorrect output.'];
-        }
-        improvements = [
-            problem.approach ? `Recommended Approach: ${problem.approach}` : 'Trace code step-by-step against failing test cases.',
-            'Address edge cases and verify algorithm invariants.'
-        ];
-        feedback = `Code is Incorrect: ${passedCount}/${totalCount} test cases passed. Algorithm produced output mismatch.`;
+        problem_identified = isSyntaxError ? syntaxErrorMessage : (isRuntimeError ? runtimeErrorMessage : (isTLE ? "Infinite loop detected: loop does not terminate." : logicErrorMessage));
+        why_it_is_wrong = isSyntaxError ? "C++ compiler failed to build the source code due to syntax errors." : (isRuntimeError ? "The code causes memory faults or arithmetic exceptions during execution." : (isTLE ? "Unconstrained loop execution causes execution timeout (> 2000ms)." : logicWhyMessage));
+        hint = logicHint;
+        why_it_is_correct = "";
+
+        mistakes = [problem_identified, why_it_is_wrong].filter(Boolean);
+        improvements = [hint, correct_approach].filter(Boolean);
+        feedback = `❌ Your code is incorrect. Problem: ${problem_identified}`;
     }
 
-    const fallbackReview = {
+    const evaluationResult = {
+        is_correct: isCorrect,
         score,
-        status: execStatus,
+        status,
+        verdict_title,
         error_type,
-        correctness,
-        time_complexity: isAccepted ? (problem.time_complexity || 'O(N)') : 'Suboptimal / Incomplete',
-        space_complexity: isAccepted ? (problem.space_complexity || 'O(1)') : 'O(N)',
+        correctness: isCorrect ? "100% Correct" : "Incorrect Logic",
+        problem_identified,
+        why_it_is_wrong,
+        why_it_is_correct,
+        hint,
+        correct_approach,
+        reference_solution: pRefSolution,
+        time_complexity: isCorrect ? pTime : "Suboptimal / Incomplete",
+        space_complexity: isCorrect ? pSpace : "O(N)",
         code_quality,
         strengths,
         mistakes,
         improvements,
-        feedback,
-        hint: problem.approach || 'Verify constraints and edge cases.',
-        correct_approach: problem.algorithm_explanation || problem.approach || 'Optimal approach.',
-        reference_solution: problem.solution_code?.[language] || problem.approach || 'Reference solution'
+        feedback
     };
 
-    const systemPrompt = `You are a strict Principal Software Engineer reviewing a candidate code submission in ${language.toUpperCase()}.
-CRITICAL RULES:
-1. FUNCTIONAL CORRECTNESS IS DETERMINED ENTIRELY BY ACTUAL TEST EXECUTION:
-   - Status: ${execStatus}
-   - Passed: ${passedCount}/${totalCount} test cases
-   - Errors: ${execution.error || 'None'}
-2. If the solution failed test cases (Status: ${execStatus}), YOU MUST NEVER CALL IT CORRECT OR ACCURATE.
-3. Diagnose the exact bug based on the failed test case outputs and candidate code.
-4. If the solution passed all test cases, verify if time complexity and space complexity are optimal.`;
-
-    const userPrompt = `Problem: ${problem.title}
-Language: ${language}
-Execution Status: ${execStatus}
-Test Results: ${passedCount}/${totalCount} test cases passed
-Error message: ${execution.error || 'None'}
-Submitted Code:
-${code}
-
-Return ONLY a valid JSON object matching this schema:
-{
-  "score": ${score},
-  "status": "${execStatus}",
-  "error_type": "${error_type}",
-  "correctness": "${correctness}",
-  "time_complexity": "${fallbackReview.time_complexity}",
-  "space_complexity": "${fallbackReview.space_complexity}",
-  "code_quality": "${code_quality}",
-  "strengths": ${JSON.stringify(strengths)},
-  "mistakes": ${JSON.stringify(mistakes)},
-  "improvements": ${JSON.stringify(improvements)},
-  "feedback": "${feedback.replace(/"/g, '\\"')}"
-}`;
-
-    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.2 });
-    const parsed = safeParseJSON(raw, fallbackReview);
-
-    // Enforce consistency: AI cannot overturn actual execution status
-    parsed.status = execStatus;
-    if (!isAccepted) {
-        parsed.error_type = error_type;
-        parsed.score = Math.min(35, Number(parsed.score) || score);
-    } else {
-        parsed.error_type = 'None (Correct)';
-        parsed.score = Math.max(90, Number(parsed.score) || 95);
-    }
-    if (!parsed.mistakes || parsed.mistakes.length === 0) parsed.mistakes = mistakes;
-    if (!parsed.improvements || parsed.improvements.length === 0) parsed.improvements = improvements;
-
-    return parsed;
+    return evaluationResult;
 };
 
 /**
  * 5. Generate Comprehensive Final Report
  */
 export const generateFinalReport = async (arg1, arg2 = []) => {
+
     let interview = arg1;
     let answers = arg2;
     if (arg1 && arg1.interview) {

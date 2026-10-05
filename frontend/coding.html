@@ -107,38 +107,24 @@
         </div>
       </div>
 
-      <!-- Right Pane: Code Editor & Execution Console -->
+      <!-- Right Pane: Code Editor -->
       <div class="editor-pane">
-        <div class="editor-wrapper">
+        <div class="editor-wrapper" style="height: 100%;">
           <div class="editor-toolbar">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 0.82rem; font-weight: 500; color: var(--text-muted);">Language:</span>
-              <select id="code-language-select" class="form-control" style="padding: 0.25rem 0.6rem; width: auto; font-size: 0.82rem;">
-                <option value="java" selected>Java</option>
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="python">Python</option>
+              <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">Language:</span>
+              <select id="code-language-select" class="form-control" style="padding: 0.25rem 0.6rem; width: auto; font-size: 0.82rem; font-weight: 600;">
+                <option value="cpp" selected>C++</option>
               </select>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button id="skip-code-btn" class="btn btn-secondary btn-sm" title="Skip this problem">Skip Problem ↷</button>
               <button id="reset-code-btn" class="btn btn-secondary btn-sm" title="Reset starter template">↺ Reset</button>
-              <button id="run-code-btn" class="btn btn-secondary btn-sm">▶ Run Tests</button>
               <button id="submit-code-btn" class="btn btn-primary btn-sm">Submit Solution</button>
             </div>
           </div>
 
-          <textarea id="code-editor-textarea" class="code-textarea" spellcheck="false" placeholder="// Implement your solution in Java, C, C++, or Python here..."></textarea>
-        </div>
-
-        <!-- Output Console & Test Results -->
-        <div class="console-wrapper">
-          <div class="console-tabs">
-            <div class="console-tab active">Execution Output & Test Cases</div>
-          </div>
-          <div class="console-output" id="console-output-pane">
-            <span style="color: var(--text-dim);">Click 'Run Tests' to compile and test against sample test cases.</span>
-          </div>
+          <textarea id="code-editor-textarea" class="code-textarea" spellcheck="false" placeholder="// Write your C++ solution here..."></textarea>
         </div>
       </div>
     </div>
@@ -150,7 +136,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
         <div>
           <span class="badge badge-primary" style="margin-bottom: 0.25rem;">Reference Solution</span>
-          <h3 style="font-size: 1.15rem; margin: 0;">💡 Expected Approach & Algorithm</h3>
+          <h3 style="font-size: 1.15rem; margin: 0;">💡 Expected Approach & C++ Algorithm</h3>
         </div>
         <button id="close-solution-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
       </div>
@@ -179,7 +165,7 @@
 
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
-            <strong style="color: var(--text-main);">Optimal Code (<span id="solution-lang-label">Java</span>):</strong>
+            <strong style="color: var(--text-main);">Optimal C++ Solution:</strong>
             <button id="copy-solution-btn" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Copy to Editor</button>
           </div>
           <pre id="solution-code-view" style="background: #090d16; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.85rem; color: #38bdf8; overflow-x: auto; white-space: pre; margin: 0;"></pre>
@@ -188,23 +174,22 @@
     </div>
   </div>
 
-  <!-- AI Review Modal -->
+  <!-- AI Review & Analysis Modal -->
   <div id="ai-review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
-    <div class="card" style="max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+    <div class="card" style="max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card); box-shadow: var(--shadow-lg);">
+      <!-- Header Banner -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
         <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-            <span class="badge" id="code-status-badge">Accepted</span>
-            <span class="badge badge-primary" id="code-perf-badge">3 / 3 Passed</span>
-          </div>
-          <h2 style="font-size: 1.3rem; margin: 0;">Algorithmic Submission Review</h2>
+          <h2 style="font-size: 1.35rem; margin: 0; font-weight: 700;" id="code-review-main-title">✅ Your code is correct.</h2>
+          <span style="font-size: 0.8rem; color: var(--text-dim);" id="code-review-subtitle">C++ Code Correctness & Algorithmic Analysis</span>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 1.6rem; font-weight: 800; color: #34d399;" id="code-eval-score">95/100</div>
-          <div style="font-size: 0.75rem; color: var(--text-dim);" id="code-eval-score-label">Score</div>
+          <div style="font-size: 1.5rem; font-weight: 800;" id="code-eval-score">95/100</div>
+          <div style="font-size: 0.72rem; color: var(--text-dim);" id="code-eval-score-label">Evaluation Score</div>
         </div>
       </div>
 
+      <!-- Complexity & Quality Badges -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.65rem; margin-bottom: 1rem;">
         <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
           <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Time Complexity</div>
@@ -220,31 +205,55 @@
         </div>
       </div>
 
-      <!-- What Went Right -->
-      <div class="review-feedback-card review-card-strengths" id="code-strengths-box">
-        <div style="font-size: 0.85rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">✅ What Went Right</div>
-        <ul id="code-strengths-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--text-main);"></ul>
+      <!-- CORRECT CONTAINER -->
+      <div id="correct-details-container" style="display: none; flex-direction: column; gap: 0.75rem;">
+        <div class="review-feedback-card review-card-strengths">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">✓ Why it is correct:</div>
+          <p id="correct-why-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+        <div class="review-feedback-card review-card-improvements">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.35rem;">💡 Approach Used:</div>
+          <p id="correct-approach-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
       </div>
 
-      <!-- What Went Wrong -->
-      <div class="review-feedback-card review-card-mistakes" id="code-mistakes-box">
-        <div style="font-size: 0.85rem; font-weight: 700; color: #ef4444; margin-bottom: 0.35rem;">❌ Issues & Failing Cases</div>
-        <ul id="code-mistakes-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--text-main);"></ul>
+      <!-- INCORRECT CONTAINER -->
+      <div id="incorrect-details-container" style="display: none; flex-direction: column; gap: 0.75rem;">
+        <!-- 1. What is wrong -->
+        <div class="review-feedback-card review-card-mistakes">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #ef4444; margin-bottom: 0.35rem;">❌ What is wrong (Problem):</div>
+          <p id="incorrect-problem-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5; font-weight: 600;"></p>
+        </div>
+
+        <!-- 2. Why it is wrong -->
+        <div class="review-feedback-card" style="background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.25);">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.35rem;">⚠️ Why it is wrong:</div>
+          <p id="incorrect-why-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+
+        <!-- 3. Hint -->
+        <div class="review-feedback-card review-card-improvements">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.35rem;">💡 Hint:</div>
+          <p id="incorrect-hint-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+
+        <!-- 4. Correct Approach -->
+        <div class="review-feedback-card review-card-strengths">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">🧭 Correct Approach:</div>
+          <p id="incorrect-approach-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+
+        <!-- 5. Correct Solution -->
+        <div style="margin-top: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <strong style="color: var(--text-main); font-size: 0.88rem;">📄 Correct C++ Solution:</strong>
+            <button id="copy-review-solution-btn" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">Copy Solution to Editor</button>
+          </div>
+          <pre id="review-solution-code-view" style="background: #090d16; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.85rem; color: #38bdf8; overflow-x: auto; white-space: pre; margin: 0;"></pre>
+        </div>
       </div>
 
-      <!-- How to Improve -->
-      <div class="review-feedback-card review-card-improvements" id="code-improvements-box">
-        <div style="font-size: 0.85rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.35rem;">💡 How to Fix / Improve</div>
-        <ul id="code-improvements-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--text-main);"></ul>
-      </div>
-
-      <div style="margin-top: 0.75rem;">
-        <strong style="font-size: 0.85rem; color: var(--text-main);">Summary Feedback:</strong>
-        <p id="code-feedback-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;">
-          Detailed algorithmic analysis based on real test execution.
-        </p>
-      </div>
-
+      <!-- Action Buttons -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
         <button id="close-review-btn" class="btn btn-secondary btn-sm">Close Review</button>
         <button id="proceed-to-hr-btn" class="btn btn-primary btn-lg">Next Coding Problem →</button>
