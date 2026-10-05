@@ -111,20 +111,43 @@
       <div class="editor-pane">
         <div class="editor-wrapper" style="height: 100%;">
           <div class="editor-toolbar">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
               <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">Language:</span>
-              <select id="code-language-select" class="form-control" style="padding: 0.25rem 0.6rem; width: auto; font-size: 0.82rem; font-weight: 600;">
-                <option value="cpp" selected>C++</option>
-              </select>
+              <span class="badge badge-primary" style="font-size: 0.82rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.35rem;">
+                <span>⚡</span> C++ (Fixed)
+              </span>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button id="skip-code-btn" class="btn btn-secondary btn-sm" title="Skip this problem">Skip Problem ↷</button>
               <button id="reset-code-btn" class="btn btn-secondary btn-sm" title="Reset starter template">↺ Reset</button>
-              <button id="submit-code-btn" class="btn btn-primary btn-sm">Submit Solution</button>
+              <button id="submit-code-btn" class="btn btn-primary btn-sm">Submit Answer</button>
             </div>
           </div>
 
           <textarea id="code-editor-textarea" class="code-textarea" spellcheck="false" placeholder="// Write your C++ solution here..."></textarea>
+
+          <!-- Explain Your Approach Section -->
+          <div class="approach-wrapper" style="padding: 0.75rem 1rem; border-top: 1px solid var(--border-subtle); background: var(--bg-card-hover);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label for="approach-explanation-textarea" style="font-size: 0.82rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 0.35rem;">
+                <span>🧠</span> Explain Your Approach & Complexity <span style="font-size: 0.72rem; color: var(--text-dim); font-weight: normal;">(Evaluated with code)</span>:
+              </label>
+              <span style="font-size: 0.72rem; color: var(--text-dim);" id="approach-char-count">0 chars</span>
+            </div>
+            <textarea id="approach-explanation-textarea" class="form-control" rows="3" placeholder="Explain your intuition, algorithmic approach, time complexity O(...) and space complexity O(...)..." style="font-size: 0.84rem; resize: vertical; line-height: 1.45; width: 100%;"></textarea>
+          </div>
+
+          <!-- In-Page Evaluation Summary Card (Appears after submission / restores on navigation) -->
+          <div id="inline-eval-card" style="display: none; padding: 0.85rem 1rem; border-top: 1px solid var(--border-subtle); background: var(--bg-card);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span id="inline-verdict-badge" class="badge badge-success" style="font-size: 0.82rem; font-weight: 700;">✅ Correct</span>
+                <span id="inline-score-text" style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">Score: 95/100</span>
+              </div>
+              <button id="reopen-review-btn" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 0.2rem 0.6rem;">🔍 View Full Feedback</button>
+            </div>
+            <p id="inline-eval-summary-text" style="font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.4;"></p>
+          </div>
         </div>
       </div>
     </div>
@@ -176,12 +199,12 @@
 
   <!-- AI Review & Analysis Modal -->
   <div id="ai-review-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
-    <div class="card" style="max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card); box-shadow: var(--shadow-lg);">
+    <div class="card" style="max-width: 740px; width: 100%; max-height: 90vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card); box-shadow: var(--shadow-lg);">
       <!-- Header Banner -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
         <div>
           <h2 style="font-size: 1.35rem; margin: 0; font-weight: 700;" id="code-review-main-title">✅ Your code is correct.</h2>
-          <span style="font-size: 0.8rem; color: var(--text-dim);" id="code-review-subtitle">C++ Code Correctness & Algorithmic Analysis</span>
+          <span style="font-size: 0.8rem; color: var(--text-dim);" id="code-review-subtitle">C++ Code & Algorithmic Analysis</span>
         </div>
         <div style="text-align: right;">
           <div style="font-size: 1.5rem; font-weight: 800;" id="code-eval-score">95/100</div>
@@ -189,23 +212,33 @@
         </div>
       </div>
 
-      <!-- Complexity & Quality Badges -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.65rem; margin-bottom: 1rem;">
+      <!-- Complexity, Quality & Approach Badges -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.65rem; margin-bottom: 1rem;">
         <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Time Complexity</div>
-          <div id="code-time-comp" style="font-size: 0.95rem; font-weight: 600; color: #93c5fd;">O(N)</div>
+          <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim);">Time Complexity</div>
+          <div id="code-time-comp" style="font-size: 0.92rem; font-weight: 600; color: #93c5fd;">O(N)</div>
         </div>
         <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Space Complexity</div>
-          <div id="code-space-comp" style="font-size: 0.95rem; font-weight: 600; color: #a78bfa;">O(1)</div>
+          <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim);">Space Complexity</div>
+          <div id="code-space-comp" style="font-size: 0.92rem; font-weight: 600; color: #a78bfa;">O(1)</div>
         </div>
         <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
-          <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-dim);">Code Quality</div>
-          <div id="code-quality-badge" style="font-size: 0.95rem; font-weight: 600; color: #34d399;">Clean Code</div>
+          <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim);">Code Quality</div>
+          <div id="code-quality-badge" style="font-size: 0.92rem; font-weight: 600; color: #34d399;">Clean Code</div>
+        </div>
+        <div style="background: var(--bg-card-hover); padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border-subtle);">
+          <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim);">Approach Explanation</div>
+          <div id="code-expl-badge" style="font-size: 0.92rem; font-weight: 600; color: #38bdf8;">Good</div>
         </div>
       </div>
 
-      <!-- CORRECT CONTAINER -->
+      <!-- Approach Explanation Feedback Note -->
+      <div id="expl-feedback-container" class="review-feedback-card" style="background: var(--bg-card-hover); border-color: var(--border-subtle); margin-bottom: 0.75rem; padding: 0.65rem 0.85rem;">
+        <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.2rem;">🧠 Approach Assessment:</div>
+        <p id="code-expl-feedback-text" style="font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.4;"></p>
+      </div>
+
+      <!-- 1. CORRECT CONTAINER (✅) -->
       <div id="correct-details-container" style="display: none; flex-direction: column; gap: 0.75rem;">
         <div class="review-feedback-card review-card-strengths">
           <div style="font-size: 0.88rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">✓ Why it is correct:</div>
@@ -217,7 +250,31 @@
         </div>
       </div>
 
-      <!-- INCORRECT CONTAINER -->
+      <!-- 2. PARTIALLY CORRECT CONTAINER (🟡) -->
+      <div id="partial-details-container" style="display: none; flex-direction: column; gap: 0.75rem;">
+        <div class="review-feedback-card review-card-strengths">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">✓ What is correct:</div>
+          <p id="partial-what-correct-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+        <div class="review-feedback-card review-card-mistakes">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #ef4444; margin-bottom: 0.35rem;">⚠️ What is wrong / Missed Edge Case:</div>
+          <p id="partial-problem-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5; font-weight: 600;"></p>
+        </div>
+        <div class="review-feedback-card" style="background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.25);">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #f59e0b; margin-bottom: 0.35rem;">🔍 Why it is wrong:</div>
+          <p id="partial-why-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+        <div class="review-feedback-card review-card-improvements">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.35rem;">💡 Hint:</div>
+          <p id="partial-hint-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+        <div class="review-feedback-card review-card-strengths">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #10b981; margin-bottom: 0.35rem;">🧭 Correct Approach:</div>
+          <p id="partial-approach-text" style="font-size: 0.86rem; color: var(--text-main); margin: 0; line-height: 1.5;"></p>
+        </div>
+      </div>
+
+      <!-- 3. INCORRECT CONTAINER (❌) -->
       <div id="incorrect-details-container" style="display: none; flex-direction: column; gap: 0.75rem;">
         <!-- 1. What is wrong -->
         <div class="review-feedback-card review-card-mistakes">

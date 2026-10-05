@@ -1,17 +1,16 @@
 /**
  * Coding / DSA Round Controller (C++ ONLY)
+ * Independent State Management & Structured AI Evaluation
  */
 let interviewId = null;
 let currentRole = 'Software Developer';
 let currentDifficulty = 'Intermediate';
 let problems = [];
 let currentIndex = 0;
-let userCode = {}; // { [index]: string }
-let submissions = {}; // { [index]: { evaluation } }
-let skippedProblems = {}; // { [index]: boolean }
-let viewedSolutions = {}; // { [index]: boolean }
-let visitedProblems = { 0: true };
-const currentLanguage = 'cpp'; // C++ ONLY
+
+// Independent State per question: { [problemId]: { id, title, candidateCode, explanation, evaluationResult, evaluationStatus, score, isCorrect, viewedSolution, submittingToken } }
+const questionsState = {};
+
 const MAX_CODING_QUESTIONS = 30;
 let isSpeakingQuestion = false;
 
@@ -32,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupToolbarButtons();
     setupSolutionModal();
     setupSpeechButton();
+    setupApproachInputListener();
     await loadProblems();
 });
 
@@ -39,15 +39,92 @@ window.addEventListener('beforeunload', () => {
     stopQuestionSpeech();
 });
 
+function getDefaultCppStarter() {
+    return '#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int solve() {\n        // Write your C++ solution here\n        return 0;\n    }\n};';
+}
+
+function getProblemKey(index) {
+    const p = problems[index];
+    return p?.id || `problem_${index}`;
+}
+
+function initProblemState(p, index) {
+    const key = p.id || `problem_${index}`;
+    if (!questionsState[key]) {
+        questionsState[key] = {
+            id: key,
+            title: p.title || `Problem ${index + 1}`,
+            candidateCode: p.starter_code?.cpp || getDefaultCppStarter(),
+            explanation: '',
+            evaluationResult: null,
+            evaluationStatus: index === 0 ? 'visited' : 'unvisited',
+            score: null,
+            isCorrect: null,
+            viewedSolution: false,
+            submittingToken: null
+        };
+    }
+    return questionsState[key];
+}
+
+function saveCurrentProblemDraft() {
+    const p = problems[currentIndex];
+    if (!p) return;
+    const key = getProblemKey(currentIndex);
+    const codeArea = document.getElementById('code-editor-textarea');
+    const explArea = document.getElementById('approach-explanation-textarea');
+
+    if (!questionsState[key]) {
+        initProblemState(p, currentIndex);
+    }
+
+    if (codeArea) {
+        questionsState[key].candidateCode = codeArea.value;
+    }
+    if (explArea) {
+        questionsState[key].explanation = explArea.value;
+    }
+}
+
+function setupApproachInputListener() {
+    const explArea = document.getElementById('approach-explanation-textarea');
+    const charCount = document.getElementById('approach-char-count');
+    if (explArea && charCount) {
+        explArea.addEventListener('input', () => {
+            const len = explArea.value.length;
+            charCount.textContent = `${len} chars`;
+            const key = getProblemKey(currentIndex);
+            if (questionsState[key]) {
+                questionsState[key].explanation = explArea.value;
+            }
+        });
+    }
+
+    const reopenBtn = document.getElementById('reopen-review-btn');
+    if (reopenBtn) {
+        reopenBtn.addEventListener('click', () => {
+            const p = problems[currentIndex];
+            const key = getProblemKey(currentIndex);
+            const state = questionsState[key];
+            if (state && state.evaluationResult) {
+                displayAIReviewModal(state.evaluationResult, p, currentIndex);
+            }
+        });
+    }
+}
+
 function setupToolbarButtons() {
     const resetBtn = document.getElementById('reset-code-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
             const p = problems[currentIndex];
             if (!p) return;
+            const key = getProblemKey(currentIndex);
             const starter = p.starter_code?.cpp || getDefaultCppStarter();
             document.getElementById('code-editor-textarea').value = starter;
-            userCode[currentIndex] = starter;
+            if (questionsState[key]) {
+                questionsState[key].candidateCode = starter;
+            }
             window.Toast.info('Editor reset to clean C++ template.');
         });
     }
@@ -55,13 +132,20 @@ function setupToolbarButtons() {
     const skipBtn = document.getElementById('skip-code-btn');
     if (skipBtn) {
         skipBtn.addEventListener('click', async () => {
-            saveCurrentCodeDraft();
+            saveCurrentProblemDraft();
             stopQuestionSpeech();
             const p = problems[currentIndex];
+            const key = getProblemKey(currentIndex);
 
-            skippedProblems[currentIndex] = true;
-            delete submissions[currentIndex];
+            if (questionsState[key]) {
+                questionsState[key].evaluationStatus = 'skipped';
+                questionsState[key].evaluationResult = null;
+                questionsState[key].score = 0;
+                questionsState[key].isCorrect = false;
+            }
+
             renderPalette();
+            updateInlineEvaluationCard();
 
             try {
                 skipBtn.disabled = true;
@@ -69,9 +153,10 @@ function setupToolbarButtons() {
                     interviewId,
                     problem: p,
                     code: '// [SKIPPED]',
+                    explanation: questionsState[key]?.explanation || '',
                     language: 'cpp',
                     is_skipped: true,
-                    viewed_answer: !!viewedSolutions[currentIndex]
+                    viewed_answer: !!questionsState[key]?.viewedSolution
                 });
                 window.Toast.info(`Problem ${currentIndex + 1} marked as skipped.`);
             } catch (e) {
@@ -82,7 +167,6 @@ function setupToolbarButtons() {
 
             if (currentIndex < problems.length - 1) {
                 renderProblem(currentIndex + 1);
-                renderPalette();
             } else {
                 finishCodingRound();
             }
@@ -92,40 +176,59 @@ function setupToolbarButtons() {
     const submitBtn = document.getElementById('submit-code-btn');
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
-            saveCurrentCodeDraft();
+            saveCurrentProblemDraft();
             stopQuestionSpeech();
-            const code = document.getElementById('code-editor-textarea').value;
+            const p = problems[currentIndex];
+            const key = getProblemKey(currentIndex);
+            const state = questionsState[key];
+
+            const code = state?.candidateCode || document.getElementById('code-editor-textarea')?.value || '';
+            const explanation = state?.explanation || document.getElementById('approach-explanation-textarea')?.value || '';
+
             if (!code || code.trim().length < 5) {
                 window.Toast.warning('Please write your C++ solution before submitting.');
                 return;
             }
 
-            const p = problems[currentIndex];
+            const submissionIndex = currentIndex;
+            const submissionToken = Date.now();
+            state.submittingToken = submissionToken;
 
             try {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner"></span> Analyzing C++ Solution...';
+                submitBtn.innerHTML = '<span class="spinner"></span> Evaluating C++ Answer...';
 
                 const res = await window.API.submitCode({
                     interviewId,
                     problem: p,
                     code,
+                    explanation,
                     language: 'cpp',
-                    viewed_answer: !!viewedSolutions[currentIndex]
+                    viewed_answer: !!state.viewedSolution
                 });
 
-                if (res.success) {
-                    submissions[currentIndex] = { evaluation: res.evaluation };
-                    delete skippedProblems[currentIndex];
+                if (res.success && res.evaluation) {
+                    state.evaluationResult = res.evaluation;
+                    state.evaluationStatus = 'answered';
+                    state.score = res.evaluation.score;
+                    state.isCorrect = res.evaluation.is_correct ? true : (res.evaluation.status === 'Partially Correct' ? 'partially' : false);
+
                     renderPalette();
-                    displayAIReviewModal(res.evaluation, p);
+
+                    // Check race condition: only pop up if user is still on this problem
+                    if (currentIndex === submissionIndex) {
+                        updateInlineEvaluationCard();
+                        displayAIReviewModal(res.evaluation, p, submissionIndex);
+                    } else {
+                        window.Toast.info(`Problem ${submissionIndex + 1} evaluated: ${res.evaluation.status}`);
+                    }
                 }
             } catch (err) {
                 console.error('Submit code error:', err);
-                window.Toast.error(err.message || 'Submission failed.');
+                window.Toast.error(err.message || 'Submission evaluation failed.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Solution';
+                submitBtn.innerHTML = 'Submit Answer';
             }
         });
     }
@@ -135,7 +238,6 @@ function setupToolbarButtons() {
         prevNavBtn.addEventListener('click', () => {
             if (currentIndex > 0) {
                 renderProblem(currentIndex - 1);
-                renderPalette();
             }
         });
     }
@@ -145,37 +247,10 @@ function setupToolbarButtons() {
         nextNavBtn.addEventListener('click', () => {
             if (currentIndex < problems.length - 1) {
                 renderProblem(currentIndex + 1);
-                renderPalette();
             } else {
                 finishCodingRound();
             }
         });
-    }
-}
-
-function getDefaultCppStarter() {
-    return '#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int solve() {\n        // Write your C++ code here\n        return 0;\n    }\n};';
-}
-
-function saveCurrentCodeDraft() {
-    const textarea = document.getElementById('code-editor-textarea');
-    if (textarea && problems[currentIndex]) {
-        userCode[currentIndex] = textarea.value;
-    }
-}
-
-function restoreEditorCode() {
-    const textarea = document.getElementById('code-editor-textarea');
-    if (!textarea || !problems[currentIndex]) return;
-
-    const p = problems[currentIndex];
-    const saved = userCode[currentIndex];
-    if (saved !== undefined) {
-        textarea.value = saved;
-    } else if (p.starter_code && p.starter_code.cpp) {
-        textarea.value = p.starter_code.cpp;
-    } else {
-        textarea.value = getDefaultCppStarter();
     }
 }
 
@@ -187,7 +262,10 @@ function setupSolutionModal() {
 
     if (viewBtn && modal) {
         viewBtn.addEventListener('click', () => {
-            viewedSolutions[currentIndex] = true;
+            const key = getProblemKey(currentIndex);
+            if (questionsState[key]) {
+                questionsState[key].viewedSolution = true;
+            }
             renderPalette();
             updateSolutionModalContent();
             modal.style.display = 'flex';
@@ -205,7 +283,10 @@ function setupSolutionModal() {
             const codeView = document.getElementById('solution-code-view');
             const sol = codeView?.textContent || '';
             document.getElementById('code-editor-textarea').value = sol;
-            userCode[currentIndex] = sol;
+            const key = getProblemKey(currentIndex);
+            if (questionsState[key]) {
+                questionsState[key].candidateCode = sol;
+            }
             modal.style.display = 'none';
             window.Toast.success('Copied C++ reference solution to editor!');
         });
@@ -306,8 +387,9 @@ async function loadProblems() {
 
         if (res.success && res.problems && res.problems.length > 0) {
             problems = res.problems;
+            // Initialize states for all problems
+            problems.forEach((p, i) => initProblemState(p, i));
             renderProblem(0);
-            renderPalette();
         } else {
             window.Toast.error('Could not load coding problem pool.');
         }
@@ -318,13 +400,22 @@ async function loadProblems() {
 }
 
 function renderProblem(index) {
-    saveCurrentCodeDraft();
+    saveCurrentProblemDraft();
     stopQuestionSpeech();
 
+    // Close any previous evaluation popup
+    const modal = document.getElementById('ai-review-modal');
+    if (modal) modal.style.display = 'none';
+
     currentIndex = index;
-    visitedProblems[index] = true;
     const p = problems[index];
     if (!p) return;
+
+    const key = getProblemKey(index);
+    const state = initProblemState(p, index);
+    if (state.evaluationStatus === 'unvisited') {
+        state.evaluationStatus = 'visited';
+    }
 
     // Header badges
     const counterElem = document.getElementById('coding-q-counter');
@@ -355,19 +446,72 @@ function renderProblem(index) {
         constraintsWrap.innerHTML = p.constraints.map(c => `<li>• ${c}</li>`).join('');
     }
 
-    // Editor code
-    restoreEditorCode();
+    // Restore candidate code for THIS specific question
+    const codeArea = document.getElementById('code-editor-textarea');
+    if (codeArea) {
+        codeArea.value = state.candidateCode !== undefined ? state.candidateCode : (p.starter_code?.cpp || getDefaultCppStarter());
+    }
+
+    // Restore candidate approach explanation for THIS specific question
+    const explArea = document.getElementById('approach-explanation-textarea');
+    const charCount = document.getElementById('approach-char-count');
+    if (explArea) {
+        explArea.value = state.explanation || '';
+        if (charCount) charCount.textContent = `${(state.explanation || '').length} chars`;
+    }
+
+    // Restore or hide inline evaluation card
+    updateInlineEvaluationCard();
 
     // Navigation buttons
     const prevNavBtn = document.getElementById('prev-code-nav-btn');
     const nextNavBtn = document.getElementById('next-code-nav-btn');
     if (prevNavBtn) prevNavBtn.disabled = currentIndex === 0;
     if (nextNavBtn) {
-        if (currentIndex === problems.length - 1) {
-            nextNavBtn.textContent = 'Proceed to HR Round →';
+        nextNavBtn.textContent = currentIndex === problems.length - 1 ? 'Proceed to HR Round →' : 'Next Problem →';
+    }
+
+    renderPalette();
+}
+
+function updateInlineEvaluationCard() {
+    const card = document.getElementById('inline-eval-card');
+    if (!card) return;
+
+    const key = getProblemKey(currentIndex);
+    const state = questionsState[key];
+
+    if (!state || !state.evaluationResult) {
+        card.style.display = 'none';
+        return;
+    }
+
+    const evalRes = state.evaluationResult;
+    card.style.display = 'block';
+
+    const verdictBadge = document.getElementById('inline-verdict-badge');
+    const scoreText = document.getElementById('inline-score-text');
+    const summaryText = document.getElementById('inline-eval-summary-text');
+
+    if (verdictBadge) {
+        if (evalRes.status === 'Correct') {
+            verdictBadge.textContent = '✅ Correct';
+            verdictBadge.className = 'badge badge-success';
+        } else if (evalRes.status === 'Partially Correct') {
+            verdictBadge.textContent = '🟡 Partially Correct';
+            verdictBadge.className = 'badge badge-warning';
         } else {
-            nextNavBtn.textContent = 'Next Problem →';
+            verdictBadge.textContent = '❌ Incorrect';
+            verdictBadge.className = 'badge badge-danger';
         }
+    }
+
+    if (scoreText) {
+        scoreText.textContent = `Score: ${evalRes.score}/100`;
+    }
+
+    if (summaryText) {
+        summaryText.textContent = evalRes.feedback || evalRes.problem_identified || evalRes.why_it_is_correct || 'C++ submission evaluated.';
     }
 }
 
@@ -377,22 +521,26 @@ function renderPalette() {
 
     let solvedCount = 0;
     palette.innerHTML = problems.map((p, i) => {
-        const isSolved = submissions[i] !== undefined;
-        if (isSolved) solvedCount++;
-        const isSkipped = skippedProblems[i] === true;
-        const isVisited = !!visitedProblems[i];
-        const isViewed = !!viewedSolutions[i];
+        const key = getProblemKey(i);
+        const state = questionsState[key] || { evaluationStatus: 'unvisited' };
+
+        const isAnswered = state.evaluationStatus === 'answered';
+        if (isAnswered) solvedCount++;
+        const isSkipped = state.evaluationStatus === 'skipped';
+        const isVisited = state.evaluationStatus === 'visited';
+        const isViewed = !!state.viewedSolution;
         const isCurrent = i === currentIndex;
 
         let statusClass = '';
         let statusTitle = `Problem ${i + 1}: ${p.title}`;
+
         if (isCurrent) {
             statusClass += ' current';
             statusTitle += ' (Current)';
         }
-        if (isSolved) {
+        if (isAnswered) {
             statusClass += ' answered';
-            statusTitle += ' - Solved';
+            statusTitle += ` - ${state.evaluationResult?.status || 'Answered'}`;
         } else if (isSkipped) {
             statusClass += ' skipped';
             statusTitle += ' - Skipped';
@@ -400,6 +548,7 @@ function renderPalette() {
             statusClass += ' visited';
             statusTitle += ' - Visited';
         }
+
         if (isViewed) {
             statusClass += ' viewed';
             statusTitle += ' (Solution Viewed)';
@@ -414,68 +563,122 @@ function renderPalette() {
 
     const progressBadge = document.getElementById('palette-progress-badge');
     if (progressBadge) {
-        progressBadge.textContent = `${solvedCount}/${problems.length} Solved`;
+        progressBadge.textContent = `${solvedCount}/${problems.length} Answered`;
     }
 
     palette.querySelectorAll('.palette-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const idx = parseInt(btn.getAttribute('data-index'), 10);
             renderProblem(idx);
-            renderPalette();
         });
     });
 }
 
-function displayAIReviewModal(evaluation, problem) {
+function displayAIReviewModal(evaluation, problem, problemIndex) {
     const modal = document.getElementById('ai-review-modal');
     if (!modal) return;
 
     modal.style.display = 'flex';
 
-    const isCorrect = evaluation.is_correct === true || (evaluation.score >= 75 && evaluation.status === 'Correct');
+    const status = evaluation.status || (evaluation.is_correct ? 'Correct' : 'Incorrect');
+    const isCorrect = status === 'Correct';
+    const isPartial = status === 'Partially Correct';
+
     const titleEl = document.getElementById('code-review-main-title');
     const subtitleEl = document.getElementById('code-review-subtitle');
     const scoreEl = document.getElementById('code-eval-score');
     const timeCompEl = document.getElementById('code-time-comp');
     const spaceCompEl = document.getElementById('code-space-comp');
     const qualityEl = document.getElementById('code-quality-badge');
+    const explBadge = document.getElementById('code-expl-badge');
+    const explFeedbackText = document.getElementById('code-expl-feedback-text');
 
     const correctContainer = document.getElementById('correct-details-container');
+    const partialContainer = document.getElementById('partial-details-container');
     const incorrectContainer = document.getElementById('incorrect-details-container');
 
-    const score = evaluation.score !== undefined ? Number(evaluation.score) : (isCorrect ? 95 : 20);
+    const score = evaluation.score !== undefined ? Number(evaluation.score) : (isCorrect ? 95 : (isPartial ? 55 : 20));
 
     if (scoreEl) {
         scoreEl.textContent = `${score}/100`;
-        scoreEl.style.color = isCorrect ? '#10b981' : '#ef4444';
+        scoreEl.style.color = isCorrect ? '#10b981' : (isPartial ? '#f59e0b' : '#ef4444');
     }
 
     if (timeCompEl) timeCompEl.textContent = evaluation.time_complexity || problem?.time_complexity || 'O(N)';
     if (spaceCompEl) spaceCompEl.textContent = evaluation.space_complexity || problem?.space_complexity || 'O(1)';
+    
     if (qualityEl) {
-        qualityEl.textContent = evaluation.code_quality || (isCorrect ? 'Clean Code' : 'Needs Optimization');
-        qualityEl.style.color = isCorrect ? '#10b981' : '#ef4444';
+        qualityEl.textContent = evaluation.code_quality || (isCorrect ? 'Clean Code' : (isPartial ? 'Partially Optimized' : 'Needs Optimization'));
+        qualityEl.style.color = isCorrect ? '#10b981' : (isPartial ? '#f59e0b' : '#ef4444');
     }
 
+    if (explBadge) {
+        const rating = evaluation.explanation_rating || 'Not Provided';
+        explBadge.textContent = rating;
+        explBadge.style.color = rating === 'Good' ? '#38bdf8' : (rating === 'Adequate' ? '#f59e0b' : '#94a3b8');
+    }
+
+    if (explFeedbackText) {
+        explFeedbackText.textContent = evaluation.explanation_feedback || 'No written approach explanation provided.';
+    }
+
+    // Toggle 3 distinct verdict views
     if (isCorrect) {
         // ✅ CORRECT FLOW
         if (titleEl) {
             titleEl.textContent = '✅ Your code is correct.';
             titleEl.style.color = '#10b981';
         }
-        if (subtitleEl) subtitleEl.textContent = 'Optimal C++ logic and algorithmic structure verified.';
+        if (subtitleEl) subtitleEl.textContent = 'Optimal C++ logic and algorithmic invariants verified.';
 
         if (correctContainer) correctContainer.style.display = 'flex';
+        if (partialContainer) partialContainer.style.display = 'none';
         if (incorrectContainer) incorrectContainer.style.display = 'none';
 
         const whyText = document.getElementById('correct-why-text');
         if (whyText) {
-            whyText.textContent = evaluation.why_it_is_correct || evaluation.feedback || 'Your algorithm correctly solves the problem requirements with optimal boundary and edge-case handling.';
+            whyText.textContent = evaluation.why_it_is_correct || evaluation.feedback || 'Your algorithm correctly solves all problem requirements with optimal boundary and edge-case handling.';
         }
 
         const approachText = document.getElementById('correct-approach-text');
         if (approachText) {
-            approachText.textContent = evaluation.correct_approach || problem?.algorithm_explanation || problem?.approach || 'Standard optimal DSA strategy.';
+            approachText.textContent = evaluation.correct_approach || problem?.algorithm_explanation || problem?.approach || 'Optimal DSA algorithm.';
+        }
+    } else if (isPartial) {
+        // 🟡 PARTIALLY CORRECT FLOW
+        if (titleEl) {
+            titleEl.textContent = '🟡 Your code is partially correct.';
+            titleEl.style.color = '#f59e0b';
+        }
+        if (subtitleEl) subtitleEl.textContent = 'Core algorithmic intent is sound, but edge case flaws or suboptimal complexity were detected.';
+
+        if (correctContainer) correctContainer.style.display = 'none';
+        if (partialContainer) partialContainer.style.display = 'flex';
+        if (incorrectContainer) incorrectContainer.style.display = 'none';
+
+        const whatCorrectText = document.getElementById('partial-what-correct-text');
+        if (whatCorrectText) {
+            whatCorrectText.textContent = evaluation.what_is_correct || 'Main algorithmic structure and logic loop were implemented correctly.';
+        }
+
+        const probText = document.getElementById('partial-problem-text');
+        if (probText) {
+            probText.textContent = evaluation.problem_identified || 'Missed boundary conditions or suboptimal time complexity.';
+        }
+
+        const whyText = document.getElementById('partial-why-text');
+        if (whyText) {
+            whyText.textContent = evaluation.why_it_is_wrong || 'The implementation fails on edge-case inputs (e.g. negative numbers, empty arrays, single elements).';
+        }
+
+        const hintText = document.getElementById('partial-hint-text');
+        if (hintText) {
+            hintText.textContent = evaluation.hint || problem?.approach || 'Check boundary edge cases and adjust accumulator initialization.';
+        }
+
+        const approachText = document.getElementById('partial-approach-text');
+        if (approachText) {
+            approachText.textContent = evaluation.correct_approach || problem?.algorithm_explanation || problem?.approach || 'Refactor algorithm to satisfy optimal Big-O bounds.';
         }
     } else {
         // ❌ INCORRECT FLOW
@@ -486,6 +689,7 @@ function displayAIReviewModal(evaluation, problem) {
         if (subtitleEl) subtitleEl.textContent = 'Logical errors or missing problem invariants detected in C++ implementation.';
 
         if (correctContainer) correctContainer.style.display = 'none';
+        if (partialContainer) partialContainer.style.display = 'none';
         if (incorrectContainer) incorrectContainer.style.display = 'flex';
 
         const probText = document.getElementById('incorrect-problem-text');
@@ -495,12 +699,12 @@ function displayAIReviewModal(evaluation, problem) {
 
         const whyText = document.getElementById('incorrect-why-text');
         if (whyText) {
-            whyText.textContent = evaluation.why_it_is_wrong || evaluation.feedback || 'The submitted C++ code does not satisfy the algorithmic invariants or produces wrong answers on edge cases.';
+            whyText.textContent = evaluation.why_it_is_wrong || evaluation.feedback || 'The submitted C++ code does not satisfy the algorithmic invariants or produces wrong answers on test cases.';
         }
 
         const hintText = document.getElementById('incorrect-hint-text');
         if (hintText) {
-            hintText.textContent = evaluation.hint || problem?.approach || 'Review boundary conditions and verify how state transitions occur.';
+            hintText.textContent = evaluation.hint || problem?.approach || 'Review boundary conditions and verify step-by-step state transitions.';
         }
 
         const approachText = document.getElementById('incorrect-approach-text');
@@ -518,7 +722,10 @@ function displayAIReviewModal(evaluation, problem) {
         if (copyReviewSolBtn) {
             copyReviewSolBtn.onclick = () => {
                 document.getElementById('code-editor-textarea').value = refSolution;
-                userCode[currentIndex] = refSolution;
+                const key = getProblemKey(currentIndex);
+                if (questionsState[key]) {
+                    questionsState[key].candidateCode = refSolution;
+                }
                 window.Toast.success('Copied corrected C++ solution to editor!');
             };
         }
@@ -538,7 +745,6 @@ function displayAIReviewModal(evaluation, problem) {
             modal.style.display = 'none';
             if (currentIndex < problems.length - 1) {
                 renderProblem(currentIndex + 1);
-                renderPalette();
             } else {
                 finishCodingRound();
             }
@@ -547,7 +753,7 @@ function displayAIReviewModal(evaluation, problem) {
 }
 
 async function finishCodingRound() {
-    saveCurrentCodeDraft();
+    saveCurrentProblemDraft();
     stopQuestionSpeech();
     window.Toast.success('Coding Round completed! Advancing to HR Round...');
 
@@ -568,4 +774,3 @@ async function finishCodingRound() {
         window.location.href = `hr.html?id=${interviewId}&role=${encodeURIComponent(currentRole)}&difficulty=${currentDifficulty}`;
     }
 }
-

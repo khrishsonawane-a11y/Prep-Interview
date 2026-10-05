@@ -58,17 +58,17 @@ async function runTests() {
 
     // TEST 4: Check JavaScript controllers for palette rendering & state preservation
     const jsControllers = [
-        { file: 'frontend/js/aptitude.js', name: 'Aptitude JS', draftKey: 'userAnswers', visitedKey: 'visitedQuestions' },
-        { file: 'frontend/js/technical.js', name: 'Technical JS', draftKey: 'draftAnswers', visitedKey: 'visitedQuestions' },
-        { file: 'frontend/js/coding.js', name: 'Coding JS', draftKey: 'userCode', visitedKey: 'visitedProblems' },
-        { file: 'frontend/js/hr.js', name: 'HR JS', draftKey: 'draftTranscripts', visitedKey: 'visitedQuestions' }
+        { file: 'frontend/js/aptitude.js', name: 'Aptitude JS', draftCheck: c => c.includes('userAnswers'), visitedCheck: c => c.includes('visitedQuestions') },
+        { file: 'frontend/js/technical.js', name: 'Technical JS', draftCheck: c => c.includes('draftAnswers'), visitedCheck: c => c.includes('visitedQuestions') },
+        { file: 'frontend/js/coding.js', name: 'Coding JS', draftCheck: c => c.includes('candidateCode') || c.includes('questionsState'), visitedCheck: c => c.includes('visited') || c.includes('questionsState') },
+        { file: 'frontend/js/hr.js', name: 'HR JS', draftCheck: c => c.includes('draftTranscripts'), visitedCheck: c => c.includes('visitedQuestions') }
     ];
 
     for (const j of jsControllers) {
         const code = fs.readFileSync(path.join(rootDir, j.file), 'utf8');
         assert(code.includes('renderPalette'), `${j.name} implements renderPalette()`);
-        assert(code.includes(j.draftKey), `${j.name} preserves user draft answers via ${j.draftKey}`);
-        assert(code.includes(j.visitedKey), `${j.name} tracks visited state via ${j.visitedKey}`);
+        assert(j.draftCheck(code), `${j.name} preserves user draft answers`);
+        assert(j.visitedCheck(code), `${j.name} tracks visited state`);
         assert(code.includes('current'), `${j.name} marks active question as current`);
         assert(code.includes('answered'), `${j.name} marks submitted/answered questions`);
         assert(code.includes('skipped'), `${j.name} marks skipped questions`);

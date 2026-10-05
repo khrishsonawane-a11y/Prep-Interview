@@ -142,20 +142,8 @@ export const getCodingQuestion = async (req, res, next) => {
 };
 
 export const runCode = async (req, res, next) => {
-    try {
-        const { code, language = 'java', testCases = [], problemId } = req.body || {};
-
-        const runResult = await runCodeService({
-            code,
-            language,
-            testCases,
-            problemId
-        });
-
-        return res.json({ success: true, execution: runResult });
-    } catch (err) {
-        next(err);
-    }
+    // Deprecated Run Code endpoint retained only for API interface compatibility
+    return res.json({ success: true, message: "Run/Test execution disabled. Submit code directly for comprehensive evaluation." });
 };
 
 export const submitCode = async (req, res, next) => {
@@ -165,6 +153,7 @@ export const submitCode = async (req, res, next) => {
             interviewId,
             problem,
             code,
+            explanation = '',
             language = 'cpp',
             is_skipped = false,
             viewed_answer = false,
@@ -183,11 +172,13 @@ export const submitCode = async (req, res, next) => {
         const aiReview = await aiEvalCode({
             problem: matching || problem,
             code,
+            explanation,
             language: lang
         });
 
-        const isCorrect = isSkipped ? false : (aiReview.is_correct === true && Number(aiReview.score) >= 75);
-        const score = isSkipped ? 0 : Number(aiReview.score || (isCorrect ? 95 : 20));
+        const isCorrect = isSkipped ? false : (aiReview.status === 'Correct' && aiReview.is_correct === true);
+        const isPartiallyCorrect = isSkipped ? false : (aiReview.status === 'Partially Correct');
+        const score = isSkipped ? 0 : Number(aiReview.score || (isCorrect ? 95 : (isPartiallyCorrect ? 55 : 20)));
         const errorType = isSkipped ? 'Did Not Answer' : (aiReview.error_type || (isCorrect ? 'None (Correct)' : 'Wrong Logic'));
 
         const answerRecord = {
@@ -199,9 +190,11 @@ export const submitCode = async (req, res, next) => {
             question_text: `${problem.title}: ${(problem.description || '').slice(0, 120)}...`,
             topic: problem.topic || 'DSA Algorithms',
             user_answer: code,
+            user_explanation: explanation || '',
             code_language: 'cpp',
             reference_answer: (matching?.solution_code?.cpp) || matching?.approach || 'Optimal C++ reference implementation',
             is_correct: isCorrect,
+            is_partially_correct: isPartiallyCorrect,
             is_skipped: isSkipped,
             viewed_answer: Boolean(viewed_answer),
             score: score,
@@ -210,7 +203,7 @@ export const submitCode = async (req, res, next) => {
                 ...aiReview,
                 is_correct: isCorrect,
                 score,
-                status: isCorrect ? 'Correct' : 'Incorrect',
+                status: isSkipped ? 'Did Not Answer' : aiReview.status,
                 error_type: errorType,
                 hint: aiReview.hint || matching?.approach || 'Check problem constraints and step-by-step logic.',
                 correct_approach: aiReview.correct_approach || matching?.algorithm_explanation || matching?.approach || 'Optimal algorithmic approach.',
