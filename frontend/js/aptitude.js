@@ -130,6 +130,7 @@ function setupAnswerModal() {
             if (!q) return;
 
             viewedAnswers[currentIndex] = true;
+            renderPalette();
             const labels = ['A', 'B', 'C', 'D'];
             const corrIdx = q.correct_option ?? 0;
             const corrText = q.options ? `${labels[corrIdx]}: ${q.options[corrIdx]}` : `Option ${corrIdx + 1}`;
@@ -163,9 +164,12 @@ async function loadQuestions() {
     }
 }
 
+let visitedQuestions = { 0: true };
+
 function renderQuestion(index) {
     stopQuestionSpeech();
     currentIndex = index;
+    visitedQuestions[index] = true;
     const q = questions[index];
     if (!q) return;
 
@@ -217,17 +221,49 @@ function renderPalette() {
     const palette = document.getElementById('palette-container');
     if (!palette) return;
 
+    let answeredCount = 0;
     palette.innerHTML = questions.map((q, i) => {
         const isAnswered = userAnswers[i] !== undefined && userAnswers[i] !== -1;
+        if (isAnswered) answeredCount++;
+        const isSkipped = userAnswers[i] === -1;
+        const isVisited = !!visitedQuestions[i];
+        const isViewed = !!viewedAnswers[i];
         const isCurrent = i === currentIndex;
+
+        let statusClass = '';
+        let statusTitle = `Question ${i + 1}`;
+        if (isCurrent) {
+            statusClass += ' current';
+            statusTitle += ' (Current)';
+        }
+        if (isAnswered) {
+            statusClass += ' answered';
+            statusTitle += ' - Answered';
+        } else if (isSkipped) {
+            statusClass += ' skipped';
+            statusTitle += ' - Skipped';
+        } else if (isVisited) {
+            statusClass += ' visited';
+            statusTitle += ' - Visited';
+        }
+        if (isViewed) {
+            statusClass += ' viewed';
+            statusTitle += ' (Solution Viewed)';
+        }
+
         return `
-            <button class="palette-item ${isAnswered ? 'answered' : ''} ${isCurrent ? 'current' : ''}" data-index="${i}">
+            <button class="palette-btn ${statusClass.trim()}" data-index="${i}" title="${statusTitle}" aria-label="${statusTitle}">
                 ${i + 1}
             </button>
         `;
     }).join('');
 
-    palette.querySelectorAll('.palette-item').forEach(btn => {
+    const progressBadge = document.getElementById('palette-progress-badge');
+    if (progressBadge) {
+        progressBadge.textContent = `${answeredCount}/${questions.length} Answered`;
+    }
+
+    palette.querySelectorAll('.palette-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const idx = parseInt(btn.getAttribute('data-index'), 10);
             renderQuestion(idx);

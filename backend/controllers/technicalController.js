@@ -12,6 +12,49 @@ function shuffleArray(array) {
     return arr;
 }
 
+export const getTechnicalQuestions = async (req, res, next) => {
+    try {
+        const { count = 30, role = 'Software Developer', difficulty = 'Intermediate', topic } = { ...req.query, ...req.body };
+        const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 30));
+
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            try {
+                let query = supabaseAdmin
+                    .from('technical_questions')
+                    .select('*')
+                    .limit(100);
+
+                const { data, error } = await query;
+                if (!error && data && data.length > 0) {
+                    let candidates = data;
+                    if (topic) {
+                        const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+                        if (topicMatches.length > 0) candidates = topicMatches;
+                    }
+                    const shuffled = shuffleArray(candidates);
+                    return res.json({ success: true, questions: shuffled.slice(0, limit) });
+                }
+            } catch (supErr) {
+                console.warn('Supabase technical questions batch fallback:', supErr.message);
+            }
+        }
+
+        let questions = [...mockStore.technicalQuestions];
+        if (topic) {
+            const topicFiltered = questions.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+            if (topicFiltered.length > 0) questions = topicFiltered;
+        }
+
+        const shuffled = shuffleArray(questions);
+        return res.json({
+            success: true,
+            questions: shuffled.slice(0, limit)
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export const getTechnicalQuestion = async (req, res, next) => {
     try {
         const { role = 'Software Developer', difficulty = 'Intermediate', topic, previousQuestions = [], dynamicAI = false } = req.body || {};

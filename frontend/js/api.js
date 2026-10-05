@@ -65,6 +65,10 @@ const API = {
     },
 
     // Technical Endpoints
+    getTechnicalQuestions(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/technical/questions${query ? `?${query}` : ''}`);
+    },
     getTechnicalQuestion(payload) {
         return this.request('/technical/question', { method: 'POST', body: JSON.stringify(payload) });
     },
@@ -73,6 +77,10 @@ const API = {
     },
 
     // Coding Endpoints
+    getCodingQuestions(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/coding/questions${query ? `?${query}` : ''}`);
+    },
     getCodingQuestion(payload) {
         return this.request('/coding/question', { method: 'POST', body: JSON.stringify(payload) });
     },
@@ -84,6 +92,10 @@ const API = {
     },
 
     // HR Endpoints
+    getHRQuestions(params = {}) {
+        const query = new URLSearchParams(params).toString();
+        return this.request(`/hr/questions${query ? `?${query}` : ''}`);
+    },
     getHRQuestion(payload) {
         return this.request('/hr/question', { method: 'POST', body: JSON.stringify(payload) });
     },

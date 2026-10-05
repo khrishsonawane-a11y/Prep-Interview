@@ -35,95 +35,148 @@
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div id="hr-loading-state" class="card" style="text-align: center; padding: 3rem;">
-      <div class="spinner" style="width: 32px; height: 32px; border-width: 3px; margin-bottom: 1rem;"></div>
-      <h3>HR Director is preparing behavioral scenario...</h3>
-    </div>
-
-    <!-- Question Box -->
-    <div class="hr-question-box" id="hr-question-container" style="display: none;">
-      <div class="hr-question-badge">
-        <span class="badge badge-primary" id="hr-q-category">Behavioral & Situational</span>
-      </div>
-
-      <div class="hr-question-text" id="hr-question-text">
-        Loading question...
-      </div>
-
+    <div class="round-with-sidebar">
+      <!-- Left Column: Scenario, Recorder, Evaluation -->
       <div>
-        <button id="speak-question-btn" type="button" class="btn btn-secondary btn-sm">
-          🔊 Read Question Aloud
-        </button>
-      </div>
-    </div>
+        <!-- Loading State -->
+        <div id="hr-loading-state" class="card" style="text-align: center; padding: 3rem;">
+          <div class="spinner" style="width: 32px; height: 32px; border-width: 3px; margin-bottom: 1rem;"></div>
+          <h3>HR Director is preparing behavioral scenario...</h3>
+          <p>Loading behavioral question pool.</p>
+        </div>
 
-    <!-- Voice Recording Interaction Area -->
-    <div class="card" style="margin-bottom: 2rem; text-align: center;">
-      <div class="voice-recorder-section">
-        <button type="button" class="mic-circle-btn" id="mic-record-btn" aria-label="Toggle Microphone Recording">
-          🎙️
-        </button>
-        <div class="voice-status-text" id="voice-status-indicator">
-          Click microphone to record your voice answer
+        <!-- Question Box -->
+        <div class="hr-question-box" id="hr-question-container" style="display: none;">
+          <div class="hr-question-badge">
+            <span class="badge badge-primary" id="hr-q-category">Behavioral & Situational</span>
+          </div>
+
+          <div class="hr-question-text" id="hr-question-text">
+            Loading question...
+          </div>
+
+          <div>
+            <button id="speak-question-btn" type="button" class="btn btn-secondary btn-sm">
+              🔊 Read Question Aloud
+            </button>
+          </div>
+        </div>
+
+        <!-- Voice Recording Interaction Area -->
+        <div class="card" style="margin-bottom: 2rem; text-align: center;">
+          <div class="voice-recorder-section">
+            <button type="button" class="mic-circle-btn" id="mic-record-btn" aria-label="Toggle Microphone Recording">
+              🎙️
+            </button>
+            <div class="voice-status-text" id="voice-status-indicator">
+              Click microphone to record your voice answer
+            </div>
+          </div>
+
+          <div style="text-align: left; margin-top: 1.5rem;">
+            <label class="form-label" for="hr-transcript-input">Answer Transcript / Text Response:</label>
+            <textarea id="hr-transcript-input" class="transcript-area" placeholder="Your voice transcription or typed answer will appear here... Speak using the STAR method (Situation, Task, Action, Result)."></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+            <button id="prev-hr-btn" type="button" class="btn btn-secondary">
+              ← Previous
+            </button>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button id="skip-hr-btn" type="button" class="btn btn-secondary">
+                Skip Question ↷
+              </button>
+              <button id="submit-hr-btn" class="btn btn-primary btn-lg">
+                Submit & Review Answer 🎯
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Behavioral Evaluation Panel -->
+        <div class="card" id="hr-eval-panel" style="display: none; border-color: rgba(59, 130, 246, 0.4);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+            <div>
+              <span class="badge badge-success" style="margin-bottom: 0.25rem;">Behavioral Analysis</span>
+              <h3>Communication Assessment</h3>
+            </div>
+            <div style="text-align: right;">
+              <div class="score-badge-large" id="hr-eval-score">80/100</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="eval-metric-box">
+              <div class="eval-metric-title">Clarity & Articulation</div>
+              <div class="eval-metric-val" id="hr-eval-clarity" style="color: #60a5fa;">High</div>
+            </div>
+            <div class="eval-metric-box">
+              <div class="eval-metric-title">STAR Structure Adherence</div>
+              <div class="eval-metric-val" id="hr-eval-structure" style="color: #34d399;">Structured</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification:</strong>
+            <span class="badge badge-primary" id="hr-eval-error-badge" style="margin-left: 0.5rem;">None (Strong Communication)</span>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Behavioral Strengths:</strong>
+            <ul id="hr-eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Executive Coach Recommendation:</strong>
+            <p id="hr-eval-feedback" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <button id="next-hr-btn" class="btn btn-primary btn-lg">Next Behavioral Question →</button>
+          </div>
         </div>
       </div>
 
-      <div style="text-align: left; margin-top: 1.5rem;">
-        <label class="form-label" for="hr-transcript-input">Answer Transcript / Text Response:</label>
-        <textarea id="hr-transcript-input" class="transcript-area" placeholder="Your voice transcription or typed answer will appear here... Speak using the STAR method (Situation, Task, Action, Result)."></textarea>
-      </div>
+      <!-- Right Column: Question Palette -->
+      <div>
+        <div class="question-palette-card">
+          <div class="palette-header">
+            <span class="palette-title">🧭 Question Palette</span>
+            <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
+          </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
-        <button id="skip-hr-btn" type="button" class="btn btn-secondary">
-          Skip Question ↷
-        </button>
-        <button id="submit-hr-btn" class="btn btn-primary btn-lg">
-          Submit & Review Answer 🎯
-        </button>
-      </div>
-    </div>
+          <div class="palette-grid" id="palette-container">
+            <!-- Numbers 1..30 populated by hr.js -->
+          </div>
 
-    <!-- AI Behavioral Evaluation Panel -->
-    <div class="card" id="hr-eval-panel" style="display: none; border-color: rgba(59, 130, 246, 0.4);">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
-        <div>
-          <span class="badge badge-success" style="margin-bottom: 0.25rem;">Behavioral Analysis</span>
-          <h3>Communication Assessment</h3>
+          <!-- Legend -->
+          <div class="palette-legend">
+            <div class="legend-item" title="Currently selected question">
+              <span class="legend-swatch current-swatch"></span>
+              <span>Current</span>
+            </div>
+            <div class="legend-item" title="Answer has been evaluated">
+              <span class="legend-swatch answered-swatch">✓</span>
+              <span>Answered</span>
+            </div>
+            <div class="legend-item" title="Question marked as skipped">
+              <span class="legend-swatch skipped-swatch">↷</span>
+              <span>Skipped</span>
+            </div>
+            <div class="legend-item" title="Question opened but not submitted yet">
+              <span class="legend-swatch visited-swatch">•</span>
+              <span>Visited</span>
+            </div>
+            <div class="legend-item" title="Question has not been visited yet">
+              <span class="legend-swatch unvisited-swatch"></span>
+              <span>Unvisited</span>
+            </div>
+            <div class="legend-item" title="Reference answer was viewed">
+              <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+              <span>Viewed</span>
+            </div>
+          </div>
         </div>
-        <div style="text-align: right;">
-          <div class="score-badge-large" id="hr-eval-score">80/100</div>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="eval-metric-box">
-          <div class="eval-metric-title">Clarity & Articulation</div>
-          <div class="eval-metric-val" id="hr-eval-clarity" style="color: #60a5fa;">High</div>
-        </div>
-        <div class="eval-metric-box">
-          <div class="eval-metric-title">STAR Structure Adherence</div>
-          <div class="eval-metric-val" id="hr-eval-structure" style="color: #34d399;">Structured</div>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification:</strong>
-        <span class="badge badge-primary" id="hr-eval-error-badge" style="margin-left: 0.5rem;">None (Strong Communication)</span>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Behavioral Strengths:</strong>
-        <ul id="hr-eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
-      </div>
-
-      <div style="margin-bottom: 1.5rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Executive Coach Recommendation:</strong>
-        <p id="hr-eval-feedback" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end;">
-        <button id="next-hr-btn" class="btn btn-primary btn-lg">Next Behavioral Question →</button>
       </div>
     </div>
   </main>

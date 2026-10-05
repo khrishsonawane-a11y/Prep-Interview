@@ -40,109 +40,161 @@
       </div>
     </div>
 
-    <!-- Question Loading State -->
-    <div id="question-loading-state" class="card" style="text-align: center; padding: 3rem;">
-      <div class="spinner" style="width: 32px; height: 32px; border-width: 3px; margin-bottom: 1rem;"></div>
-      <h3>AI Interviewer is formulating your technical challenge...</h3>
-      <p>Analyzing role requirements and generating practical engineering prompt.</p>
-    </div>
-
-    <!-- AI Interviewer Dialogue Box -->
-    <div class="ai-interviewer-card" id="ai-question-card" style="display: none;">
-      <div class="ai-avatar-pulse">🤖</div>
-      <div class="ai-dialog-body">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-          <span class="badge badge-primary" id="tech-q-topic">System Architecture</span>
-          <span style="font-size: 0.78rem; color: var(--text-dim);">Principal AI Lead</span>
+    <div class="round-with-sidebar">
+      <!-- Left Column: Question, Editor, Evaluation -->
+      <div>
+        <!-- Question Loading State -->
+        <div id="question-loading-state" class="card" style="text-align: center; padding: 3rem;">
+          <div class="spinner" style="width: 32px; height: 32px; border-width: 3px; margin-bottom: 1rem;"></div>
+          <h3>AI Interviewer is formulating your technical challenge...</h3>
+          <p>Analyzing role requirements and loading question pool.</p>
         </div>
-        <h3 id="tech-question-text">Loading technical question...</h3>
-        
-        <div>
-          <span style="font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase;">Key Concepts Considered:</span>
-          <div class="expected-tags-wrap" id="expected-concepts-wrap">
-            <!-- Badges -->
+
+        <!-- AI Interviewer Dialogue Box -->
+        <div class="ai-interviewer-card" id="ai-question-card" style="display: none;">
+          <div class="ai-avatar-pulse">🤖</div>
+          <div class="ai-dialog-body">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span class="badge badge-primary" id="tech-q-topic">System Architecture</span>
+              <span style="font-size: 0.78rem; color: var(--text-dim);">Principal AI Lead</span>
+            </div>
+            <h3 id="tech-question-text">Loading technical question...</h3>
+            
+            <div>
+              <span style="font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase;">Key Concepts Considered:</span>
+              <div class="expected-tags-wrap" id="expected-concepts-wrap">
+                <!-- Badges -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Candidate Response Input -->
+        <div class="response-card">
+          <div class="editor-toolbar">
+            <span class="form-label" style="font-size: 0.95rem;">Your Technical Explanation:</span>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <button id="voice-dictate-btn" type="button" class="voice-input-btn">
+                🎙️ Dictate with Voice
+              </button>
+              <span class="char-counter" id="char-count-display">0 words (0 chars)</span>
+            </div>
+          </div>
+
+          <textarea id="tech-answer-input" class="form-control" style="min-height: 160px;" placeholder="Explain your design, terminology, architectural mechanisms, trade-offs, and practical considerations here..."></textarea>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+            <button id="prev-tech-btn" type="button" class="btn btn-secondary">
+              ← Previous
+            </button>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button id="skip-question-btn" type="button" class="btn btn-secondary">
+                Skip Question ↷
+              </button>
+              <button id="submit-answer-btn" class="btn btn-primary btn-lg">
+                Submit Answer & Evaluate 🤖
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Live Evaluation Breakdown -->
+        <div class="evaluation-card" id="ai-eval-panel" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+            <div>
+              <span class="badge badge-success" style="margin-bottom: 0.25rem;">AI Evaluation Report</span>
+              <h3 id="eval-verdict-title">Performance Analysis</h3>
+            </div>
+            <div style="text-align: right;">
+              <div class="score-badge-large" id="eval-score">85/100</div>
+              <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;" id="eval-verdict-label">Score</div>
+            </div>
+          </div>
+
+          <div class="eval-grid">
+            <div class="eval-metric-box">
+              <div class="eval-metric-title">Correctness</div>
+              <div class="eval-metric-val" id="eval-correctness" style="color: #34d399;">High</div>
+            </div>
+            <div class="eval-metric-box">
+              <div class="eval-metric-title">Topic Relevance</div>
+              <div class="eval-metric-val" id="eval-relevance" style="color: #60a5fa;">High</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification / Assessment:</strong>
+            <span class="badge badge-warning" id="eval-error-type-badge" style="margin-left: 0.5rem;">None (Correct)</span>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Analysis & Feedback:</strong>
+            <p id="eval-feedback-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Missing Architectural Concepts:</strong>
+            <ul id="eval-missing-points" style="list-style: none; font-size: 0.85rem; color: #f87171; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Identified Strengths:</strong>
+            <ul id="eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+          </div>
+
+          <div style="margin-bottom: 1.5rem;">
+            <strong style="font-size: 0.9rem; color: var(--text-main);">Actionable Improvement:</strong>
+            <p id="eval-improvement-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <button id="next-stage-btn" class="btn btn-primary btn-lg">
+              Next Technical Question →
+            </button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Candidate Response Input -->
-    <div class="response-card">
-      <div class="editor-toolbar">
-        <span class="form-label" style="font-size: 0.95rem;">Your Technical Explanation:</span>
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <button id="voice-dictate-btn" type="button" class="voice-input-btn">
-            🎙️ Dictate with Voice
-          </button>
-          <span class="char-counter" id="char-count-display">0 words (0 chars)</span>
+      <!-- Right Column: Question Palette -->
+      <div>
+        <div class="question-palette-card">
+          <div class="palette-header">
+            <span class="palette-title">🧭 Question Palette</span>
+            <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
+          </div>
+
+          <div class="palette-grid" id="palette-container">
+            <!-- Numbers 1..30 populated by technical.js -->
+          </div>
+
+          <!-- Legend -->
+          <div class="palette-legend">
+            <div class="legend-item" title="Currently selected question">
+              <span class="legend-swatch current-swatch"></span>
+              <span>Current</span>
+            </div>
+            <div class="legend-item" title="Answer has been evaluated">
+              <span class="legend-swatch answered-swatch">✓</span>
+              <span>Answered</span>
+            </div>
+            <div class="legend-item" title="Question marked as skipped">
+              <span class="legend-swatch skipped-swatch">↷</span>
+              <span>Skipped</span>
+            </div>
+            <div class="legend-item" title="Question opened but not submitted yet">
+              <span class="legend-swatch visited-swatch">•</span>
+              <span>Visited</span>
+            </div>
+            <div class="legend-item" title="Question has not been visited yet">
+              <span class="legend-swatch unvisited-swatch"></span>
+              <span>Unvisited</span>
+            </div>
+            <div class="legend-item" title="Reference answer was viewed">
+              <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+              <span>Viewed</span>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <textarea id="tech-answer-input" class="form-control" style="min-height: 160px;" placeholder="Explain your design, terminology, architectural mechanisms, trade-offs, and practical considerations here..."></textarea>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem;">
-        <button id="skip-question-btn" type="button" class="btn btn-secondary">
-          Skip Question ↷
-        </button>
-        <button id="submit-answer-btn" class="btn btn-primary btn-lg">
-          Submit Answer & Evaluate 🤖
-        </button>
-      </div>
-    </div>
-
-    <!-- AI Live Evaluation Breakdown -->
-    <div class="evaluation-card" id="ai-eval-panel" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
-        <div>
-          <span class="badge badge-success" style="margin-bottom: 0.25rem;">AI Evaluation Report</span>
-          <h3 id="eval-verdict-title">Performance Analysis</h3>
-        </div>
-        <div style="text-align: right;">
-          <div class="score-badge-large" id="eval-score">85/100</div>
-          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;" id="eval-verdict-label">Score</div>
-        </div>
-      </div>
-
-      <div class="eval-grid">
-        <div class="eval-metric-box">
-          <div class="eval-metric-title">Correctness</div>
-          <div class="eval-metric-val" id="eval-correctness" style="color: #34d399;">High</div>
-        </div>
-        <div class="eval-metric-box">
-          <div class="eval-metric-title">Topic Relevance</div>
-          <div class="eval-metric-val" id="eval-relevance" style="color: #60a5fa;">High</div>
-        </div>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification / Assessment:</strong>
-        <span class="badge badge-warning" id="eval-error-type-badge" style="margin-left: 0.5rem;">None (Correct)</span>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Analysis & Feedback:</strong>
-        <p id="eval-feedback-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Missing Architectural Concepts:</strong>
-        <ul id="eval-missing-points" style="list-style: none; font-size: 0.85rem; color: #f87171; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
-      </div>
-
-      <div style="margin-bottom: 1rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Identified Strengths:</strong>
-        <ul id="eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
-      </div>
-
-      <div style="margin-bottom: 1.5rem;">
-        <strong style="font-size: 0.9rem; color: var(--text-main);">Actionable Improvement:</strong>
-        <p id="eval-improvement-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end;">
-        <button id="next-stage-btn" class="btn btn-primary btn-lg">
-          Next Technical Question →
-        </button>
       </div>
     </div>
   </main>

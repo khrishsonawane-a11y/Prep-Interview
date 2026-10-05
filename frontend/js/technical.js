@@ -4,11 +4,14 @@
 let interviewId = null;
 let currentRole = 'Software Developer';
 let currentDifficulty = 'Intermediate';
-let currentQuestion = null;
-let askedQuestions = [];
-let questionCount = 0;
+let questions = [];
+let currentIndex = 0;
+let draftAnswers = {}; // { [index]: string }
+let evaluations = {}; // { [index]: evalData }
+let skippedQuestions = {}; // { [index]: boolean }
+let viewedAnswers = {}; // { [index]: boolean }
+let visitedQuestions = { 0: true };
 const MAX_QUESTIONS = 30;
-let hasViewedCurrentAnswer = false;
 
 // Controlled Speech Recognition State Machine
 let recognitionState = 'idle'; // 'idle' | 'listening' | 'stopping' | 'stopped'
@@ -39,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupButtons();
     setupAnswerModal();
     setupSpeechButton();
-    await fetchNextTechnicalQuestion();
+    await loadQuestions();
 });
 
 window.addEventListener('beforeunload', () => {
@@ -61,14 +64,15 @@ function setupSpeechButton() {
 }
 
 function startQuestionSpeech() {
-    if (!('speechSynthesis' in window) || !currentQuestion) {
+    const q = questions[currentIndex];
+    if (!('speechSynthesis' in window) || !q) {
         window.Toast.info('Speech synthesis is not supported on this browser.');
         return;
     }
 
     stopQuestionSpeech();
 
-    const textToRead = currentQuestion.question || '';
+    const textToRead = q.question || '';
     const utterance = new SpeechSynthesisUtterance(textToRead);
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
@@ -114,17 +118,20 @@ function setupAnswerModal() {
 
     if (viewBtn && modal) {
         viewBtn.addEventListener('click', () => {
-            if (!currentQuestion) return;
-            hasViewedCurrentAnswer = true;
+            const q = questions[currentIndex];
+            if (!q) return;
+
+            viewedAnswers[currentIndex] = true;
+            renderPalette();
 
             const expectedText = document.getElementById('tech-expected-answer-text');
             if (expectedText) {
-                expectedText.textContent = currentQuestion.sample_answer || 'Expected architectural explanation covering core mechanisms, trade-offs, and design principles.';
+                expectedText.textContent = q.sample_answer || 'Expected architectural explanation covering core mechanisms, trade-offs, and design principles.';
             }
 
             const conceptsList = document.getElementById('tech-modal-concepts-list');
-            if (conceptsList && currentQuestion.expected_concepts) {
-                conceptsList.innerHTML = currentQuestion.expected_concepts.map(c => `<li>✓ <strong style="color:var(--text-main);">${c}</strong></li>`).join('');
+            if (conceptsList && q.expected_concepts) {
+                conceptsList.innerHTML = q.expected_concepts.map(c => `<li>✓ <strong style="color:var(--text-main);">${c}</strong></li>`).join('');
             }
 
             modal.style.display = 'flex';
@@ -138,54 +145,153 @@ function setupAnswerModal() {
     }
 }
 
-async function fetchNextTechnicalQuestion() {
-    stopQuestionSpeech();
-    stopRecording();
-    hasViewedCurrentAnswer = false;
-    baseManualText = '';
-    committedVoiceChunks = [];
-
-    const questionCard = document.getElementById('ai-question-card');
+async function loadQuestions() {
     const loadingState = document.getElementById('question-loading-state');
-    const evalPanel = document.getElementById('ai-eval-panel');
-    const answerInput = document.getElementById('tech-answer-input');
-
-    if (evalPanel) evalPanel.style.display = 'none';
-    if (answerInput) answerInput.value = '';
+    const questionCard = document.getElementById('ai-question-card');
     if (loadingState) loadingState.style.display = 'block';
     if (questionCard) questionCard.style.display = 'none';
 
     try {
-        const res = await window.API.getTechnicalQuestion({
+        const res = await window.API.getTechnicalQuestions({
+            count: MAX_QUESTIONS,
             role: currentRole,
-            difficulty: currentDifficulty,
-            previousQuestions: askedQuestions
+            difficulty: currentDifficulty
         });
 
-        if (res.success && res.question) {
-            currentQuestion = res.question;
-            askedQuestions.push(currentQuestion.question);
-            questionCount++;
-
-            document.getElementById('tech-q-counter').textContent = `Question ${questionCount} of ${MAX_QUESTIONS}`;
-            document.getElementById('tech-q-topic').textContent = currentQuestion.topic || 'Engineering Architecture';
-            document.getElementById('tech-question-text').textContent = currentQuestion.question;
-
-            // Render expected concepts badges
-            const conceptsWrap = document.getElementById('expected-concepts-wrap');
-            if (conceptsWrap && currentQuestion.expected_concepts) {
-                conceptsWrap.innerHTML = currentQuestion.expected_concepts.map(c => `
-                    <span class="badge badge-primary">${c}</span>
-                `).join('');
-            }
-
-            if (loadingState) loadingState.style.display = 'none';
-            if (questionCard) questionCard.style.display = 'flex';
+        if (res.success && res.questions && res.questions.length > 0) {
+            questions = res.questions;
+            renderQuestion(0);
+            renderPalette();
+        } else {
+            window.Toast.error('Could not load technical question pool.');
         }
     } catch (err) {
-        console.error('Failed to get technical question:', err);
-        window.Toast.error('Could not generate technical question.');
+        console.error('Failed to get technical questions:', err);
+        window.Toast.error('Could not load technical questions.');
     }
+}
+
+function saveCurrentDraft() {
+    const textarea = document.getElementById('tech-answer-input');
+    if (textarea) {
+        draftAnswers[currentIndex] = textarea.value;
+    }
+}
+
+function renderQuestion(index) {
+    saveCurrentDraft();
+    stopQuestionSpeech();
+    stopRecording();
+
+    currentIndex = index;
+    visitedQuestions[index] = true;
+    const q = questions[index];
+    if (!q) return;
+
+    const loadingState = document.getElementById('question-loading-state');
+    const questionCard = document.getElementById('ai-question-card');
+    const evalPanel = document.getElementById('ai-eval-panel');
+    const answerInput = document.getElementById('tech-answer-input');
+    const charCounter = document.getElementById('char-count-display');
+
+    if (loadingState) loadingState.style.display = 'none';
+    if (questionCard) questionCard.style.display = 'flex';
+
+    document.getElementById('tech-q-counter').textContent = `Question ${index + 1} of ${questions.length}`;
+    document.getElementById('tech-q-topic').textContent = q.topic || 'Engineering Architecture';
+    document.getElementById('tech-question-text').textContent = q.question;
+
+    const conceptsWrap = document.getElementById('expected-concepts-wrap');
+    if (conceptsWrap && q.expected_concepts) {
+        conceptsWrap.innerHTML = q.expected_concepts.map(c => `
+            <span class="badge badge-primary">${c}</span>
+        `).join('');
+    }
+
+    // Restore draft answer
+    const currentText = draftAnswers[index] !== undefined ? draftAnswers[index] : '';
+    if (answerInput) {
+        answerInput.value = currentText;
+        if (charCounter) {
+            const chars = currentText.length;
+            const words = currentText.trim() ? currentText.trim().split(/\s+/).length : 0;
+            charCounter.textContent = `${words} words (${chars} chars)`;
+        }
+    }
+
+    // Restore evaluation if available
+    if (evaluations[index]) {
+        displayEvaluation(evaluations[index], false);
+    } else if (evalPanel) {
+        evalPanel.style.display = 'none';
+    }
+
+    // Update Navigation buttons
+    const prevBtn = document.getElementById('prev-tech-btn');
+    const nextBtn = document.getElementById('next-stage-btn');
+    if (prevBtn) prevBtn.disabled = currentIndex === 0;
+    if (nextBtn) {
+        if (currentIndex === questions.length - 1) {
+            nextBtn.textContent = 'Proceed to Coding Round ⚡';
+        } else {
+            nextBtn.textContent = 'Next Technical Question →';
+        }
+    }
+}
+
+function renderPalette() {
+    const palette = document.getElementById('palette-container');
+    if (!palette) return;
+
+    let answeredCount = 0;
+    palette.innerHTML = questions.map((q, i) => {
+        const isAnswered = evaluations[i] !== undefined;
+        if (isAnswered) answeredCount++;
+        const isSkipped = skippedQuestions[i] === true;
+        const isVisited = !!visitedQuestions[i];
+        const isViewed = !!viewedAnswers[i];
+        const isCurrent = i === currentIndex;
+
+        let statusClass = '';
+        let statusTitle = `Question ${i + 1}`;
+        if (isCurrent) {
+            statusClass += ' current';
+            statusTitle += ' (Current)';
+        }
+        if (isAnswered) {
+            statusClass += ' answered';
+            statusTitle += ' - Answered';
+        } else if (isSkipped) {
+            statusClass += ' skipped';
+            statusTitle += ' - Skipped';
+        } else if (isVisited) {
+            statusClass += ' visited';
+            statusTitle += ' - Visited';
+        }
+        if (isViewed) {
+            statusClass += ' viewed';
+            statusTitle += ' (Solution Viewed)';
+        }
+
+        return `
+            <button class="palette-btn ${statusClass.trim()}" data-index="${i}" title="${statusTitle}" aria-label="${statusTitle}">
+                ${i + 1}
+            </button>
+        `;
+    }).join('');
+
+    const progressBadge = document.getElementById('palette-progress-badge');
+    if (progressBadge) {
+        progressBadge.textContent = `${answeredCount}/${questions.length} Answered`;
+    }
+
+    palette.querySelectorAll('.palette-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-index'), 10);
+            renderQuestion(idx);
+            renderPalette();
+        });
+    });
 }
 
 function setupCharCounter() {
@@ -194,6 +300,7 @@ function setupCharCounter() {
     if (!textarea || !counter) return;
 
     textarea.addEventListener('input', () => {
+        draftAnswers[currentIndex] = textarea.value;
         const chars = textarea.value.length;
         const words = textarea.value.trim() ? textarea.value.trim().split(/\s+/).length : 0;
         counter.textContent = `${words} words (${chars} chars)`;
@@ -237,6 +344,7 @@ function setupSpeechRecognition() {
         const textarea = document.getElementById('tech-answer-input');
         if (textarea) {
             textarea.value = fullContent;
+            draftAnswers[currentIndex] = fullContent;
             textarea.dispatchEvent(new Event('input'));
         }
     };
@@ -302,39 +410,55 @@ function stopRecording() {
 }
 
 function setupButtons() {
+    const prevBtn = document.getElementById('prev-tech-btn');
     const submitBtn = document.getElementById('submit-answer-btn');
     const skipBtn = document.getElementById('skip-question-btn');
     const nextBtn = document.getElementById('next-stage-btn');
 
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                renderQuestion(currentIndex - 1);
+                renderPalette();
+            }
+        });
+    }
+
     if (skipBtn) {
         skipBtn.addEventListener('click', async () => {
+            saveCurrentDraft();
             stopQuestionSpeech();
             stopRecording();
-            const textarea = document.getElementById('tech-answer-input');
-            if (textarea) textarea.value = '';
+
+            const q = questions[currentIndex];
+            skippedQuestions[currentIndex] = true;
+            delete evaluations[currentIndex];
+            draftAnswers[currentIndex] = '[SKIPPED]';
+            renderPalette();
 
             try {
                 skipBtn.disabled = true;
                 await window.API.evaluateTechnicalAnswer({
                     interviewId,
-                    questionText: currentQuestion?.question || 'Technical Question',
+                    questionText: q?.question || 'Technical Question',
                     answerText: '[SKIPPED]',
                     role: currentRole,
                     difficulty: currentDifficulty,
-                    topic: currentQuestion?.topic || 'Architecture',
-                    reference_answer: currentQuestion?.sample_answer || '',
+                    topic: q?.topic || 'Architecture',
+                    reference_answer: q?.sample_answer || '',
                     is_skipped: true,
-                    viewed_answer: hasViewedCurrentAnswer
+                    viewed_answer: !!viewedAnswers[currentIndex]
                 });
-                window.Toast.info('Question marked as skipped.');
+                window.Toast.info(`Question ${currentIndex + 1} marked as skipped.`);
             } catch (e) {
                 console.warn('Skip record warning:', e);
             } finally {
                 skipBtn.disabled = false;
             }
 
-            if (questionCount < MAX_QUESTIONS) {
-                await fetchNextTechnicalQuestion();
+            if (currentIndex < questions.length - 1) {
+                renderQuestion(currentIndex + 1);
+                renderPalette();
             } else {
                 finishTechnicalRound();
             }
@@ -343,14 +467,16 @@ function setupButtons() {
 
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
+            saveCurrentDraft();
             stopQuestionSpeech();
-            const answer = document.getElementById('tech-answer-input').value.trim();
+            const answer = (draftAnswers[currentIndex] || '').trim();
             if (answer.length < 15) {
                 window.Toast.warning('Please provide a substantive technical answer (at least a couple of sentences).');
                 return;
             }
 
             stopRecording();
+            const q = questions[currentIndex];
 
             try {
                 submitBtn.disabled = true;
@@ -358,17 +484,20 @@ function setupButtons() {
 
                 const res = await window.API.evaluateTechnicalAnswer({
                     interviewId,
-                    questionText: currentQuestion.question,
+                    questionText: q.question,
                     answerText: answer,
                     role: currentRole,
                     difficulty: currentDifficulty,
-                    topic: currentQuestion.topic || 'Engineering Architecture',
-                    reference_answer: currentQuestion.sample_answer || '',
-                    viewed_answer: hasViewedCurrentAnswer
+                    topic: q.topic || 'Engineering Architecture',
+                    reference_answer: q.sample_answer || '',
+                    viewed_answer: !!viewedAnswers[currentIndex]
                 });
 
                 if (res.success && res.evaluation) {
-                    displayEvaluation(res.evaluation);
+                    evaluations[currentIndex] = res.evaluation;
+                    delete skippedQuestions[currentIndex];
+                    renderPalette();
+                    displayEvaluation(res.evaluation, true);
                     window.Toast.success('Evaluation completed!');
                 }
             } catch (err) {
@@ -383,12 +512,12 @@ function setupButtons() {
 
     if (nextBtn) {
         nextBtn.addEventListener('click', async () => {
+            saveCurrentDraft();
             stopQuestionSpeech();
-            const textarea = document.getElementById('tech-answer-input');
-            if (textarea) textarea.value = '';
 
-            if (questionCount < MAX_QUESTIONS) {
-                await fetchNextTechnicalQuestion();
+            if (currentIndex < questions.length - 1) {
+                renderQuestion(currentIndex + 1);
+                renderPalette();
             } else {
                 finishTechnicalRound();
             }
@@ -396,12 +525,14 @@ function setupButtons() {
     }
 }
 
-function displayEvaluation(evalData) {
+function displayEvaluation(evalData, scroll = true) {
     const panel = document.getElementById('ai-eval-panel');
     if (!panel) return;
 
     panel.style.display = 'block';
-    panel.scrollIntoView({ behavior: 'smooth' });
+    if (scroll) {
+        panel.scrollIntoView({ behavior: 'smooth' });
+    }
 
     document.getElementById('eval-score').textContent = `${evalData.score || 80}/100`;
     document.getElementById('eval-correctness').textContent = evalData.correctness || 'High';
@@ -417,23 +548,24 @@ function displayEvaluation(evalData) {
 
     // Missing Points
     const missingWrap = document.getElementById('eval-missing-points');
-    if (missingWrap && evalData.missing_points) {
-        missingWrap.innerHTML = evalData.missing_points.map(p => `<li>⚠️ ${p}</li>`).join('');
+    if (missingWrap) {
+        missingWrap.innerHTML = (evalData.missing_points || []).map(p => `<li>⚠️ ${p}</li>`).join('');
     }
 
     // Strengths
     const strengthsWrap = document.getElementById('eval-strengths');
-    if (strengthsWrap && evalData.strengths) {
-        strengthsWrap.innerHTML = evalData.strengths.map(s => `<li>✓ ${s}</li>`).join('');
+    if (strengthsWrap) {
+        strengthsWrap.innerHTML = (evalData.strengths || []).map(s => `<li>✓ ${s}</li>`).join('');
     }
 
     const nextBtn = document.getElementById('next-stage-btn');
     if (nextBtn) {
-        nextBtn.textContent = questionCount < MAX_QUESTIONS ? 'Next Technical Question →' : 'Proceed to Coding Round ⚡';
+        nextBtn.textContent = currentIndex < questions.length - 1 ? 'Next Technical Question →' : 'Proceed to Coding Round ⚡';
     }
 }
 
 async function finishTechnicalRound() {
+    saveCurrentDraft();
     stopQuestionSpeech();
     window.Toast.success('Technical Round complete! Advancing to Coding / DSA Round...');
 

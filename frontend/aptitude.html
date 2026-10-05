@@ -72,22 +72,41 @@
 
       <!-- Right: Palette & Overview -->
       <div>
-        <div class="question-palette">
-          <h4 style="margin-bottom: 0.25rem;">Question Palette</h4>
-          <p style="font-size: 0.8rem; color: var(--text-dim);">Jump to any question instantly</p>
+        <div class="question-palette-card">
+          <div class="palette-header">
+            <span class="palette-title">🧭 Question Palette</span>
+            <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
+          </div>
 
           <div class="palette-grid" id="palette-container">
             <!-- Numbers 1..30 populated by aptitude.js -->
           </div>
 
-          <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; font-size: 0.78rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 0.4rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 12px; height: 12px; background: rgba(16, 185, 129, 0.4); border: 1px solid #10b981; border-radius: 2px;"></span>
+          <!-- Legend -->
+          <div class="palette-legend">
+            <div class="legend-item" title="Currently selected question">
+              <span class="legend-swatch current-swatch"></span>
+              <span>Current</span>
+            </div>
+            <div class="legend-item" title="Answer has been selected">
+              <span class="legend-swatch answered-swatch">✓</span>
               <span>Answered</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="width: 12px; height: 12px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 2px;"></span>
-              <span>Unanswered / Skipped</span>
+            <div class="legend-item" title="Question marked as skipped">
+              <span class="legend-swatch skipped-swatch">↷</span>
+              <span>Skipped</span>
+            </div>
+            <div class="legend-item" title="Question opened but not answered yet">
+              <span class="legend-swatch visited-swatch">•</span>
+              <span>Visited</span>
+            </div>
+            <div class="legend-item" title="Question has not been visited yet">
+              <span class="legend-swatch unvisited-swatch"></span>
+              <span>Unvisited</span>
+            </div>
+            <div class="legend-item" title="Reference answer was viewed">
+              <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+              <span>Viewed</span>
             </div>
           </div>
         </div>

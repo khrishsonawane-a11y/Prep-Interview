@@ -12,6 +12,49 @@ function shuffleArray(array) {
     return arr;
 }
 
+export const getHRQuestions = async (req, res, next) => {
+    try {
+        const { count = 30, role = 'Software Developer', difficulty = 'Intermediate', category } = { ...req.query, ...req.body };
+        const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 30));
+
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            try {
+                let query = supabaseAdmin
+                    .from('hr_questions')
+                    .select('*')
+                    .limit(100);
+
+                const { data, error } = await query;
+                if (!error && data && data.length > 0) {
+                    let candidates = data;
+                    if (category) {
+                        const catMatches = candidates.filter(q => q.category && q.category.toLowerCase() === category.toLowerCase());
+                        if (catMatches.length > 0) candidates = catMatches;
+                    }
+                    const shuffled = shuffleArray(candidates);
+                    return res.json({ success: true, questions: shuffled.slice(0, limit) });
+                }
+            } catch (supErr) {
+                console.warn('Supabase HR questions batch fallback:', supErr.message);
+            }
+        }
+
+        let questions = [...mockStore.hrQuestions];
+        if (category) {
+            const catFiltered = questions.filter(q => q.category && q.category.toLowerCase() === category.toLowerCase());
+            if (catFiltered.length > 0) questions = catFiltered;
+        }
+
+        const shuffled = shuffleArray(questions);
+        return res.json({
+            success: true,
+            questions: shuffled.slice(0, limit)
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export const getHRQuestion = async (req, res, next) => {
     try {
         const { role = 'Software Developer', difficulty = 'Intermediate', category, previousQuestions = [], dynamicAI = false } = req.body || {};

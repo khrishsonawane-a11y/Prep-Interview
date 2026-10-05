@@ -13,6 +13,55 @@ function shuffleArray(array) {
     return arr;
 }
 
+export const getCodingQuestions = async (req, res, next) => {
+    try {
+        const { count = 30, role = 'Software Developer', difficulty = 'Intermediate', topic } = { ...req.query, ...req.body };
+        const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 30));
+
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            try {
+                let query = supabaseAdmin
+                    .from('coding_questions')
+                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, solution_code, approach, algorithm_explanation, time_complexity, space_complexity, test_cases')
+                    .limit(100);
+
+                const { data, error } = await query;
+                if (!error && data && data.length > 0) {
+                    let candidates = data.map(chosen => ({
+                        ...chosen,
+                        test_cases: (chosen.test_cases || []).filter(tc => !tc.is_hidden)
+                    }));
+                    if (topic) {
+                        const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+                        if (topicMatches.length > 0) candidates = topicMatches;
+                    }
+                    const shuffled = shuffleArray(candidates);
+                    return res.json({ success: true, problems: shuffled.slice(0, limit) });
+                }
+            } catch (supErr) {
+                console.warn('Supabase coding questions batch fallback:', supErr.message);
+            }
+        }
+
+        let problems = mockStore.codingQuestions.map(mockP => ({
+            ...mockP,
+            test_cases: (mockP.test_cases || []).filter(tc => !tc.is_hidden)
+        }));
+        if (topic) {
+            const topicMatches = problems.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+            if (topicMatches.length > 0) problems = topicMatches;
+        }
+
+        const shuffled = shuffleArray(problems);
+        return res.json({
+            success: true,
+            problems: shuffled.slice(0, limit)
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
 export const getCodingQuestion = async (req, res, next) => {
     try {
         const { role = 'Software Developer', difficulty = 'Intermediate', topic, previousQuestions = [], dynamicAI = false } = req.body || {};

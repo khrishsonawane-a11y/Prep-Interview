@@ -4,12 +4,17 @@
 let interviewId = null;
 let currentRole = 'Software Developer';
 let currentDifficulty = 'Intermediate';
-let currentProblem = null;
-let currentLanguage = 'java'; // Default language is Java
-let askedProblems = [];
-let problemCount = 0;
+let problems = [];
+let currentIndex = 0;
+let userCode = {}; // { [index]: { java: '...', c: '...', cpp: '...' } }
+let userLanguages = {}; // { [index]: 'java' | 'c' | 'cpp' }
+let consoleOutputs = {}; // { [index]: string }
+let submissions = {}; // { [index]: { execution, evaluation } }
+let skippedProblems = {}; // { [index]: boolean }
+let viewedSolutions = {}; // { [index]: boolean }
+let visitedProblems = { 0: true };
+let currentLanguage = 'java'; // Default language
 const MAX_CODING_QUESTIONS = 30;
-let hasViewedCurrentAnswer = false;
 let isSpeakingQuestion = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -30,10 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupExecutionButtons();
     setupSolutionModal();
     setupSpeechButton();
-    await loadProblem();
+    await loadProblems();
 });
 
-// Stop any active TTS when leaving page
 window.addEventListener('beforeunload', () => {
     stopQuestionSpeech();
 });
@@ -42,17 +46,23 @@ function setupLanguageSelector() {
     const selector = document.getElementById('code-language-select');
     if (!selector) return;
 
-    selector.value = currentLanguage;
     selector.addEventListener('change', (e) => {
+        saveCurrentCodeDraft();
         currentLanguage = e.target.value;
-        updateEditorStarterCode();
+        userLanguages[currentIndex] = currentLanguage;
+        restoreEditorCode();
         updateSolutionModalContent();
     });
 
     const resetBtn = document.getElementById('reset-code-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            updateEditorStarterCode();
+            const p = problems[currentIndex];
+            if (!p) return;
+            const starter = p.starter_code?.[currentLanguage] || getDefaultStarter(currentLanguage);
+            document.getElementById('code-editor-textarea').value = starter;
+            if (!userCode[currentIndex]) userCode[currentIndex] = {};
+            userCode[currentIndex][currentLanguage] = starter;
             window.Toast.info(`Editor reset to clean ${getLanguageName(currentLanguage)} template.`);
         });
     }
@@ -74,12 +84,24 @@ function getDefaultStarter(lang) {
     return 'class Solution {\n    public int solve() {\n        // Write your code in Java here\n        return 0;\n    }\n}';
 }
 
-function updateEditorStarterCode() {
+function saveCurrentCodeDraft() {
     const textarea = document.getElementById('code-editor-textarea');
-    if (!textarea || !currentProblem) return;
+    if (textarea && problems[currentIndex]) {
+        if (!userCode[currentIndex]) userCode[currentIndex] = {};
+        userCode[currentIndex][currentLanguage] = textarea.value;
+    }
+}
 
-    if (currentProblem.starter_code && currentProblem.starter_code[currentLanguage]) {
-        textarea.value = currentProblem.starter_code[currentLanguage];
+function restoreEditorCode() {
+    const textarea = document.getElementById('code-editor-textarea');
+    if (!textarea || !problems[currentIndex]) return;
+
+    const p = problems[currentIndex];
+    const saved = userCode[currentIndex]?.[currentLanguage];
+    if (saved !== undefined) {
+        textarea.value = saved;
+    } else if (p.starter_code && p.starter_code[currentLanguage]) {
+        textarea.value = p.starter_code[currentLanguage];
     } else {
         textarea.value = getDefaultStarter(currentLanguage);
     }
@@ -93,7 +115,8 @@ function setupSolutionModal() {
 
     if (viewBtn && modal) {
         viewBtn.addEventListener('click', () => {
-            hasViewedCurrentAnswer = true;
+            viewedSolutions[currentIndex] = true;
+            renderPalette();
             updateSolutionModalContent();
             modal.style.display = 'flex';
         });
@@ -110,6 +133,8 @@ function setupSolutionModal() {
             const codeView = document.getElementById('solution-code-view');
             const sol = codeView?.textContent || '';
             document.getElementById('code-editor-textarea').value = sol;
+            if (!userCode[currentIndex]) userCode[currentIndex] = {};
+            userCode[currentIndex][currentLanguage] = sol;
             modal.style.display = 'none';
             window.Toast.success(`Copied ${getLanguageName(currentLanguage)} reference solution to editor!`);
         });
@@ -117,6 +142,7 @@ function setupSolutionModal() {
 }
 
 function updateSolutionModalContent() {
+    const currentProblem = problems[currentIndex];
     if (!currentProblem) return;
 
     const langLabel = document.getElementById('solution-lang-label');
@@ -155,6 +181,7 @@ function setupSpeechButton() {
 }
 
 function startQuestionSpeech() {
+    const currentProblem = problems[currentIndex];
     if (!('speechSynthesis' in window) || !currentProblem) {
         window.Toast.info('Speech synthesis is not supported on this browser.');
         return;
@@ -201,50 +228,55 @@ function stopQuestionSpeech() {
     }
 }
 
-async function loadProblem() {
-    stopQuestionSpeech();
-    hasViewedCurrentAnswer = false;
-
+async function loadProblems() {
     try {
-        const res = await window.API.getCodingQuestion({
+        const res = await window.API.getCodingQuestions({
+            count: MAX_CODING_QUESTIONS,
             role: currentRole,
-            difficulty: currentDifficulty,
-            previousQuestions: askedProblems
+            difficulty: currentDifficulty
         });
 
-        if (res.success && res.problem) {
-            currentProblem = res.problem;
-            askedProblems.push(currentProblem.title);
-            problemCount++;
-
-            const counterElem = document.getElementById('coding-q-counter');
-            if (counterElem) {
-                counterElem.textContent = `Problem ${problemCount} of ${MAX_CODING_QUESTIONS}`;
-            }
-
-            const consoleOutput = document.getElementById('console-output-pane');
-            if (consoleOutput) {
-                consoleOutput.innerHTML = '<span style="color: var(--text-dim);">Click \'Run Tests\' to compile and test against sample test cases.</span>';
-            }
-
-            renderProblemDetails(currentProblem);
+        if (res.success && res.problems && res.problems.length > 0) {
+            problems = res.problems;
+            renderProblem(0);
+            renderPalette();
+        } else {
+            window.Toast.error('Could not load coding problem pool.');
         }
     } catch (err) {
-        console.error('Failed to load coding problem:', err);
-        window.Toast.error('Could not load coding problem.');
+        console.error('Failed to load coding problems:', err);
+        window.Toast.error('Could not load coding problems.');
     }
 }
 
-function renderProblemDetails(problem) {
-    document.getElementById('problem-title-display').textContent = problem.title;
-    document.getElementById('problem-diff-badge').textContent = problem.difficulty || 'Beginner';
-    document.getElementById('problem-topic-badge').textContent = problem.topic || 'DSA';
-    document.getElementById('problem-desc-content').innerHTML = (problem.description || '').replace(/\n/g, '<br>');
+function renderProblem(index) {
+    saveCurrentCodeDraft();
+    stopQuestionSpeech();
+
+    currentIndex = index;
+    visitedProblems[index] = true;
+    const p = problems[index];
+    if (!p) return;
+
+    // Set language
+    currentLanguage = userLanguages[index] || 'java';
+    const langSelect = document.getElementById('code-language-select');
+    if (langSelect) langSelect.value = currentLanguage;
+
+    // Header badges
+    const counterElem = document.getElementById('coding-q-counter');
+    if (counterElem) {
+        counterElem.textContent = `Problem ${index + 1} of ${problems.length}`;
+    }
+    document.getElementById('problem-diff-badge').textContent = p.difficulty || 'Beginner';
+    document.getElementById('problem-topic-badge').textContent = p.topic || 'DSA';
+    document.getElementById('problem-title-display').textContent = p.title;
+    document.getElementById('problem-desc-content').innerHTML = (p.description || '').replace(/\n/g, '<br>');
 
     // Examples
     const examplesWrap = document.getElementById('examples-wrap');
-    if (examplesWrap && problem.examples) {
-        examplesWrap.innerHTML = problem.examples.map((ex, i) => `
+    if (examplesWrap && p.examples) {
+        examplesWrap.innerHTML = p.examples.map((ex, i) => `
             <div class="example-box">
                 <div style="font-weight:600; color:var(--text-main); margin-bottom:0.25rem;">Example ${i + 1}:</div>
                 <div><span style="color:var(--text-dim);">Input:</span> ${ex.input}</div>
@@ -256,25 +288,108 @@ function renderProblemDetails(problem) {
 
     // Constraints
     const constraintsWrap = document.getElementById('constraints-wrap');
-    if (constraintsWrap && problem.constraints) {
-        constraintsWrap.innerHTML = problem.constraints.map(c => `<li>• ${c}</li>`).join('');
+    if (constraintsWrap && p.constraints) {
+        constraintsWrap.innerHTML = p.constraints.map(c => `<li>• ${c}</li>`).join('');
     }
 
-    // Set starter code
-    updateEditorStarterCode();
+    // Editor code
+    restoreEditorCode();
+
+    // Console output
+    const consoleOutput = document.getElementById('console-output-pane');
+    if (consoleOutput) {
+        if (consoleOutputs[index]) {
+            consoleOutput.innerHTML = consoleOutputs[index];
+        } else {
+            consoleOutput.innerHTML = '<span style="color: var(--text-dim);">Click \'Run Tests\' to compile and test against sample test cases.</span>';
+        }
+    }
+
+    // Navigation buttons
+    const prevNavBtn = document.getElementById('prev-code-nav-btn');
+    const nextNavBtn = document.getElementById('next-code-nav-btn');
+    if (prevNavBtn) prevNavBtn.disabled = currentIndex === 0;
+    if (nextNavBtn) {
+        if (currentIndex === problems.length - 1) {
+            nextNavBtn.textContent = 'Proceed to HR Round →';
+        } else {
+            nextNavBtn.textContent = 'Next Problem →';
+        }
+    }
+}
+
+function renderPalette() {
+    const palette = document.getElementById('palette-container');
+    if (!palette) return;
+
+    let solvedCount = 0;
+    palette.innerHTML = problems.map((p, i) => {
+        const isSolved = submissions[i] !== undefined;
+        if (isSolved) solvedCount++;
+        const isSkipped = skippedProblems[i] === true;
+        const isVisited = !!visitedProblems[i];
+        const isViewed = !!viewedSolutions[i];
+        const isCurrent = i === currentIndex;
+
+        let statusClass = '';
+        let statusTitle = `Problem ${i + 1}: ${p.title}`;
+        if (isCurrent) {
+            statusClass += ' current';
+            statusTitle += ' (Current)';
+        }
+        if (isSolved) {
+            statusClass += ' answered';
+            statusTitle += ' - Solved';
+        } else if (isSkipped) {
+            statusClass += ' skipped';
+            statusTitle += ' - Skipped';
+        } else if (isVisited) {
+            statusClass += ' visited';
+            statusTitle += ' - Visited';
+        }
+        if (isViewed) {
+            statusClass += ' viewed';
+            statusTitle += ' (Solution Viewed)';
+        }
+
+        return `
+            <button class="palette-btn ${statusClass.trim()}" data-index="${i}" title="${statusTitle}" aria-label="${statusTitle}">
+                ${i + 1}
+            </button>
+        `;
+    }).join('');
+
+    const progressBadge = document.getElementById('palette-progress-badge');
+    if (progressBadge) {
+        progressBadge.textContent = `${solvedCount}/${problems.length} Solved`;
+    }
+
+    palette.querySelectorAll('.palette-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-index'), 10);
+            renderProblem(idx);
+            renderPalette();
+        });
+    });
 }
 
 function setupExecutionButtons() {
     const runBtn = document.getElementById('run-code-btn');
     const submitBtn = document.getElementById('submit-code-btn');
+    const skipBtn = document.getElementById('skip-code-btn');
+    const prevNavBtn = document.getElementById('prev-code-nav-btn');
+    const nextNavBtn = document.getElementById('next-code-nav-btn');
 
     if (runBtn) {
         runBtn.addEventListener('click', async () => {
+            saveCurrentCodeDraft();
             const code = document.getElementById('code-editor-textarea').value;
             if (!code || code.trim().length < 5) {
                 window.Toast.warning('Please write your solution code before running tests.');
                 return;
             }
+
+            const p = problems[currentIndex];
 
             try {
                 runBtn.disabled = true;
@@ -283,8 +398,8 @@ function setupExecutionButtons() {
                 const res = await window.API.runCode({
                     code,
                     language: currentLanguage,
-                    testCases: currentProblem?.test_cases || [],
-                    problemId: currentProblem?.id
+                    testCases: p?.test_cases || [],
+                    problemId: p?.id
                 });
 
                 if (res.success && res.execution) {
@@ -300,29 +415,36 @@ function setupExecutionButtons() {
         });
     }
 
-    const skipBtn = document.getElementById('skip-code-btn');
     if (skipBtn) {
         skipBtn.addEventListener('click', async () => {
+            saveCurrentCodeDraft();
             stopQuestionSpeech();
+            const p = problems[currentIndex];
+
+            skippedProblems[currentIndex] = true;
+            delete submissions[currentIndex];
+            renderPalette();
+
             try {
                 skipBtn.disabled = true;
                 await window.API.submitCode({
                     interviewId,
-                    problem: currentProblem,
+                    problem: p,
                     code: '// [SKIPPED]',
                     language: currentLanguage,
                     is_skipped: true,
-                    viewed_answer: hasViewedCurrentAnswer
+                    viewed_answer: !!viewedSolutions[currentIndex]
                 });
-                window.Toast.info('Coding problem skipped.');
+                window.Toast.info(`Problem ${currentIndex + 1} marked as skipped.`);
             } catch (e) {
                 console.warn('Skip code warning:', e);
             } finally {
                 skipBtn.disabled = false;
             }
 
-            if (problemCount < MAX_CODING_QUESTIONS) {
-                await loadProblem();
+            if (currentIndex < problems.length - 1) {
+                renderProblem(currentIndex + 1);
+                renderPalette();
             } else {
                 finishCodingRound();
             }
@@ -331,6 +453,7 @@ function setupExecutionButtons() {
 
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
+            saveCurrentCodeDraft();
             stopQuestionSpeech();
             const code = document.getElementById('code-editor-textarea').value;
             if (!code || code.trim().length < 5) {
@@ -338,19 +461,24 @@ function setupExecutionButtons() {
                 return;
             }
 
+            const p = problems[currentIndex];
+
             try {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> AI Evaluating Code...';
 
                 const res = await window.API.submitCode({
                     interviewId,
-                    problem: currentProblem,
+                    problem: p,
                     code,
                     language: currentLanguage,
-                    viewed_answer: hasViewedCurrentAnswer
+                    viewed_answer: !!viewedSolutions[currentIndex]
                 });
 
                 if (res.success) {
+                    submissions[currentIndex] = { execution: res.execution, evaluation: res.evaluation };
+                    delete skippedProblems[currentIndex];
+                    renderPalette();
                     displayExecutionConsole(res.execution);
                     displayAIReviewModal(res.evaluation);
                 }
@@ -360,6 +488,26 @@ function setupExecutionButtons() {
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Submit Solution';
+            }
+        });
+    }
+
+    if (prevNavBtn) {
+        prevNavBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                renderProblem(currentIndex - 1);
+                renderPalette();
+            }
+        });
+    }
+
+    if (nextNavBtn) {
+        nextNavBtn.addEventListener('click', () => {
+            if (currentIndex < problems.length - 1) {
+                renderProblem(currentIndex + 1);
+                renderPalette();
+            } else {
+                finishCodingRound();
             }
         });
     }
@@ -395,6 +543,7 @@ function displayExecutionConsole(execution) {
     });
 
     consoleOutput.innerHTML = html;
+    consoleOutputs[currentIndex] = html;
 }
 
 function displayAIReviewModal(evaluation) {
@@ -411,11 +560,12 @@ function displayAIReviewModal(evaluation) {
 
     const nextBtn = document.getElementById('proceed-to-hr-btn');
     if (nextBtn) {
-        nextBtn.textContent = problemCount < MAX_CODING_QUESTIONS ? 'Next Coding Problem →' : 'Proceed to HR Round →';
-        nextBtn.onclick = async () => {
+        nextBtn.textContent = currentIndex < problems.length - 1 ? 'Next Coding Problem →' : 'Proceed to HR Round →';
+        nextBtn.onclick = () => {
             modal.style.display = 'none';
-            if (problemCount < MAX_CODING_QUESTIONS) {
-                await loadProblem();
+            if (currentIndex < problems.length - 1) {
+                renderProblem(currentIndex + 1);
+                renderPalette();
             } else {
                 finishCodingRound();
             }
@@ -424,6 +574,7 @@ function displayAIReviewModal(evaluation) {
 }
 
 async function finishCodingRound() {
+    saveCurrentCodeDraft();
     stopQuestionSpeech();
     window.Toast.success('Coding Round completed! Advancing to HR Round...');
 
