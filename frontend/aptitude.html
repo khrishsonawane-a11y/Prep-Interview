@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="css/aptitude.css">
   <script>
     (function() {
-      const theme = localStorage.getItem('app_theme') || 'light';
+      const theme = localStorage.getItem('app_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
       if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
     })();
   </script>
 </head>
@@ -29,9 +30,17 @@
         </h2>
       </div>
 
-      <div class="timer-box">
-        <span>⏱️</span>
-        <span id="aptitude-timer">30:00</span>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="speak-apt-btn" class="btn btn-secondary btn-sm" type="button">
+          🔊 Read Question Aloud
+        </button>
+        <button id="view-apt-answer-btn" class="btn btn-secondary btn-sm" type="button">
+          💡 View Answer
+        </button>
+        <div class="timer-box">
+          <span>⏱️</span>
+          <span id="aptitude-timer">30:00</span>
+        </div>
       </div>
     </div>
 
@@ -68,7 +77,7 @@
           <p style="font-size: 0.8rem; color: var(--text-dim);">Jump to any question instantly</p>
 
           <div class="palette-grid" id="palette-container">
-            <!-- Numbers 1..5 populated by aptitude.js -->
+            <!-- Numbers 1..30 populated by aptitude.js -->
           </div>
 
           <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; font-size: 0.78rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 0.4rem;">
@@ -78,13 +87,38 @@
             </div>
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <span style="width: 12px; height: 12px; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 2px;"></span>
-              <span>Unanswered</span>
+              <span>Unanswered / Skipped</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </main>
+
+  <!-- Aptitude View Answer Modal -->
+  <div id="apt-answer-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="card" style="max-width: 580px; width: 100%; max-height: 85vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+        <div>
+          <span class="badge badge-success" style="margin-bottom: 0.25rem;">Reference Solution</span>
+          <h3 style="font-size: 1.15rem; margin: 0;">💡 Correct Option & Explanation</h3>
+        </div>
+        <button id="close-apt-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+      </div>
+
+      <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.75rem 1rem; border-radius: var(--radius-md);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: #34d399; font-weight: 600;">Correct Answer:</div>
+          <div id="apt-correct-answer-text" style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-top: 0.2rem;"></div>
+        </div>
+
+        <div>
+          <strong style="color: var(--text-main);">Step-by-Step Explanation:</strong>
+          <div id="apt-explanation-text" style="color: var(--text-muted); margin-top: 0.4rem; line-height: 1.6; background: var(--bg-primary); padding: 0.9rem; border-radius: 4px; border: 1px solid var(--border-subtle); white-space: pre-line;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>

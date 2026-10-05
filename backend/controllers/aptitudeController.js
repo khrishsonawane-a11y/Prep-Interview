@@ -3,9 +3,6 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
-/**
- * Fisher-Yates shuffle algorithm to ensure uniform random distribution
- */
 function shuffleArray(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -17,8 +14,8 @@ function shuffleArray(array) {
 
 export const getAptitudeQuestions = async (req, res, next) => {
     try {
-        const { count = 5, difficulty = 'Intermediate', topic, dynamicAI = false, role = 'Software Developer' } = req.query;
-        const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 5));
+        const { count = 30, difficulty = 'Intermediate', topic, dynamicAI = false, role = 'Software Developer' } = req.query;
+        const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 30));
 
         if (dynamicAI === 'true') {
             const aiQ = await generateQuestion({
@@ -49,7 +46,6 @@ export const getAptitudeQuestions = async (req, res, next) => {
             }
         }
 
-        // Mock store fallback with 35+ question pool
         let questions = [...mockStore.aptitudeQuestions];
         if (topic) {
             questions = questions.filter(q => q.topic.toLowerCase() === topic.toLowerCase());
@@ -68,24 +64,45 @@ export const getAptitudeQuestions = async (req, res, next) => {
 export const submitAptitudeAnswer = async (req, res, next) => {
     try {
         const userId = req.user?.id || 'candidate-' + Date.now();
-        const { interviewId, questionId, questionText, selectedOptionIndex, correctOptionIndex, explanation, timeTakenSeconds = 0 } = req.body || {};
+        const {
+            interviewId,
+            questionId,
+            questionText,
+            selectedOptionIndex,
+            correctOptionIndex,
+            explanation,
+            reference_answer,
+            topic = 'Quantitative',
+            is_skipped = false,
+            viewed_answer = false,
+            timeTakenSeconds = 0
+        } = req.body || {};
 
-        const isCorrect = selectedOptionIndex === correctOptionIndex;
-        const score = isCorrect ? 100 : 0;
+        const isSkipped = is_skipped === true || selectedOptionIndex === -1 || selectedOptionIndex === undefined;
+        const isCorrect = !isSkipped && selectedOptionIndex === correctOptionIndex;
+        const score = isSkipped ? 0 : (isCorrect ? 100 : 0);
+
+        const errorType = isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : 'Calculation / Logic Mistake');
 
         const answerRecord = {
             id: randomUUID(),
             interview_id: interviewId,
             user_id: userId,
             round_type: 'aptitude',
-            question_id: questionId || 'apt-custom',
+            question_id: questionId || 'apt-' + Date.now(),
             question_text: questionText,
-            user_answer: `Option index: ${selectedOptionIndex}`,
+            topic: topic || 'Quantitative',
+            user_answer: isSkipped ? '[SKIPPED]' : `Option ${selectedOptionIndex + 1}`,
+            reference_answer: reference_answer || `Option ${correctOptionIndex + 1}: ${explanation || ''}`,
             is_correct: isCorrect,
+            is_skipped: isSkipped,
+            viewed_answer: Boolean(viewed_answer),
             score: score,
+            error_type: errorType,
             ai_evaluation: {
-                correctness: isCorrect ? 'Correct' : 'Incorrect',
-                explanation: explanation || 'Standard deduction',
+                correctness: isSkipped ? 'Skipped' : (isCorrect ? 'Correct' : 'Incorrect'),
+                error_type: errorType,
+                explanation: explanation || 'Standard deductive calculation',
                 score: score
             },
             time_taken_seconds: timeTakenSeconds,

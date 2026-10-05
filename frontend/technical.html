@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="css/technical.css">
   <script>
     (function() {
-      const theme = localStorage.getItem('app_theme') || 'light';
+      const theme = localStorage.getItem('app_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
       if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
     })();
   </script>
 </head>
@@ -21,14 +22,20 @@
 
   <main class="container tech-container" style="padding: 2.5rem 1.5rem 5rem;">
     <!-- Round Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 0.75rem;">
       <div>
         <span class="badge badge-purple">Round 2: Technical Interview</span>
         <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">
           <span id="display-role">Software Developer</span> • <span id="display-diff">Intermediate</span>
         </h2>
       </div>
-      <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="speak-tech-btn" class="btn btn-secondary btn-sm" type="button">
+          🔊 Read Question Aloud
+        </button>
+        <button id="view-tech-answer-btn" class="btn btn-secondary btn-sm" type="button">
+          💡 View Answer & Points
+        </button>
         <span class="badge badge-primary" id="tech-q-counter">Question 1 of 30</span>
       </div>
     </div>
@@ -88,11 +95,11 @@
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
         <div>
           <span class="badge badge-success" style="margin-bottom: 0.25rem;">AI Evaluation Report</span>
-          <h3>Performance Analysis</h3>
+          <h3 id="eval-verdict-title">Performance Analysis</h3>
         </div>
         <div style="text-align: right;">
           <div class="score-badge-large" id="eval-score">85/100</div>
-          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;">Confidence Score</div>
+          <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;" id="eval-verdict-label">Score</div>
         </div>
       </div>
 
@@ -102,40 +109,68 @@
           <div class="eval-metric-val" id="eval-correctness" style="color: #34d399;">High</div>
         </div>
         <div class="eval-metric-box">
-          <div class="eval-metric-title">Relevance</div>
+          <div class="eval-metric-title">Topic Relevance</div>
           <div class="eval-metric-val" id="eval-relevance" style="color: #60a5fa;">High</div>
         </div>
       </div>
 
-      <div style="margin-bottom: 1.5rem;">
-        <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: #34d399;">Key Strengths Identified:</h4>
-        <ul id="eval-strengths" style="list-style: none; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; color: var(--text-main);">
-        </ul>
+      <div style="margin-bottom: 1rem;">
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification / Assessment:</strong>
+        <span class="badge badge-warning" id="eval-error-type-badge" style="margin-left: 0.5rem;">None (Correct)</span>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Analysis & Feedback:</strong>
+        <p id="eval-feedback-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Missing Architectural Concepts:</strong>
+        <ul id="eval-missing-points" style="list-style: none; font-size: 0.85rem; color: #f87171; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Identified Strengths:</strong>
+        <ul id="eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
       </div>
 
       <div style="margin-bottom: 1.5rem;">
-        <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: #fbbf24;">Missing Nuances & Omissions:</h4>
-        <ul id="eval-missing-points" style="list-style: none; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; color: var(--text-main);">
-        </ul>
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Actionable Improvement:</strong>
+        <p id="eval-improvement-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
       </div>
 
-      <div style="margin-bottom: 1.5rem;">
-        <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Interviewer Detailed Feedback:</h4>
-        <p id="eval-feedback-text" style="line-height: 1.6; font-size: 0.92rem;"></p>
-      </div>
-
-      <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem;">
-        <h4 style="font-size: 0.95rem; color: #60a5fa; margin-bottom: 0.35rem;">Actionable Recommendation:</h4>
-        <p id="eval-improvement-text" style="font-size: 0.9rem; color: var(--text-main);"></p>
-      </div>
-
-      <div style="text-align: right;">
-        <button id="next-stage-btn" class="btn btn-accent btn-lg">
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="next-stage-btn" class="btn btn-primary btn-lg">
           Next Technical Question →
         </button>
       </div>
     </div>
   </main>
+
+  <!-- Technical View Answer Modal -->
+  <div id="tech-answer-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="card" style="max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+        <div>
+          <span class="badge badge-purple" style="margin-bottom: 0.25rem;">Reference Solution</span>
+          <h3 style="font-size: 1.15rem; margin: 0;">💡 Expected Technical Answer & Concepts</h3>
+        </div>
+        <button id="close-tech-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+      </div>
+
+      <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <strong style="color: var(--text-main);">Expected Answer Summary:</strong>
+          <div id="tech-expected-answer-text" style="color: var(--text-muted); margin-top: 0.35rem; line-height: 1.6; background: var(--bg-primary); padding: 0.9rem; border-radius: 4px; border: 1px solid var(--border-subtle);"></div>
+        </div>
+
+        <div>
+          <strong style="color: var(--text-main);">Key Concepts to Emphasize:</strong>
+          <ul id="tech-modal-concepts-list" style="list-style: none; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>

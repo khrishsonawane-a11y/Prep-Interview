@@ -7,9 +7,15 @@ let currentDifficulty = 'Intermediate';
 let currentQuestion = null;
 let askedQuestions = [];
 let questionCount = 0;
-const MAX_QUESTIONS = 30; // 30 technical questions per session
-let isRecording = false;
+const MAX_QUESTIONS = 30;
+let hasViewedCurrentAnswer = false;
+
+// Controlled Speech Recognition State Machine
+let recognitionState = 'idle'; // 'idle' | 'listening' | 'stopping' | 'stopped'
 let speechRecognition = null;
+let baseManualText = '';
+let committedVoiceChunks = [];
+let isSpeakingQuestion = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
@@ -31,12 +37,113 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSpeechRecognition();
     setupCharCounter();
     setupButtons();
+    setupAnswerModal();
+    setupSpeechButton();
     await fetchNextTechnicalQuestion();
 });
 
-async function fetchNextTechnicalQuestion() {
+window.addEventListener('beforeunload', () => {
+    stopQuestionSpeech();
     stopRecording();
-    baseTranscript = '';
+});
+
+function setupSpeechButton() {
+    const speakBtn = document.getElementById('speak-tech-btn');
+    if (!speakBtn) return;
+
+    speakBtn.addEventListener('click', () => {
+        if (isSpeakingQuestion) {
+            stopQuestionSpeech();
+        } else {
+            startQuestionSpeech();
+        }
+    });
+}
+
+function startQuestionSpeech() {
+    if (!('speechSynthesis' in window) || !currentQuestion) {
+        window.Toast.info('Speech synthesis is not supported on this browser.');
+        return;
+    }
+
+    stopQuestionSpeech();
+
+    const textToRead = currentQuestion.question || '';
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+        isSpeakingQuestion = true;
+        const btn = document.getElementById('speak-tech-btn');
+        if (btn) {
+            btn.innerHTML = '⏹ Stop Reading';
+            btn.classList.add('btn-danger');
+            btn.classList.remove('btn-secondary');
+        }
+    };
+
+    utterance.onend = () => {
+        stopQuestionSpeech();
+    };
+
+    utterance.onerror = () => {
+        stopQuestionSpeech();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function stopQuestionSpeech() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    isSpeakingQuestion = false;
+    const btn = document.getElementById('speak-tech-btn');
+    if (btn) {
+        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-secondary');
+    }
+}
+
+function setupAnswerModal() {
+    const viewBtn = document.getElementById('view-tech-answer-btn');
+    const modal = document.getElementById('tech-answer-modal');
+    const closeBtn = document.getElementById('close-tech-modal-btn');
+
+    if (viewBtn && modal) {
+        viewBtn.addEventListener('click', () => {
+            if (!currentQuestion) return;
+            hasViewedCurrentAnswer = true;
+
+            const expectedText = document.getElementById('tech-expected-answer-text');
+            if (expectedText) {
+                expectedText.textContent = currentQuestion.sample_answer || 'Expected architectural explanation covering core mechanisms, trade-offs, and design principles.';
+            }
+
+            const conceptsList = document.getElementById('tech-modal-concepts-list');
+            if (conceptsList && currentQuestion.expected_concepts) {
+                conceptsList.innerHTML = currentQuestion.expected_concepts.map(c => `<li>✓ <strong style="color:var(--text-main);">${c}</strong></li>`).join('');
+            }
+
+            modal.style.display = 'flex';
+        });
+    }
+
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+}
+
+async function fetchNextTechnicalQuestion() {
+    stopQuestionSpeech();
+    stopRecording();
+    hasViewedCurrentAnswer = false;
+    baseManualText = '';
+    committedVoiceChunks = [];
 
     const questionCard = document.getElementById('ai-question-card');
     const loadingState = document.getElementById('question-loading-state');
@@ -93,8 +200,6 @@ function setupCharCounter() {
     });
 }
 
-let baseTranscript = '';
-
 function setupSpeechRecognition() {
     const voiceBtn = document.getElementById('voice-dictate-btn');
     if (!voiceBtn) return;
@@ -111,30 +216,27 @@ function setupSpeechRecognition() {
     speechRecognition.lang = 'en-US';
 
     speechRecognition.onresult = (event) => {
-        let interimTranscript = '';
-        let sessionFinalTranscript = '';
+        let interimText = '';
 
-        for (let i = 0; i < event.results.length; ++i) {
-            const result = event.results[i];
-            const text = result[0].transcript.trim();
-            if (result.isFinal) {
-                sessionFinalTranscript = sessionFinalTranscript ? `${sessionFinalTranscript} ${text}` : text;
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const res = event.results[i];
+            const transcript = res[0].transcript.trim();
+            if (res.isFinal) {
+                if (transcript) {
+                    committedVoiceChunks.push(transcript);
+                }
             } else {
-                interimTranscript = interimTranscript ? `${interimTranscript} ${text}` : text;
+                interimText = interimText ? `${interimText} ${transcript}` : transcript;
             }
         }
 
-        const currentSessionText = sessionFinalTranscript && interimTranscript
-            ? `${sessionFinalTranscript} ${interimTranscript}`
-            : (sessionFinalTranscript || interimTranscript);
-
-        const fullText = baseTranscript
-            ? (currentSessionText ? `${baseTranscript} ${currentSessionText}` : baseTranscript)
-            : currentSessionText;
+        const fullVoice = [...committedVoiceChunks, interimText].filter(Boolean).join(' ');
+        const baseTranscript = baseManualText;
+        const fullContent = [baseTranscript, fullVoice].filter(Boolean).join(' ');
 
         const textarea = document.getElementById('tech-answer-input');
         if (textarea) {
-            textarea.value = fullText;
+            textarea.value = fullContent;
             textarea.dispatchEvent(new Event('input'));
         }
     };
@@ -145,53 +247,58 @@ function setupSpeechRecognition() {
     };
 
     speechRecognition.onend = () => {
-        stopRecording();
+        recognitionState = 'idle';
+        const btn = document.getElementById('voice-dictate-btn');
+        if (btn) {
+            btn.classList.remove('recording');
+            btn.innerHTML = '🎙️ Dictate with Voice';
+        }
     };
 
     voiceBtn.addEventListener('click', () => {
-        if (isRecording) {
+        if (recognitionState === 'listening') {
             stopRecording();
-        } else {
+        } else if (recognitionState === 'idle') {
             startRecording();
         }
     });
 }
 
 function startRecording() {
-    if (!speechRecognition || isRecording) return;
+    if (!speechRecognition || recognitionState === 'listening') return;
+
     const textarea = document.getElementById('tech-answer-input');
-    baseTranscript = textarea ? textarea.value.trim() : '';
+    baseManualText = textarea ? textarea.value.trim() : '';
+    committedVoiceChunks = [];
 
     try {
         speechRecognition.start();
-        isRecording = true;
+        recognitionState = 'listening';
         const btn = document.getElementById('voice-dictate-btn');
         if (btn) {
             btn.classList.add('recording');
             btn.innerHTML = '🔴 Listening... (Click to stop)';
         }
-        window.Toast.info('Microphone active. Speak your answer clearly.');
+        window.Toast.info('Microphone active. Speak your technical answer clearly.');
     } catch (e) {
         console.warn('Speech start error:', e);
+        recognitionState = 'idle';
     }
 }
 
 function stopRecording() {
     if (!speechRecognition) return;
-    if (isRecording) {
+
+    if (recognitionState === 'listening') {
+        recognitionState = 'stopping';
         try {
             speechRecognition.stop();
         } catch (e) {}
     }
-    isRecording = false;
-    const textarea = document.getElementById('tech-answer-input');
-    baseTranscript = textarea ? textarea.value.trim() : '';
 
-    const btn = document.getElementById('voice-dictate-btn');
-    if (btn) {
-        btn.classList.remove('recording');
-        btn.innerHTML = '🎙️ Dictate with Voice';
-    }
+    const textarea = document.getElementById('tech-answer-input');
+    baseManualText = textarea ? textarea.value.trim() : '';
+    committedVoiceChunks = [];
 }
 
 function setupButtons() {
@@ -201,8 +308,8 @@ function setupButtons() {
 
     if (skipBtn) {
         skipBtn.addEventListener('click', async () => {
+            stopQuestionSpeech();
             stopRecording();
-            baseTranscript = '';
             const textarea = document.getElementById('tech-answer-input');
             if (textarea) textarea.value = '';
 
@@ -213,9 +320,13 @@ function setupButtons() {
                     questionText: currentQuestion?.question || 'Technical Question',
                     answerText: '[SKIPPED]',
                     role: currentRole,
-                    difficulty: currentDifficulty
+                    difficulty: currentDifficulty,
+                    topic: currentQuestion?.topic || 'Architecture',
+                    reference_answer: currentQuestion?.sample_answer || '',
+                    is_skipped: true,
+                    viewed_answer: hasViewedCurrentAnswer
                 });
-                window.Toast.info('Question skipped.');
+                window.Toast.info('Question marked as skipped.');
             } catch (e) {
                 console.warn('Skip record warning:', e);
             } finally {
@@ -232,6 +343,7 @@ function setupButtons() {
 
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
+            stopQuestionSpeech();
             const answer = document.getElementById('tech-answer-input').value.trim();
             if (answer.length < 15) {
                 window.Toast.warning('Please provide a substantive technical answer (at least a couple of sentences).');
@@ -249,7 +361,10 @@ function setupButtons() {
                     questionText: currentQuestion.question,
                     answerText: answer,
                     role: currentRole,
-                    difficulty: currentDifficulty
+                    difficulty: currentDifficulty,
+                    topic: currentQuestion.topic || 'Engineering Architecture',
+                    reference_answer: currentQuestion.sample_answer || '',
+                    viewed_answer: hasViewedCurrentAnswer
                 });
 
                 if (res.success && res.evaluation) {
@@ -268,7 +383,7 @@ function setupButtons() {
 
     if (nextBtn) {
         nextBtn.addEventListener('click', async () => {
-            baseTranscript = '';
+            stopQuestionSpeech();
             const textarea = document.getElementById('tech-answer-input');
             if (textarea) textarea.value = '';
 
@@ -294,6 +409,12 @@ function displayEvaluation(evalData) {
     document.getElementById('eval-feedback-text').textContent = evalData.feedback || 'Good explanation.';
     document.getElementById('eval-improvement-text').textContent = evalData.improvement || 'Deepen production trade-offs.';
 
+    const errorBadge = document.getElementById('eval-error-type-badge');
+    if (errorBadge) {
+        errorBadge.textContent = evalData.error_type || (evalData.score >= 70 ? 'None (Correct)' : 'Concept Incomplete');
+        errorBadge.className = `badge ${evalData.score >= 70 ? 'badge-success' : 'badge-warning'}`;
+    }
+
     // Missing Points
     const missingWrap = document.getElementById('eval-missing-points');
     if (missingWrap && evalData.missing_points) {
@@ -313,6 +434,7 @@ function displayEvaluation(evalData) {
 }
 
 async function finishTechnicalRound() {
+    stopQuestionSpeech();
     window.Toast.success('Technical Round complete! Advancing to Coding / DSA Round...');
 
     try {

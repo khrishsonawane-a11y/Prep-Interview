@@ -344,8 +344,10 @@ export const finalizeInterview = async (req, res, next) => {
             }
 
             const wrong = Math.max(0, total - correct - skipped);
+            const attempted = total - skipped;
+            const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
             const score = evaluatedCount > 0 ? Math.round(totalScore / evaluatedCount) : (correct > 0 ? Math.round((correct / total) * 100) : 0);
-            return { total_questions: total, correct, wrong, skipped, score, hasAnswers: roundAns.length > 0 };
+            return { total_questions: total, attempted, correct, wrong, skipped, accuracy, score, hasAnswers: roundAns.length > 0 };
         };
 
         const aptMetrics = computeRound('aptitude', 30);
@@ -360,6 +362,9 @@ export const finalizeInterview = async (req, res, next) => {
         const totalCorrect = metricsToUse.reduce((acc, m) => acc + m.correct, 0);
         const totalSkipped = metricsToUse.reduce((acc, m) => acc + (m.skipped || 0), 0);
         const totalWrong = metricsToUse.reduce((acc, m) => acc + m.wrong, 0);
+        const totalAttempted = totalQuestions - totalSkipped;
+        const overallAccuracy = totalAttempted > 0 ? Math.round((totalCorrect / totalAttempted) * 100) : 0;
+        const completionPercentage = totalQuestions > 0 ? Math.round((totalAttempted / totalQuestions) * 100) : 100;
         const overallScore = Math.round(metricsToUse.reduce((acc, m) => acc + m.score, 0) / metricsToUse.length);
 
         // Improvement calculation against previous attempt
@@ -377,58 +382,128 @@ export const finalizeInterview = async (req, res, next) => {
 
         const aiReport = await generateFinalReport({ interview, answers });
 
+        // Map question-by-question review items
+        const questionReviews = answers.map((a, idx) => {
+            const isSkipped = a.is_skipped === true || a.user_answer === '[SKIPPED]';
+            const isCorrect = !isSkipped && (a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60));
+            return {
+                id: a.id || `q-${idx + 1}`,
+                round_type: (a.round_type || 'technical').toUpperCase(),
+                question: a.question_text || `Question #${idx + 1}`,
+                topic: a.topic || 'Core Engineering',
+                user_answer: isSkipped ? '[SKIPPED]' : (a.user_answer || 'No answer submitted'),
+                reference_answer: a.reference_answer || (a.ai_evaluation?.sample_answer || 'Standard engineering reference answer'),
+                result: isSkipped ? 'Skipped' : (isCorrect ? 'Correct' : 'Incorrect'),
+                score: Number(a.score) || 0,
+                error_type: a.error_type || (isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : 'Concept Incomplete')),
+                missing_concepts: a.ai_evaluation?.missing_points || [],
+                explanation: a.ai_evaluation?.feedback || a.ai_evaluation?.explanation || 'Evaluated based on standard criteria.',
+                suggested_improvement: a.ai_evaluation?.improvement || 'Review core definitions and practice trade-offs.',
+                viewed_answer: Boolean(a.viewed_answer)
+            };
+        });
+
+        const performanceLevel = aiReport.performance_level || (
+            overallScore >= 90 ? 'Exceptional Readiness'
+            : overallScore >= 80 ? 'Strong Candidate'
+            : overallScore >= 70 ? 'Proficient'
+            : overallScore >= 60 ? 'Developing Foundations'
+            : 'Needs Intensive Preparation'
+        );
+
         const resultRecord = {
             id: randomUUID(),
             interview_id: id,
             user_id: userId,
             overall_score: overallScore,
+            performance_level: performanceLevel,
+            readiness_rating: aiReport.readiness_rating || (overallScore >= 80 ? 'Interview Ready' : overallScore >= 65 ? 'Nearly Ready' : 'Developing'),
             overall_performance: {
                 total_questions: totalQuestions,
+                attempted: totalAttempted,
                 correct: totalCorrect,
                 wrong: totalWrong,
                 skipped: totalSkipped,
+                accuracy: overallAccuracy,
+                completion_percentage: completionPercentage,
+                percentage: overallScore,
                 score: overallScore,
+                performance_level: performanceLevel,
                 improvement: overallImprovement
             },
+            previous_attempt_comparison: prevInterview ? {
+                has_previous: true,
+                previous_interview_id: prevInterview.id,
+                previous_date: prevInterview.completed_at || prevInterview.created_at,
+                previous_score: prevInterview.overall_score || 0,
+                current_score: overallScore,
+                score_difference: formatDiff(overallScore, prevInterview.overall_score),
+                accuracy_difference: prevResult?.overall_performance?.accuracy !== undefined
+                    ? formatDiff(overallAccuracy, prevResult.overall_performance.accuracy)
+                    : '+0%'
+            } : { has_previous: false },
             overall_summary: aiReport.overall_summary,
             aptitude_summary: {
                 ...(aiReport.aptitude_summary || {}),
+                round_name: 'Aptitude & Logic',
                 total_questions: aptMetrics.total_questions,
+                attempted: aptMetrics.attempted,
                 correct: aptMetrics.correct,
                 wrong: aptMetrics.wrong,
                 skipped: aptMetrics.skipped,
+                accuracy: aptMetrics.accuracy,
                 score: aptMetrics.score,
+                percentage: aptMetrics.score,
                 improvement: aptImprovement
             },
             technical_summary: {
                 ...(aiReport.technical_summary || {}),
+                round_name: 'Technical Architecture',
                 total_questions: techMetrics.total_questions,
+                attempted: techMetrics.attempted,
                 correct: techMetrics.correct,
                 wrong: techMetrics.wrong,
                 skipped: techMetrics.skipped,
+                accuracy: techMetrics.accuracy,
                 score: techMetrics.score,
+                percentage: techMetrics.score,
                 improvement: techImprovement
             },
             coding_summary: {
                 ...(aiReport.coding_summary || {}),
+                round_name: 'Coding & DSA (Java/C/C++)',
                 total_questions: codeMetrics.total_questions,
+                attempted: codeMetrics.attempted,
                 correct: codeMetrics.correct,
                 wrong: codeMetrics.wrong,
                 skipped: codeMetrics.skipped,
+                accuracy: codeMetrics.accuracy,
                 score: codeMetrics.score,
+                percentage: codeMetrics.score,
                 improvement: codeImprovement
             },
             hr_summary: {
                 ...(aiReport.hr_summary || {}),
+                round_name: 'HR & Behavioral',
                 total_questions: hrMetrics.total_questions,
+                attempted: hrMetrics.attempted,
                 correct: hrMetrics.correct,
                 wrong: hrMetrics.wrong,
                 skipped: hrMetrics.skipped,
+                accuracy: hrMetrics.accuracy,
                 score: hrMetrics.score,
+                percentage: hrMetrics.score,
                 improvement: hrImprovement
             },
+            weak_topics: aiReport.weak_topics || [],
+            strong_topics: aiReport.strong_topics || [],
+            top_priorities: aiReport.top_priorities || [
+                'Master edge case handling in coding assessments.',
+                'Deepen system design architecture and database indexing.',
+                'Structure behavioral responses using quantifiable STAR metrics.'
+            ],
             recommended_topics: aiReport.recommended_topics || [],
-            readiness_rating: aiReport.readiness_rating || (overallScore >= 80 ? 'Interview Ready' : overallScore >= 65 ? 'Nearly Ready' : 'Developing'),
+            question_reviews: questionReviews,
             created_at: new Date().toISOString()
         };
 

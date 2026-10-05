@@ -3,9 +3,6 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion, evaluateTechnicalAnswer as aiEvalTech } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
-/**
- * Fisher-Yates shuffle algorithm to ensure uniform random distribution
- */
 function shuffleArray(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -30,7 +27,6 @@ export const getTechnicalQuestion = async (req, res, next) => {
             return res.json({ success: true, question: aiQ });
         }
 
-        // 1. Try fetching from Supabase Question Bank if configured
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
                 let query = supabaseAdmin
@@ -46,7 +42,6 @@ export const getTechnicalQuestion = async (req, res, next) => {
                         if (topicMatches.length > 0) candidates = topicMatches;
                     }
 
-                    // Exclude already asked questions in this session
                     const unasked = candidates.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
                     const pool = unasked.length > 0 ? unasked : candidates;
                     const shuffled = shuffleArray(pool);
@@ -57,14 +52,12 @@ export const getTechnicalQuestion = async (req, res, next) => {
             }
         }
 
-        // 2. Mock Store Fallback with 30+ Questions Pool
         let questions = [...mockStore.technicalQuestions];
         if (topic) {
             const topicFiltered = questions.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
             if (topicFiltered.length > 0) questions = topicFiltered;
         }
 
-        // Exclude previous questions in the active interview session
         const unasked = questions.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
         const pool = unasked.length > 0 ? unasked : questions;
         const shuffled = shuffleArray(pool);
@@ -87,12 +80,18 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             answerText,
             role = 'Software Developer',
             difficulty = 'Intermediate',
+            topic = 'Engineering Architecture',
+            reference_answer = '',
+            is_skipped = false,
+            viewed_answer = false,
             timeTakenSeconds = 0
         } = req.body || {};
 
         if (!interviewId || !questionText || !answerText) {
             return res.status(400).json({ success: false, error: 'interviewId, questionText, and answerText are required.' });
         }
+
+        const isSkipped = is_skipped === true || answerText.trim() === '[SKIPPED]';
 
         const evaluation = await aiEvalTech({
             question: questionText,
@@ -101,20 +100,30 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             difficulty
         });
 
-        const score = evaluation.score || 75;
-        const isCorrect = score >= 60;
+        const score = isSkipped ? 0 : (evaluation.score || 75);
+        const isCorrect = !isSkipped && score >= 60;
+        const errorType = isSkipped ? 'Did Not Answer' : (evaluation.error_type || (score >= 80 ? 'None (Correct)' : 'Concept Missing'));
 
         const answerRecord = {
             id: randomUUID(),
             interview_id: interviewId,
             user_id: userId,
             round_type: 'technical',
-            question_id: 'tech-dyn-' + Date.now(),
+            question_id: 'tech-' + Date.now(),
             question_text: questionText,
+            topic: topic || 'Architecture',
             user_answer: answerText,
+            reference_answer: reference_answer || 'Key concepts and architectural trade-offs.',
             is_correct: isCorrect,
+            is_skipped: isSkipped,
+            viewed_answer: Boolean(viewed_answer),
             score: score,
-            ai_evaluation: evaluation,
+            error_type: errorType,
+            ai_evaluation: {
+                ...evaluation,
+                score,
+                error_type: errorType
+            },
             time_taken_seconds: timeTakenSeconds,
             created_at: new Date().toISOString()
         };

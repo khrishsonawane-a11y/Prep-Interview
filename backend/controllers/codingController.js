@@ -4,9 +4,6 @@ import { generateQuestion, evaluateCodingSubmission as aiEvalCode } from '../ser
 import { executeCode as runCodeService, submitCode as submitCodeService } from '../services/codeExecutionService.js';
 import { randomUUID } from 'crypto';
 
-/**
- * Fisher-Yates shuffle algorithm to ensure uniform random distribution
- */
 function shuffleArray(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -38,12 +35,11 @@ export const getCodingQuestion = async (req, res, next) => {
             });
         }
 
-        // 1. Try fetching from Supabase Question Bank if configured
         if (isSupabaseConfigured() && supabaseAdmin) {
             try {
                 let query = supabaseAdmin
                     .from('coding_questions')
-                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, solution_code, test_cases')
+                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, solution_code, approach, algorithm_explanation, time_complexity, space_complexity, test_cases')
                     .limit(100);
 
                 const { data, error } = await query;
@@ -73,7 +69,6 @@ export const getCodingQuestion = async (req, res, next) => {
             }
         }
 
-        // 2. Mock Store Fallback with 30+ Coding Problems Pool
         let problems = [...mockStore.codingQuestions];
         if (topic) {
             const topicMatches = problems.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
@@ -99,7 +94,7 @@ export const getCodingQuestion = async (req, res, next) => {
 
 export const runCode = async (req, res, next) => {
     try {
-        const { code, language = 'javascript', testCases = [], problemId } = req.body || {};
+        const { code, language = 'java', testCases = [], problemId } = req.body || {};
 
         const runResult = await runCodeService({
             code,
@@ -121,7 +116,9 @@ export const submitCode = async (req, res, next) => {
             interviewId,
             problem,
             code,
-            language = 'javascript',
+            language = 'java',
+            is_skipped = false,
+            viewed_answer = false,
             timeTakenSeconds = 0
         } = req.body || {};
 
@@ -129,14 +126,21 @@ export const submitCode = async (req, res, next) => {
             return res.status(400).json({ success: false, error: 'interviewId, problem, and code are required.' });
         }
 
-        // Find complete problem including hidden test cases
+        const isSkipped = is_skipped === true || code.trim() === '// [SKIPPED]';
+
         let fullTestCases = problem.test_cases || [];
         const matching = mockStore.codingQuestions.find(q => q.id === problem.id || q.title === problem.title);
         if (matching && matching.test_cases && matching.test_cases.length > 0) {
             fullTestCases = matching.test_cases;
         }
 
-        const executionResult = await submitCodeService({
+        const executionResult = isSkipped ? {
+            success: true,
+            passedCount: 0,
+            totalCount: fullTestCases.length,
+            isComplete: false,
+            results: []
+        } : await submitCodeService({
             code,
             language,
             testCases: fullTestCases,
@@ -150,19 +154,30 @@ export const submitCode = async (req, res, next) => {
             testResults: executionResult.results || []
         });
 
+        const score = isSkipped ? 0 : (aiReview.score || (executionResult.isComplete ? 95 : 60));
+        const isCorrect = !isSkipped && executionResult.isComplete;
+        const errorType = isSkipped ? 'Did Not Answer' : (executionResult.isComplete ? 'None (Correct)' : (executionResult.error ? 'Syntax/Implementation Error' : 'Edge Case Missed'));
+
         const answerRecord = {
             id: randomUUID(),
             interview_id: interviewId,
             user_id: userId,
             round_type: 'coding',
             question_id: problem.id || 'code-1',
-            question_text: `${problem.title}: ${(problem.description || '').slice(0, 100)}...`,
+            question_text: `${problem.title}: ${(problem.description || '').slice(0, 120)}...`,
+            topic: problem.topic || 'DSA Algorithms',
             user_answer: code,
             code_language: language,
-            is_correct: executionResult.isComplete,
-            score: aiReview.score || (executionResult.isComplete ? 95 : 60),
+            reference_answer: (matching?.solution_code?.[language]) || matching?.approach || 'Optimal reference implementation',
+            is_correct: isCorrect,
+            is_skipped: isSkipped,
+            viewed_answer: Boolean(viewed_answer),
+            score: score,
+            error_type: errorType,
             ai_evaluation: {
                 ...aiReview,
+                score,
+                error_type: errorType,
                 execution: executionResult
             },
             time_taken_seconds: timeTakenSeconds,

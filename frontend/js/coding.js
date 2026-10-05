@@ -1,14 +1,16 @@
 /**
- * Coding / DSA Round Controller
+ * Coding / DSA Round Controller (Java, C, C++)
  */
 let interviewId = null;
 let currentRole = 'Software Developer';
 let currentDifficulty = 'Intermediate';
 let currentProblem = null;
-let currentLanguage = 'javascript';
+let currentLanguage = 'java'; // Default language is Java
 let askedProblems = [];
 let problemCount = 0;
 const MAX_CODING_QUESTIONS = 30;
+let hasViewedCurrentAnswer = false;
+let isSpeakingQuestion = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
@@ -27,37 +29,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupLanguageSelector();
     setupExecutionButtons();
     setupSolutionModal();
+    setupSpeechButton();
     await loadProblem();
+});
+
+// Stop any active TTS when leaving page
+window.addEventListener('beforeunload', () => {
+    stopQuestionSpeech();
 });
 
 function setupLanguageSelector() {
     const selector = document.getElementById('code-language-select');
     if (!selector) return;
 
+    selector.value = currentLanguage;
     selector.addEventListener('change', (e) => {
         currentLanguage = e.target.value;
-        if (currentProblem && currentProblem.starter_code) {
-            const starter = currentProblem.starter_code[currentLanguage] || getDefaultStarter(currentLanguage);
-            document.getElementById('code-editor-textarea').value = starter;
-        }
+        updateEditorStarterCode();
+        updateSolutionModalContent();
     });
 
     const resetBtn = document.getElementById('reset-code-btn');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            if (currentProblem && currentProblem.starter_code) {
-                document.getElementById('code-editor-textarea').value = currentProblem.starter_code[currentLanguage] || getDefaultStarter(currentLanguage);
-                window.Toast.info('Editor reset to clean starter template.');
-            }
+            updateEditorStarterCode();
+            window.Toast.info(`Editor reset to clean ${getLanguageName(currentLanguage)} template.`);
         });
     }
 }
 
+function getLanguageName(lang) {
+    if (lang === 'c') return 'C';
+    if (lang === 'cpp') return 'C++';
+    return 'Java';
+}
+
 function getDefaultStarter(lang) {
-    if (lang === 'python') {
-        return 'def solution(input_data):\n    # Write your solution here\n    pass';
+    if (lang === 'c') {
+        return '#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\nint solve() {\n    // Write your code here\n    return 0;\n}';
     }
-    return 'function solution(inputData) {\n    // Write your solution here\n    \n}';
+    if (lang === 'cpp') {
+        return '#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int solve() {\n        // Write your code here\n        return 0;\n    }\n};';
+    }
+    return 'class Solution {\n    public int solve() {\n        // Write your code in Java here\n        return 0;\n    }\n}';
+}
+
+function updateEditorStarterCode() {
+    const textarea = document.getElementById('code-editor-textarea');
+    if (!textarea || !currentProblem) return;
+
+    if (currentProblem.starter_code && currentProblem.starter_code[currentLanguage]) {
+        textarea.value = currentProblem.starter_code[currentLanguage];
+    } else {
+        textarea.value = getDefaultStarter(currentLanguage);
+    }
 }
 
 function setupSolutionModal() {
@@ -65,15 +90,11 @@ function setupSolutionModal() {
     const modal = document.getElementById('solution-modal');
     const closeBtn = document.getElementById('close-solution-btn');
     const copyBtn = document.getElementById('copy-solution-btn');
-    const codeView = document.getElementById('solution-code-view');
 
     if (viewBtn && modal) {
         viewBtn.addEventListener('click', () => {
-            const sol = currentProblem?.solution_code?.[currentLanguage] || 
-                (currentLanguage === 'python'
-                    ? '# Model Solution\ndef two_sum(nums, target):\n    lookup = {}\n    for i, num in enumerate(nums):\n        if target - num in lookup:\n            return [lookup[target - num], i]\n        lookup[num] = i\n    return []'
-                    : '// Model Solution\nfunction twoSum(nums, target) {\n    const map = new Map();\n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        if (map.has(complement)) return [map.get(complement), i];\n        map.set(nums[i], i);\n    }\n    return [];\n}');
-            if (codeView) codeView.textContent = sol;
+            hasViewedCurrentAnswer = true;
+            updateSolutionModalContent();
             modal.style.display = 'flex';
         });
     }
@@ -86,15 +107,104 @@ function setupSolutionModal() {
 
     if (copyBtn && modal) {
         copyBtn.addEventListener('click', () => {
+            const codeView = document.getElementById('solution-code-view');
             const sol = codeView?.textContent || '';
             document.getElementById('code-editor-textarea').value = sol;
             modal.style.display = 'none';
-            window.Toast.success('Solution copied to editor!');
+            window.Toast.success(`Copied ${getLanguageName(currentLanguage)} reference solution to editor!`);
         });
     }
 }
 
+function updateSolutionModalContent() {
+    if (!currentProblem) return;
+
+    const langLabel = document.getElementById('solution-lang-label');
+    if (langLabel) langLabel.textContent = getLanguageName(currentLanguage);
+
+    const approachText = document.getElementById('solution-approach-text');
+    if (approachText) approachText.textContent = currentProblem.approach || 'Apply optimal algorithmic strategy for minimum time complexity.';
+
+    const algoText = document.getElementById('solution-algorithm-text');
+    if (algoText) algoText.textContent = currentProblem.algorithm_explanation || '1. Parse constraints.\n2. Apply algorithmic data structures.\n3. Return result.';
+
+    const timeText = document.getElementById('solution-time-text');
+    if (timeText) timeText.textContent = currentProblem.time_complexity || 'O(N)';
+
+    const spaceText = document.getElementById('solution-space-text');
+    if (spaceText) spaceText.textContent = currentProblem.space_complexity || 'O(1)';
+
+    const codeView = document.getElementById('solution-code-view');
+    if (codeView) {
+        const sol = currentProblem.solution_code?.[currentLanguage] || getDefaultStarter(currentLanguage);
+        codeView.textContent = sol;
+    }
+}
+
+function setupSpeechButton() {
+    const speakBtn = document.getElementById('speak-code-btn');
+    if (!speakBtn) return;
+
+    speakBtn.addEventListener('click', () => {
+        if (isSpeakingQuestion) {
+            stopQuestionSpeech();
+        } else {
+            startQuestionSpeech();
+        }
+    });
+}
+
+function startQuestionSpeech() {
+    if (!('speechSynthesis' in window) || !currentProblem) {
+        window.Toast.info('Speech synthesis is not supported on this browser.');
+        return;
+    }
+
+    stopQuestionSpeech();
+
+    const textToRead = `${currentProblem.title}. ${currentProblem.description || ''}`;
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+        isSpeakingQuestion = true;
+        const btn = document.getElementById('speak-code-btn');
+        if (btn) {
+            btn.innerHTML = '⏹ Stop Reading';
+            btn.classList.add('btn-danger');
+            btn.classList.remove('btn-secondary');
+        }
+    };
+
+    utterance.onend = () => {
+        stopQuestionSpeech();
+    };
+
+    utterance.onerror = () => {
+        stopQuestionSpeech();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function stopQuestionSpeech() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    isSpeakingQuestion = false;
+    const btn = document.getElementById('speak-code-btn');
+    if (btn) {
+        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-secondary');
+    }
+}
+
 async function loadProblem() {
+    stopQuestionSpeech();
+    hasViewedCurrentAnswer = false;
+
     try {
         const res = await window.API.getCodingQuestion({
             role: currentRole,
@@ -129,7 +239,7 @@ function renderProblemDetails(problem) {
     document.getElementById('problem-title-display').textContent = problem.title;
     document.getElementById('problem-diff-badge').textContent = problem.difficulty || 'Beginner';
     document.getElementById('problem-topic-badge').textContent = problem.topic || 'DSA';
-    document.getElementById('problem-desc-content').innerHTML = problem.description.replace(/\n/g, '<br>');
+    document.getElementById('problem-desc-content').innerHTML = (problem.description || '').replace(/\n/g, '<br>');
 
     // Examples
     const examplesWrap = document.getElementById('examples-wrap');
@@ -150,11 +260,8 @@ function renderProblemDetails(problem) {
         constraintsWrap.innerHTML = problem.constraints.map(c => `<li>• ${c}</li>`).join('');
     }
 
-    // Starter code (SKELETON ONLY - No pre-filled solutions)
-    const textarea = document.getElementById('code-editor-textarea');
-    if (textarea && problem.starter_code) {
-        textarea.value = problem.starter_code[currentLanguage] || getDefaultStarter(currentLanguage);
-    }
+    // Set starter code
+    updateEditorStarterCode();
 }
 
 function setupExecutionButtons() {
@@ -171,7 +278,7 @@ function setupExecutionButtons() {
 
             try {
                 runBtn.disabled = true;
-                runBtn.innerHTML = '<span class="spinner"></span> Testing...';
+                runBtn.innerHTML = '<span class="spinner"></span> Compiling & Testing...';
 
                 const res = await window.API.runCode({
                     code,
@@ -196,13 +303,16 @@ function setupExecutionButtons() {
     const skipBtn = document.getElementById('skip-code-btn');
     if (skipBtn) {
         skipBtn.addEventListener('click', async () => {
+            stopQuestionSpeech();
             try {
                 skipBtn.disabled = true;
                 await window.API.submitCode({
                     interviewId,
                     problem: currentProblem,
                     code: '// [SKIPPED]',
-                    language: currentLanguage
+                    language: currentLanguage,
+                    is_skipped: true,
+                    viewed_answer: hasViewedCurrentAnswer
                 });
                 window.Toast.info('Coding problem skipped.');
             } catch (e) {
@@ -212,7 +322,7 @@ function setupExecutionButtons() {
             }
 
             if (problemCount < MAX_CODING_QUESTIONS) {
-                await fetchNextCodingProblem();
+                await loadProblem();
             } else {
                 finishCodingRound();
             }
@@ -221,6 +331,7 @@ function setupExecutionButtons() {
 
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
+            stopQuestionSpeech();
             const code = document.getElementById('code-editor-textarea').value;
             if (!code || code.trim().length < 5) {
                 window.Toast.warning('Please write your solution code before submitting.');
@@ -229,13 +340,14 @@ function setupExecutionButtons() {
 
             try {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+                submitBtn.innerHTML = '<span class="spinner"></span> AI Evaluating Code...';
 
                 const res = await window.API.submitCode({
                     interviewId,
                     problem: currentProblem,
                     code,
-                    language: currentLanguage
+                    language: currentLanguage,
+                    viewed_answer: hasViewedCurrentAnswer
                 });
 
                 if (res.success) {
@@ -258,8 +370,12 @@ function displayExecutionConsole(execution) {
     if (!consoleOutput) return;
 
     let html = `<div style="margin-bottom:0.6rem; color:var(--text-main); font-weight:600; font-size:0.85rem;">
-        ${execution.passedCount} / ${execution.totalCount} Test Cases Passed (${execution.executionTimeMs}ms)
+        ${execution.passedCount || 0} / ${execution.totalCount || 0} Test Cases Passed (${execution.executionTimeMs || 0}ms) — Language: ${getLanguageName(currentLanguage)}
     </div>`;
+
+    if (execution.error) {
+        html += `<div style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444; padding: 0.6rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 0.5rem; white-space: pre-wrap;">${execution.error}</div>`;
+    }
 
     (execution.results || []).forEach(r => {
         const passBadge = r.passed ? '<span class="test-badge-pass">✓ PASSED</span>' : '<span class="test-badge-fail">✕ FAILED</span>';
@@ -308,6 +424,7 @@ function displayAIReviewModal(evaluation) {
 }
 
 async function finishCodingRound() {
+    stopQuestionSpeech();
     window.Toast.success('Coding Round completed! Advancing to HR Round...');
 
     try {

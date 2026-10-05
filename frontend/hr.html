@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="css/hr.css">
   <script>
     (function() {
-      const theme = localStorage.getItem('app_theme') || 'light';
+      const theme = localStorage.getItem('app_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', theme);
       if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
     })();
   </script>
 </head>
@@ -21,12 +22,15 @@
 
   <main class="container hr-stage" style="padding: 2.5rem 1.5rem 5rem;">
     <!-- Round Navigation -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 0.75rem;">
       <div>
         <span class="badge badge-primary">Round 4: HR & Behavioral</span>
         <h2 style="font-size: 1.5rem; margin-top: 0.25rem;">Communication & Cultural Fit</h2>
       </div>
-      <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button id="view-hr-answer-btn" class="btn btn-secondary btn-sm" type="button">
+          💡 View Reference STAR Answer
+        </button>
         <span class="badge badge-purple" id="hr-q-counter">Question 1 of 30</span>
       </div>
     </div>
@@ -70,7 +74,7 @@
         <textarea id="hr-transcript-input" class="transcript-area" placeholder="Your voice transcription or typed answer will appear here... Speak using the STAR method (Situation, Task, Action, Result)."></textarea>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
         <button id="skip-hr-btn" type="button" class="btn btn-secondary">
           Skip Question ↷
         </button>
@@ -92,34 +96,66 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
         <div class="eval-metric-box">
           <div class="eval-metric-title">Clarity & Articulation</div>
           <div class="eval-metric-val" id="hr-eval-clarity" style="color: #60a5fa;">High</div>
         </div>
         <div class="eval-metric-box">
-          <div class="eval-metric-title">STAR Method Structure</div>
-          <div class="eval-metric-val" id="hr-eval-structure" style="color: #34d399;">Good Flow</div>
+          <div class="eval-metric-title">STAR Structure Adherence</div>
+          <div class="eval-metric-val" id="hr-eval-structure" style="color: #34d399;">Structured</div>
         </div>
       </div>
 
+      <div style="margin-bottom: 1rem;">
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification:</strong>
+        <span class="badge badge-primary" id="hr-eval-error-badge" style="margin-left: 0.5rem;">None (Strong Communication)</span>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Behavioral Strengths:</strong>
+        <ul id="hr-eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+      </div>
+
       <div style="margin-bottom: 1.5rem;">
-        <h4 style="font-size: 0.95rem; margin-bottom: 0.35rem;">HR Feedback:</h4>
-        <p id="hr-eval-feedback" style="line-height: 1.6; font-size: 0.9rem; color: var(--text-muted);"></p>
+        <strong style="font-size: 0.9rem; color: var(--text-main);">Executive Coach Recommendation:</strong>
+        <p id="hr-eval-feedback" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
       </div>
 
-      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 2rem;">
-        <h4 style="font-size: 0.95rem; color: #fbbf24; margin-bottom: 0.35rem;">Executive Tip:</h4>
-        <p id="hr-eval-improvement" style="font-size: 0.9rem; color: var(--text-main);"></p>
-      </div>
-
-      <div style="text-align: right;">
-        <button id="next-hr-stage-btn" class="btn btn-accent btn-lg">
-          Complete Interview & View Final Report 🏆
-        </button>
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="next-hr-btn" class="btn btn-primary btn-lg">Next Behavioral Question →</button>
       </div>
     </div>
   </main>
+
+  <!-- HR Reference Answer Modal -->
+  <div id="hr-answer-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.75); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="card" style="max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-card);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+        <div>
+          <span class="badge badge-primary" style="margin-bottom: 0.25rem;">Reference Example</span>
+          <h3 style="font-size: 1.15rem; margin: 0;">💡 STAR Behavioral Framework & Example</h3>
+        </div>
+        <button id="close-hr-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+      </div>
+
+      <div style="font-size: 0.88rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.82rem; color: #38bdf8;">
+          ℹ️ <strong>Note:</strong> This is a reference example illustrating the STAR methodology. Authentic responses grounded in your personal engineering experience are encouraged.
+        </div>
+
+        <div>
+          <strong style="color: var(--text-main);">Model STAR Response:</strong>
+          <div id="hr-reference-answer-text" style="color: var(--text-muted); margin-top: 0.35rem; line-height: 1.6; background: var(--bg-primary); padding: 0.9rem; border-radius: 4px; border: 1px solid var(--border-subtle); white-space: pre-line;"></div>
+        </div>
+
+        <div>
+          <strong style="color: var(--text-main);">Key Evaluator Focus Points:</strong>
+          <ul id="hr-points-list" style="list-style: none; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>

@@ -7,8 +7,10 @@ let currentDifficulty = 'Intermediate';
 let questions = [];
 let currentIndex = 0;
 let userAnswers = {}; // { [index]: selectedOptionIndex }
+let viewedAnswers = {}; // { [index]: boolean }
 let timerInterval = null;
-let secondsRemaining = 1800; // 30 minutes for 30 questions
+let secondsRemaining = 1800; // 30 minutes
+let isSpeakingQuestion = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
@@ -28,8 +30,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('display-diff')?.replaceChildren(document.createTextNode(currentDifficulty));
 
     startTimer();
-    await loadQuestions();
     setupNavigationButtons();
+    setupAnswerModal();
+    setupSpeechButton();
+    await loadQuestions();
+});
+
+window.addEventListener('beforeunload', () => {
+    stopQuestionSpeech();
 });
 
 function startTimer() {
@@ -50,6 +58,95 @@ function startTimer() {
     }, 1000);
 }
 
+function setupSpeechButton() {
+    const speakBtn = document.getElementById('speak-apt-btn');
+    if (!speakBtn) return;
+
+    speakBtn.addEventListener('click', () => {
+        if (isSpeakingQuestion) {
+            stopQuestionSpeech();
+        } else {
+            startQuestionSpeech();
+        }
+    });
+}
+
+function startQuestionSpeech() {
+    const q = questions[currentIndex];
+    if (!('speechSynthesis' in window) || !q) {
+        window.Toast.info('Speech synthesis is not supported on this browser.');
+        return;
+    }
+
+    stopQuestionSpeech();
+
+    const textToRead = `${q.question}. Options are: ${q.options ? q.options.join(', ') : ''}`;
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+        isSpeakingQuestion = true;
+        const btn = document.getElementById('speak-apt-btn');
+        if (btn) {
+            btn.innerHTML = '⏹ Stop Reading';
+            btn.classList.add('btn-danger');
+            btn.classList.remove('btn-secondary');
+        }
+    };
+
+    utterance.onend = () => {
+        stopQuestionSpeech();
+    };
+
+    utterance.onerror = () => {
+        stopQuestionSpeech();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+
+function stopQuestionSpeech() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+    isSpeakingQuestion = false;
+    const btn = document.getElementById('speak-apt-btn');
+    if (btn) {
+        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-secondary');
+    }
+}
+
+function setupAnswerModal() {
+    const viewBtn = document.getElementById('view-apt-answer-btn');
+    const modal = document.getElementById('apt-answer-modal');
+    const closeBtn = document.getElementById('close-apt-modal-btn');
+
+    if (viewBtn && modal) {
+        viewBtn.addEventListener('click', () => {
+            const q = questions[currentIndex];
+            if (!q) return;
+
+            viewedAnswers[currentIndex] = true;
+            const labels = ['A', 'B', 'C', 'D'];
+            const corrIdx = q.correct_option ?? 0;
+            const corrText = q.options ? `${labels[corrIdx]}: ${q.options[corrIdx]}` : `Option ${corrIdx + 1}`;
+
+            document.getElementById('apt-correct-answer-text').textContent = corrText;
+            document.getElementById('apt-explanation-text').textContent = q.explanation || 'Calculated using standard mathematical derivation.';
+            modal.style.display = 'flex';
+        });
+    }
+
+    if (closeBtn && modal) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+}
+
 async function loadQuestions() {
     try {
         const res = await window.API.getAptitudeQuestions({ count: 30, difficulty: currentDifficulty });
@@ -67,6 +164,7 @@ async function loadQuestions() {
 }
 
 function renderQuestion(index) {
+    stopQuestionSpeech();
     currentIndex = index;
     const q = questions[index];
     if (!q) return;
@@ -119,19 +217,21 @@ function renderPalette() {
     const palette = document.getElementById('palette-container');
     if (!palette) return;
 
-    palette.innerHTML = questions.map((_, i) => {
-        const isAnswered = userAnswers[i] !== undefined;
+    palette.innerHTML = questions.map((q, i) => {
+        const isAnswered = userAnswers[i] !== undefined && userAnswers[i] !== -1;
         const isCurrent = i === currentIndex;
         return `
-            <button class="palette-btn ${isCurrent ? 'current' : ''} ${isAnswered ? 'answered' : ''}" data-idx="${i}">
+            <button class="palette-item ${isAnswered ? 'answered' : ''} ${isCurrent ? 'current' : ''}" data-index="${i}">
                 ${i + 1}
             </button>
         `;
     }).join('');
 
-    palette.querySelectorAll('.palette-btn').forEach(btn => {
+    palette.querySelectorAll('.palette-item').forEach(btn => {
         btn.addEventListener('click', () => {
-            renderQuestion(parseInt(btn.getAttribute('data-idx'), 10));
+            const idx = parseInt(btn.getAttribute('data-index'), 10);
+            renderQuestion(idx);
+            renderPalette();
         });
     });
 }
@@ -143,14 +243,22 @@ function setupNavigationButtons() {
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
-            if (currentIndex > 0) renderQuestion(currentIndex - 1);
+            if (currentIndex > 0) {
+                renderQuestion(currentIndex - 1);
+                renderPalette();
+            }
         });
     }
 
     if (skipBtn) {
         skipBtn.addEventListener('click', () => {
+            userAnswers[currentIndex] = -1; // Flag as skipped
+            renderPalette();
+            window.Toast.info(`Question ${currentIndex + 1} marked as skipped.`);
+
             if (currentIndex < questions.length - 1) {
                 renderQuestion(currentIndex + 1);
+                renderPalette();
             } else {
                 finishAptitudeRound();
             }
@@ -161,6 +269,7 @@ function setupNavigationButtons() {
         nextBtn.addEventListener('click', () => {
             if (currentIndex < questions.length - 1) {
                 renderQuestion(currentIndex + 1);
+                renderPalette();
             } else {
                 finishAptitudeRound();
             }
@@ -169,32 +278,36 @@ function setupNavigationButtons() {
 }
 
 async function finishAptitudeRound() {
-    clearInterval(timerInterval);
-    const finishBtn = document.getElementById('next-q-btn');
-    if (finishBtn) {
-        finishBtn.disabled = true;
-        finishBtn.innerHTML = '<span class="spinner"></span> Scoring & Saving Answers...';
-    }
+    stopQuestionSpeech();
+    if (timerInterval) clearInterval(timerInterval);
+
+    window.Toast.info('Submitting Aptitude evaluation...');
 
     try {
-        // Submit all answered questions to backend
-        for (let i = 0; i < questions.length; i++) {
-            const q = questions[i];
-            const chosen = userAnswers[i] ?? -1;
-            await window.API.submitAptitudeAnswer({
+        const submitPromises = questions.map((q, i) => {
+            const selectedIdx = userAnswers[i];
+            const isSkipped = selectedIdx === undefined || selectedIdx === -1;
+            const labels = ['A', 'B', 'C', 'D'];
+            const corrIdx = q.correct_option ?? 0;
+            const refAns = q.options ? `${labels[corrIdx]}: ${q.options[corrIdx]}` : `Option ${corrIdx}`;
+
+            return window.API.submitAptitudeAnswer({
                 interviewId,
                 questionId: q.id,
                 questionText: q.question,
-                selectedOptionIndex: chosen,
+                selectedOptionIndex: isSkipped ? -1 : selectedIdx,
                 correctOptionIndex: q.correct_option,
                 explanation: q.explanation,
-                timeTakenSeconds: 1800 - secondsRemaining
+                reference_answer: refAns,
+                topic: q.topic || 'Quantitative',
+                is_skipped: isSkipped,
+                viewed_answer: Boolean(viewedAnswers[i])
             });
-        }
+        });
 
-        window.Toast.success('Aptitude Round completed! Transitioning to Technical Round...');
+        await Promise.all(submitPromises);
+        window.Toast.success('Aptitude Round completed! Advancing to Technical Round...');
 
-        // Check next round in interview configuration
         const intRes = await window.API.getInterviewById(interviewId);
         let nextRound = 'technical';
         if (intRes.success && intRes.interview) {
@@ -206,13 +319,9 @@ async function finishAptitudeRound() {
 
         setTimeout(() => {
             window.location.href = `${nextRound}.html?id=${interviewId}&role=${encodeURIComponent(currentRole)}&difficulty=${currentDifficulty}`;
-        }, 1200);
-
+        }, 1000);
     } catch (err) {
-        console.error('Error completing aptitude round:', err);
-        window.Toast.error('Could not save answers. Continuing to next round.');
-        setTimeout(() => {
-            window.location.href = `technical.html?id=${interviewId}&role=${encodeURIComponent(currentRole)}&difficulty=${currentDifficulty}`;
-        }, 1500);
+        console.error('Error submitting aptitude round:', err);
+        window.location.href = `technical.html?id=${interviewId}&role=${encodeURIComponent(currentRole)}&difficulty=${currentDifficulty}`;
     }
 }
