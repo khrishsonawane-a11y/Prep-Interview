@@ -1,13 +1,13 @@
 /**
- * Coding / DSA Round Controller (Java, C, C++)
+ * Coding / DSA Round Controller (Java, C, C++, Python)
  */
 let interviewId = null;
 let currentRole = 'Software Developer';
 let currentDifficulty = 'Intermediate';
 let problems = [];
 let currentIndex = 0;
-let userCode = {}; // { [index]: { java: '...', c: '...', cpp: '...' } }
-let userLanguages = {}; // { [index]: 'java' | 'c' | 'cpp' }
+let userCode = {}; // { [index]: { java: '...', c: '...', cpp: '...', python: '...' } }
+let userLanguages = {}; // { [index]: 'java' | 'c' | 'cpp' | 'python' }
 let consoleOutputs = {}; // { [index]: string }
 let submissions = {}; // { [index]: { execution, evaluation } }
 let skippedProblems = {}; // { [index]: boolean }
@@ -71,6 +71,7 @@ function setupLanguageSelector() {
 function getLanguageName(lang) {
     if (lang === 'c') return 'C';
     if (lang === 'cpp') return 'C++';
+    if (lang === 'python') return 'Python';
     return 'Java';
 }
 
@@ -80,6 +81,9 @@ function getDefaultStarter(lang) {
     }
     if (lang === 'cpp') {
         return '#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int solve() {\n        // Write your code here\n        return 0;\n    }\n};';
+    }
+    if (lang === 'python') {
+        return 'class Solution:\n    def solve(self):\n        # Write your code in Python here\n        return 0';
     }
     return 'class Solution {\n    public int solve() {\n        // Write your code in Java here\n        return 0;\n    }\n}';
 }

@@ -1064,12 +1064,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Write your code here\n        return new int[]{};\n    }\n}",
                         "c": "int* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    // Write your code here\n    *returnSize = 2;\n    int* res = (int*)malloc(sizeof(int) * 2);\n    return res;\n}",
-                        "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Write your code here\n        return {};\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Write your code here\n        return {};\n    }\n};",
+                        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        # Write your code here\n        return []"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int comp = target - nums[i];\n            if (map.containsKey(comp)) return new int[]{map.get(comp), i};\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n}",
                         "c": "int* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(sizeof(int) * 2);\n    for (int i = 0; i < numsSize; i++) {\n        for (int j = i + 1; j < numsSize; j++) {\n            if (nums[i] + nums[j] == target) {\n                res[0] = i; res[1] = j;\n                return res;\n            }\n        }\n    }\n    *returnSize = 0;\n    return NULL;\n}",
-                        "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> seen;\n        for (int i = 0; i < (int)nums.size(); i++) {\n            int comp = target - nums[i];\n            if (seen.count(comp)) return {seen[comp], i};\n            seen[nums[i]] = i;\n        }\n        return {};\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> seen;\n        for (int i = 0; i < (int)nums.size(); i++) {\n            int comp = target - nums[i];\n            if (seen.count(comp)) return {seen[comp], i};\n            seen[nums[i]] = i;\n        }\n        return {};\n    }\n};",
+                        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        seen = {}\n        for i, num in enumerate(nums):\n            comp = target - num\n            if comp in seen:\n                return [seen[comp], i]\n            seen[num] = i\n        return []"
                 },
                 "test_cases": [
                         {
@@ -1120,12 +1122,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public boolean isValid(String s) {\n        // Write your code here\n        return false;\n    }\n}",
                         "c": "bool isValid(char* s) {\n    // Write your code here\n    return false;\n}",
-                        "cpp": "class Solution {\npublic:\n    bool isValid(string s) {\n        // Write your code here\n        return false;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    bool isValid(string s) {\n        // Write your code here\n        return false;\n    }\n};",
+                        "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        # Write your code here\n        return False"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    public boolean isValid(String s) {\n        Stack<Character> stack = new Stack<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(') stack.push(')');\n            else if (c == '{') stack.push('}');\n            else if (c == '[') stack.push(']');\n            else if (stack.isEmpty() || stack.pop() != c) return false;\n        }\n        return stack.isEmpty();\n    }\n}",
                         "c": "bool isValid(char* s) {\n    int len = strlen(s);\n    char* stack = (char*)malloc(len + 1);\n    int top = -1;\n    for (int i = 0; i < len; i++) {\n        char c = s[i];\n        if (c == '(' || c == '{' || c == '[') stack[++top] = c;\n        else {\n            if (top == -1) { free(stack); return false; }\n            char open = stack[top--];\n            if ((c == ')' && open != '(') || (c == '}' && open != '{') || (c == ']' && open != '[')) {\n                free(stack); return false;\n            }\n        }\n    }\n    bool valid = (top == -1);\n    free(stack);\n    return valid;\n}",
-                        "cpp": "class Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        for (char c : s) {\n            if (c == '(') st.push(')');\n            else if (c == '{') st.push('}');\n            else if (c == '[') st.push(']');\n            else if (st.empty() || st.top() != c) return false;\n            else st.pop();\n        }\n        return st.empty();\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        for (char c : s) {\n            if (c == '(') st.push(')');\n            else if (c == '{') st.push('}');\n            else if (c == '[') st.push(']');\n            else if (st.empty() || st.top() != c) return false;\n            else st.pop();\n        }\n        return st.empty();\n    }\n};",
+                        "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        stack = []\n        pairs = {')': '(', '}': '{', ']': '['}\n        for char in s:\n            if char in pairs.values():\n                stack.append(char)\n            elif char in pairs:\n                if not stack or stack.pop() != pairs[char]:\n                    return False\n        return len(stack) == 0"
                 },
                 "test_cases": [
                         {
@@ -1176,12 +1180,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "/**\n * Definition for singly-linked list.\n * public class ListNode { int val; ListNode next; ListNode(int x) { val = x; } }\n */\nclass Solution {\n    public ListNode reverseList(ListNode head) {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "struct ListNode* reverseList(struct ListNode* head) {\n    // Write your code here\n    return NULL;\n}",
-                        "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        // Write your code here\n        return nullptr;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        // Write your code here\n        return nullptr;\n    }\n};",
+                        "python": "class Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        return None"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    public ListNode reverseList(ListNode head) {\n        ListNode prev = null, curr = head;\n        while (curr != null) {\n            ListNode next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n}",
                         "c": "struct ListNode* reverseList(struct ListNode* head) {\n    struct ListNode *prev = NULL, *curr = head;\n    while (curr != NULL) {\n        struct ListNode *next = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
-                        "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr) {\n            ListNode* next = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr) {\n            ListNode* next = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n};",
+                        "python": "class Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        prev = None\n        curr = head\n        while curr:\n            nxt = curr.next\n            curr.next = prev\n            prev = curr\n            curr = nxt\n        return prev"
                 },
                 "test_cases": [
                         {
@@ -1232,12 +1238,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public int maxProfit(int[] prices) {\n        // Write your code here\n        return 0;\n    }\n}",
                         "c": "int maxProfit(int* prices, int pricesSize) {\n    // Write your code here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        // Write your code here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        // Write your code here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def maxProfit(self, prices: list[int]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    public int maxProfit(int[] prices) {\n        int min = Integer.MAX_VALUE, max = 0;\n        for (int p : prices) {\n            if (p < min) min = p;\n            else if (p - min > max) max = p - min;\n        }\n        return max;\n    }\n}",
                         "c": "int maxProfit(int* prices, int pricesSize) {\n    int min = 1e9, max = 0;\n    for (int i = 0; i < pricesSize; i++) {\n        if (prices[i] < min) min = prices[i];\n        else if (prices[i] - min > max) max = prices[i] - min;\n    }\n    return max;\n}",
-                        "cpp": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        int minP = 1e9, maxP = 0;\n        for (int p : prices) {\n            minP = min(minP, p);\n            maxP = max(maxP, p - minP);\n        }\n        return maxP;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        int minP = 1e9, maxP = 0;\n        for (int p : prices) {\n            minP = min(minP, p);\n            maxP = max(maxP, p - minP);\n        }\n        return maxP;\n    }\n};",
+                        "python": "class Solution:\n    def maxProfit(self, prices: list[int]) -> int:\n        min_price = float('inf')\n        max_profit = 0\n        for price in prices:\n            if price < min_price:\n                min_price = price\n            elif price - min_price > max_profit:\n                max_profit = price - min_price\n        return max_profit"
                 },
                 "test_cases": [
                         {
@@ -1288,12 +1296,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Maximum Subarray (Kadane's Algorithm)\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Maximum Subarray (Kadane's Algorithm) here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Maximum Subarray (Kadane's Algorithm) here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Maximum Subarray (Kadane's Algorithm) here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def maxSubArray(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Maximum Subarray (Kadane's Algorithm)\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Maximum Subarray (Kadane's Algorithm)\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Maximum Subarray (Kadane's Algorithm)\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Maximum Subarray (Kadane's Algorithm)\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def maxSubArray(self, nums: list[int]) -> int:\n        max_sum = nums[0]\n        current_sum = nums[0]\n        for num in nums[1:]:\n            current_sum = max(num, current_sum + num)\n            max_sum = max(max_sum, current_sum)\n        return max_sum"
                 },
                 "test_cases": [
                         {
@@ -1344,12 +1354,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public boolean isAnagram(String s, String t) {\n        // Write your code here\n        return false;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Valid Anagram here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Valid Anagram here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Valid Anagram here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        # Write your code here\n        return False"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Valid Anagram\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Valid Anagram\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Valid Anagram\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Valid Anagram\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        if len(s) != len(t):\n            return False\n        count = {}\n        for c in s:\n            count[c] = count.get(c, 0) + 1\n        for c in t:\n            if c not in count or count[c] == 0:\n                return False\n            count[c] -= 1\n        return True"
                 },
                 "test_cases": [
                         {
@@ -1400,12 +1412,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public int search(int[] nums, int target) {\n        // Write your code here\n        return -1;\n    }\n}",
                         "c": "int search(int* nums, int numsSize, int target) {\n    // Write your code here\n    return -1;\n}",
-                        "cpp": "class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        // Write your code here\n        return -1;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        // Write your code here\n        return -1;\n    }\n};",
+                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        # Write your code here\n        return -1"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    public int search(int[] nums, int target) {\n        int l = 0, r = nums.length - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n}",
                         "c": "int search(int* nums, int numsSize, int target) {\n    int l = 0, r = numsSize - 1;\n    while (l <= r) {\n        int mid = l + (r - l) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[mid] < target) l = mid + 1;\n        else r = mid - 1;\n    }\n    return -1;\n}",
-                        "cpp": "class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n};",
+                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left, right = 0, len(nums) - 1\n        while left <= right:\n            mid = (left + right) // 2\n            if nums[mid] == target:\n                return mid\n            elif nums[mid] < target:\n                left = mid + 1\n            else:\n                right = mid - 1\n        return -1"
                 },
                 "test_cases": [
                         {
@@ -1451,12 +1465,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Merge Two Sorted Lists here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Merge Two Sorted Lists here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Merge Two Sorted Lists here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        return None"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Merge Two Sorted Lists\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Merge Two Sorted Lists\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Merge Two Sorted Lists\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Merge Two Sorted Lists\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:\n        dummy = ListNode(0)\n        curr = dummy\n        while list1 and list2:\n            if list1.val <= list2.val:\n                curr.next = list1\n                list1 = list1.next\n            else:\n                curr.next = list2\n                list2 = list2.next\n            curr = curr.next\n        curr.next = list1 if list1 else list2\n        return dummy.next"
                 },
                 "test_cases": [
                         {
@@ -1496,12 +1512,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Invert Binary Tree\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Invert Binary Tree here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Invert Binary Tree here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Invert Binary Tree here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        # Write your code here\n        return root"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Invert Binary Tree\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Invert Binary Tree\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Invert Binary Tree\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Invert Binary Tree\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        if not root:\n            return None\n        root.left, root.right = self.invertTree(root.right), self.invertTree(root.left)\n        return root"
                 },
                 "test_cases": [
                         {
@@ -1546,12 +1564,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n}",
                         "c": "int climbStairs(int n) {\n    // Write your code here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def climbStairs(self, n: int) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    public int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b;\n            b = c;\n        }\n        return b;\n    }\n}",
                         "c": "int climbStairs(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;\n    for (int i = 3; i <= n; i++) {\n        int c = a + b;\n        a = b; b = c;\n    }\n    return b;\n}",
-                        "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b; b = c;\n        }\n        return b;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b; b = c;\n        }\n        return b;\n    }\n};",
+                        "python": "class Solution:\n    def climbStairs(self, n: int) -> int:\n        if n <= 2:\n            return n\n        first, second = 1, 2\n        for _ in range(3, n + 1):\n            first, second = second, first + second\n        return second"
                 },
                 "test_cases": [
                         {
@@ -1602,12 +1622,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    public boolean containsDuplicate(int[] nums) {\n        // Write your code here\n        return false;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Contains Duplicate here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Contains Duplicate here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Contains Duplicate here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        # Write your code here\n        return False"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Contains Duplicate\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Contains Duplicate\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Contains Duplicate\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Contains Duplicate\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        seen = set()\n        for num in nums:\n            if num in seen:\n                return True\n            seen.add(num)\n        return False"
                 },
                 "test_cases": [
                         {
@@ -1658,12 +1680,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Valid Palindrome\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Valid Palindrome here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Valid Palindrome here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Valid Palindrome here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        # Write your code here\n        return False"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Valid Palindrome\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Valid Palindrome\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Valid Palindrome\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Valid Palindrome\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        filtered = [c.lower() for c in s if c.isalnum()]\n        return filtered == filtered[::-1]"
                 },
                 "test_cases": [
                         {
@@ -1708,12 +1732,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Maximum Depth of Binary Tree\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Maximum Depth of Binary Tree here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Maximum Depth of Binary Tree here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Maximum Depth of Binary Tree here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def maxDepth(self, root: Optional[TreeNode]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Maximum Depth of Binary Tree\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Maximum Depth of Binary Tree\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Maximum Depth of Binary Tree\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Maximum Depth of Binary Tree\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def maxDepth(self, root: Optional[TreeNode]) -> int:\n        if not root:\n            return 0\n        return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))"
                 },
                 "test_cases": [
                         {
@@ -1764,12 +1790,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Single Number\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Single Number here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Single Number here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Single Number here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def singleNumber(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Single Number\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Single Number\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Single Number\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Single Number\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def singleNumber(self, nums: list[int]) -> int:\n        res = 0\n        for num in nums:\n            res ^= num\n        return res"
                 },
                 "test_cases": [
                         {
@@ -1814,12 +1842,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Intersection of Two Arrays\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Intersection of Two Arrays here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Intersection of Two Arrays here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Intersection of Two Arrays here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def intersection(self, nums1: list[int], nums2: list[int]) -> list[int]:\n        # Write your code here\n        return []"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Intersection of Two Arrays\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Intersection of Two Arrays\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Intersection of Two Arrays\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Intersection of Two Arrays\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def intersection(self, nums1: list[int], nums2: list[int]) -> list[int]:\n        return list(set(nums1) & set(nums2))"
                 },
                 "test_cases": [
                         {
@@ -1860,12 +1890,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Move Zeroes\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Move Zeroes here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Move Zeroes here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Move Zeroes here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def moveZeroes(self, nums: list[int]) -> None:\n        # Modify nums in-place\n        pass"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Move Zeroes\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Move Zeroes\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Move Zeroes\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Move Zeroes\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def moveZeroes(self, nums: list[int]) -> None:\n        last_non_zero = 0\n        for i in range(len(nums)):\n            if nums[i] != 0:\n                nums[last_non_zero], nums[i] = nums[i], nums[last_non_zero]\n                last_non_zero += 1"
                 },
                 "test_cases": [
                         {
@@ -1907,12 +1939,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Missing Number\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Missing Number here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Missing Number here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Missing Number here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def missingNumber(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Missing Number\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Missing Number\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Missing Number\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Missing Number\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def missingNumber(self, nums: list[int]) -> int:\n        n = len(nums)\n        expected_sum = n * (n + 1) // 2\n        return expected_sum - sum(nums)"
                 },
                 "test_cases": [
                         {
@@ -1957,12 +1991,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Symmetric Tree\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Symmetric Tree here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Symmetric Tree here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Symmetric Tree here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isSymmetric(self, root: Optional[TreeNode]) -> bool:\n        # Write your code here\n        return False"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Symmetric Tree\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Symmetric Tree\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Symmetric Tree\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Symmetric Tree\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isSymmetric(self, root: Optional[TreeNode]) -> bool:\n        def isMirror(t1, t2):\n            if not t1 and not t2:\n                return True\n            if not t1 or not t2:\n                return False\n            return (t1.val == t2.val) and isMirror(t1.left, t2.right) and isMirror(t1.right, t2.left)\n        return isMirror(root, root) if root else True"
                 },
                 "test_cases": [
                         {
@@ -2002,12 +2038,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Reverse String\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Reverse String here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Reverse String here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Reverse String here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def reverseString(self, s: list[str]) -> None:\n        # Modify s in-place\n        pass"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Reverse String\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Reverse String\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Reverse String\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Reverse String\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def reverseString(self, s: list[str]) -> None:\n        left, right = 0, len(s) - 1\n        while left < right:\n            s[left], s[right] = s[right], s[left]\n            left += 1\n            right -= 1"
                 },
                 "test_cases": [
                         {
@@ -2048,12 +2086,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Longest Common Prefix\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Longest Common Prefix here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Longest Common Prefix here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Longest Common Prefix here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def longestCommonPrefix(self, strs: list[str]) -> str:\n        # Write your code here\n        return \"\""
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Longest Common Prefix\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Longest Common Prefix\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Longest Common Prefix\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Longest Common Prefix\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def longestCommonPrefix(self, strs: list[str]) -> str:\n        if not strs:\n            return \"\"\n        prefix = strs[0]\n        for s in strs[1:]:\n            while not s.startswith(prefix):\n                prefix = prefix[:-1]\n                if not prefix:\n                    return \"\"\n        return prefix"
                 },
                 "test_cases": [
                         {
@@ -2093,12 +2133,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Min Stack\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Min Stack here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Min Stack here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Min Stack here\n        return 0;\n    }\n};",
+                        "python": "class MinStack:\n    def __init__(self):\n        pass\n    def push(self, val: int) -> None:\n        pass\n    def pop(self) -> None:\n        pass\n    def top(self) -> int:\n        return 0\n    def getMin(self) -> int:\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Min Stack\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Min Stack\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Min Stack\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Min Stack\n        return 0;\n    }\n};",
+                        "python": "class MinStack:\n    def __init__(self):\n        self.stack = []\n        self.min_stack = []\n    def push(self, val: int) -> None:\n        self.stack.append(val)\n        if not self.min_stack or val <= self.min_stack[-1]:\n            self.min_stack.append(val)\n    def pop(self) -> None:\n        val = self.stack.pop()\n        if val == self.min_stack[-1]:\n            self.min_stack.pop()\n    def top(self) -> int:\n        return self.stack[-1]\n    def getMin(self) -> int:\n        return self.min_stack[-1]"
                 },
                 "test_cases": [
                         {
@@ -2134,12 +2176,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Merge Sorted Array\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Merge Sorted Array here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Merge Sorted Array here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Merge Sorted Array here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def merge(self, nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n        # Modify nums1 in-place\n        pass"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Merge Sorted Array\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Merge Sorted Array\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Merge Sorted Array\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Merge Sorted Array\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def merge(self, nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n        p1, p2, p = m - 1, n - 1, m + n - 1\n        while p1 >= 0 and p2 >= 0:\n            if nums1[p1] > nums2[p2]:\n                nums1[p] = nums1[p1]\n                p1 -= 1\n            else:\n                nums1[p] = nums2[p2]\n                p2 -= 1\n            p -= 1\n        while p2 >= 0:\n            nums1[p] = nums2[p2]\n            p2 -= 1\n            p -= 1"
                 },
                 "test_cases": [
                         {
@@ -2180,12 +2224,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for First Unique Character in a String\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for First Unique Character in a String here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for First Unique Character in a String here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for First Unique Character in a String here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def firstUniqChar(self, s: str) -> int:\n        # Write your code here\n        return -1"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for First Unique Character in a String\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for First Unique Character in a String\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for First Unique Character in a String\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for First Unique Character in a String\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def firstUniqChar(self, s: str) -> int:\n        from collections import Counter\n        count = Counter(s)\n        for i, c in enumerate(s):\n            if count[c] == 1:\n                return i\n        return -1"
                 },
                 "test_cases": [
                         {
@@ -2230,12 +2276,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Palindrome Linked List\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Palindrome Linked List here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Palindrome Linked List here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Palindrome Linked List here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isPalindrome(self, head: Optional[ListNode]) -> bool:\n        # Write your code here\n        return False"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Palindrome Linked List\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Palindrome Linked List\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Palindrome Linked List\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Palindrome Linked List\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def isPalindrome(self, head: Optional[ListNode]) -> bool:\n        vals = []\n        curr = head\n        while curr:\n            vals.append(curr.val)\n            curr = curr.next\n        return vals == vals[::-1]"
                 },
                 "test_cases": [
                         {
@@ -2281,12 +2329,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Majority Element\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Majority Element here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Majority Element here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Majority Element here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def majorityElement(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Majority Element\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Majority Element\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Majority Element\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Majority Element\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def majorityElement(self, nums: list[int]) -> int:\n        candidate, count = None, 0\n        for num in nums:\n            if count == 0:\n                candidate = num\n            count += (1 if num == candidate else -1)\n        return candidate"
                 },
                 "test_cases": [
                         {
@@ -2326,12 +2376,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Middle of the Linked List\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Middle of the Linked List here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Middle of the Linked List here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Middle of the Linked List here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def middleNode(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        return None"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Middle of the Linked List\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Middle of the Linked List\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Middle of the Linked List\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Middle of the Linked List\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def middleNode(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        slow = fast = head\n        while fast and fast.next:\n            slow = slow.next\n            fast = fast.next.next\n        return slow"
                 },
                 "test_cases": [
                         {
@@ -2372,12 +2424,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for House Robber\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for House Robber here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for House Robber here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for House Robber here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def rob(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for House Robber\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for House Robber\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for House Robber\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for House Robber\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def rob(self, nums: list[int]) -> int:\n        prev1, prev2 = 0, 0\n        for num in nums:\n            prev1, prev2 = max(prev2 + num, prev1), prev1\n        return prev1"
                 },
                 "test_cases": [
                         {
@@ -2418,12 +2472,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Coin Change\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Coin Change here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Coin Change here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Coin Change here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def coinChange(self, coins: list[int], amount: int) -> int:\n        # Write your code here\n        return -1"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Coin Change\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Coin Change\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Coin Change\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Coin Change\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def coinChange(self, coins: list[int], amount: int) -> int:\n        dp = [float('inf')] * (amount + 1)\n        dp[0] = 0\n        for coin in coins:\n            for i in range(coin, amount + 1):\n                dp[i] = min(dp[i], dp[i - coin] + 1)\n        return dp[amount] if dp[amount] != float('inf') else -1"
                 },
                 "test_cases": [
                         {
@@ -2464,12 +2520,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Search in Rotated Sorted Array\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Search in Rotated Sorted Array here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Search in Rotated Sorted Array here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Search in Rotated Sorted Array here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        # Write your code here\n        return -1"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Search in Rotated Sorted Array\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Search in Rotated Sorted Array\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Search in Rotated Sorted Array\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Search in Rotated Sorted Array\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left, right = 0, len(nums) - 1\n        while left <= right:\n            mid = (left + right) // 2\n            if nums[mid] == target:\n                return mid\n            if nums[left] <= nums[mid]:\n                if nums[left] <= target < nums[mid]:\n                    right = mid - 1\n                else:\n                    left = mid + 1\n            else:\n                if nums[mid] < target <= nums[right]:\n                    left = mid + 1\n                else:\n                    right = mid - 1\n        return -1"
                 },
                 "test_cases": [
                         {
@@ -2504,12 +2562,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Longest Substring Without Repeating Characters\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Longest Substring Without Repeating Characters here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Longest Substring Without Repeating Characters here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Longest Substring Without Repeating Characters here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        # Write your code here\n        return 0"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Longest Substring Without Repeating Characters\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Longest Substring Without Repeating Characters\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Longest Substring Without Repeating Characters\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Longest Substring Without Repeating Characters\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        seen = {}\n        left = max_len = 0\n        for right, c in enumerate(s):\n            if c in seen and seen[c] >= left:\n                left = seen[c] + 1\n            seen[c] = right\n            max_len = max(max_len, right - left + 1)\n        return max_len"
                 },
                 "test_cases": [
                         {
@@ -2550,12 +2610,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for Group Anagrams\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for Group Anagrams here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Group Anagrams here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for Group Anagrams here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        # Write your code here\n        return []"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for Group Anagrams\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for Group Anagrams\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Group Anagrams\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Group Anagrams\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        from collections import defaultdict\n        groups = defaultdict(list)\n        for s in strs:\n            key = ''.join(sorted(s))\n            groups[key].append(s)\n        return list(groups.values())"
                 },
                 "test_cases": [
                         {
@@ -2591,12 +2653,14 @@ export const mockStore = {
                 "starter_code": {
                         "java": "class Solution {\n    // Method for 3Sum\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
                         "c": "int solve() {\n    // Write your code for 3Sum here\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for 3Sum here\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Write your code for 3Sum here\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def threeSum(self, nums: list[int]) -> list[list[int]]:\n        # Write your code here\n        return []"
                 },
                 "solution_code": {
                         "java": "class Solution {\n    // Optimal solution for 3Sum\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
                         "c": "int solve() {\n    // Optimal C implementation for 3Sum\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for 3Sum\n        return 0;\n    }\n};"
+                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for 3Sum\n        return 0;\n    }\n};",
+                        "python": "class Solution:\n    def threeSum(self, nums: list[int]) -> list[list[int]]:\n        nums.sort()\n        res = []\n        for i in range(len(nums) - 2):\n            if i > 0 and nums[i] == nums[i - 1]:\n                continue\n            left, right = i + 1, len(nums) - 1\n            while left < right:\n                s = nums[i] + nums[left] + nums[right]\n                if s < 0:\n                    left += 1\n                elif s > 0:\n                    right -= 1\n                else:\n                    res.append([nums[i], nums[left], nums[right]])\n                    while left < right and nums[left] == nums[left + 1]:\n                        left += 1\n                    while left < right and nums[right] == nums[right - 1]:\n                        right -= 1\n                    left += 1\n                    right -= 1\n        return res"
                 },
                 "test_cases": [
                         {

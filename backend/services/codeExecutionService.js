@@ -46,6 +46,15 @@ public:
         return {};
     }
 };`
+    },
+    python: {
+        id: 'python',
+        name: 'Python',
+        extension: '.py',
+        template: `class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
+        # Implement your solution
+        return []`
     }
 };
 
@@ -53,6 +62,7 @@ export function normalizeLanguage(lang) {
     const lower = (lang || 'java').toLowerCase().trim();
     if (lower === 'c' || lower === 'clang') return 'c';
     if (lower === 'cpp' || lower === 'c++' || lower === 'cplusplus') return 'cpp';
+    if (lower === 'python' || lower === 'py' || lower === 'python3') return 'python';
     return 'java';
 }
 
@@ -255,12 +265,12 @@ export const submitCode = async ({ code, language = 'java', testCases = [], prob
 };
 
 /**
- * Check syntax and static structure for Java, C, and C++
+ * Check syntax and static structure for Java, C, C++, and Python
  */
 export function checkLanguageSyntax(code, language) {
     const trimmed = code.trim();
 
-    // 1. Bracket Matching Check
+    // 1. Bracket Matching Check (Parentheses, Braces, Brackets)
     const stack = [];
     const pairs = { ')': '(', '}': '{', ']': '[' };
     for (let i = 0; i < trimmed.length; i++) {
@@ -277,8 +287,39 @@ export function checkLanguageSyntax(code, language) {
         return { valid: false, error: `Unclosed bracket '${stack[stack.length - 1].char}' at position ${stack[stack.length - 1].index}` };
     }
 
-    // 2. Semicolon & Syntax Integrity Check
     const lines = trimmed.split('\n');
+
+    // 2. Python-Specific Syntax Checks
+    if (language === 'python') {
+        // Check illegal foreign keywords in Python
+        if (trimmed.includes('public class') || trimmed.includes('System.out') || trimmed.includes('console.log') || /\bfunction\s+[a-zA-Z_]/.test(trimmed) || /\bvar\s+[a-zA-Z_]/.test(trimmed) || /\blet\s+[a-zA-Z_]/.test(trimmed) || /\bconst\s+[a-zA-Z_]/.test(trimmed)) {
+            return { valid: false, error: "SyntaxError: Illegal language keyword or construct detected in Python source code." };
+        }
+
+        if (!trimmed.includes('def ') && !trimmed.includes('class ')) {
+            return { valid: false, error: "Missing Python function or class definition (e.g. 'def twoSum(self, nums, target):' or 'class Solution:')." };
+        }
+
+        // Check for missing colons on statement headers
+        for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+            let line = lines[lineNum].trim();
+            if (line.startsWith('#') || line.length === 0) continue;
+            if (line.includes('#')) line = line.split('#')[0].trim();
+
+            const headerKeywords = ['def ', 'class ', 'if ', 'elif ', 'else', 'for ', 'while ', 'try', 'except', 'finally', 'with '];
+            for (const kw of headerKeywords) {
+                if (line === kw.trim() || line.startsWith(kw)) {
+                    if (!line.endsWith(':') && !line.endsWith('\\') && !line.endsWith('(')) {
+                        return { valid: false, error: `SyntaxError: Line ${lineNum + 1}: Missing colon ':' at end of '${kw.trim()}' header statement: "${line}"` };
+                    }
+                }
+            }
+        }
+
+        return { valid: true };
+    }
+
+    // 3. Semicolon & Syntax Integrity Check for C, C++, Java
     for (let lineNum = 0; lineNum < lines.length; lineNum++) {
         let line = lines[lineNum].trim();
         // Remove comments
@@ -312,7 +353,7 @@ export function checkLanguageSyntax(code, language) {
         }
     }
 
-    // 3. Language Structure Specifics
+    // 4. Language Structure Specifics for Java, C, C++
     if (language === 'java') {
         if (!trimmed.includes('class ') && !trimmed.includes('public class') && !trimmed.includes('public int') && !trimmed.includes('public boolean') && !trimmed.includes('public String') && !trimmed.includes('public void')) {
             return { valid: false, error: "Missing Java class or method declaration (e.g. 'class Solution')." };
@@ -334,24 +375,50 @@ export function checkLanguageSyntax(code, language) {
 }
 
 /**
- * Check for runtime crashes
+ * Check for runtime crashes across Java, C, C++, and Python
  */
 export function checkRuntimeErrors(code, language) {
     const lower = code.toLowerCase();
 
     // 1. Division by Zero
     if (/\/\s*0(?![0-9])/.test(lower) || /%\s*0(?![0-9])/.test(lower)) {
-        return { valid: false, error: 'java.lang.ArithmeticException: / by zero (Division or modulo by zero)' };
+        if (language === 'python') {
+            return { valid: false, error: 'ZeroDivisionError: division by zero' };
+        } else if (language === 'java') {
+            return { valid: false, error: 'java.lang.ArithmeticException: / by zero (Division or modulo by zero)' };
+        } else {
+            return { valid: false, error: 'Floating point exception (core dumped) - Division or modulo by zero' };
+        }
     }
 
-    // 2. Dereferencing Null
-    if (/null\.[a-z_]/i.test(code) || /null->[a-z_]/i.test(code)) {
-        return { valid: false, error: 'java.lang.NullPointerException: Cannot read field or invoke method on null reference' };
+    // 2. Dereferencing Null / None
+    if (language === 'python') {
+        if (/none\.[a-z_]/i.test(code) || /none\[/i.test(code)) {
+            return { valid: false, error: "AttributeError: 'NoneType' object has no attribute or subscript operation" };
+        }
+    } else {
+        if (/null\.[a-z_]/i.test(code) || /null->[a-z_]/i.test(code)) {
+            if (language === 'java') {
+                return { valid: false, error: 'java.lang.NullPointerException: Cannot read field or invoke method on null reference' };
+            } else {
+                return { valid: false, error: 'Segmentation fault (core dumped) - Null pointer dereference' };
+            }
+        }
     }
 
-    // 3. Direct negative / out of bounds constant index
-    if (/\[\s*-\d+\s*\]/.test(code)) {
-        return { valid: false, error: 'java.lang.ArrayIndexOutOfBoundsException: Index is negative or out of bounds' };
+    // 3. Direct out of bounds index
+    if (language === 'python') {
+        if (/\[\s*99999+\s*\]/.test(code)) {
+            return { valid: false, error: 'IndexError: list index out of range' };
+        }
+    } else {
+        if (/\[\s*-\d+\s*\]/.test(code) || /\[\s*99999+\s*\]/.test(code)) {
+            if (language === 'java') {
+                return { valid: false, error: 'java.lang.ArrayIndexOutOfBoundsException: Index is negative or out of bounds' };
+            } else {
+                return { valid: false, error: 'Segmentation fault (core dumped) - Array index out of bounds' };
+            }
+        }
     }
 
     // 4. Segmentation fault pattern in C
@@ -366,9 +433,20 @@ export function checkRuntimeErrors(code, language) {
  * Check for infinite loops and Time Limit Exceeded
  */
 export function checkTimeLimitExceeded(code, language) {
-    const cleanCode = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, ''); // strip comments
+    const cleanCode = code.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').replace(/#.*/g, ''); // strip comments
 
-    // 1. Infinite while loop: while(true) or while(1) without break/return inside loop body
+    // 1. Python infinite while loop: while True: or while 1: without break/return inside loop
+    if (language === 'python') {
+        const pyWhileMatch = cleanCode.match(/while\s+(True|1)\s*:\s*([\s\S]*)/i);
+        if (pyWhileMatch) {
+            const body = pyWhileMatch[2];
+            if (!body.includes('break') && !body.includes('return')) {
+                return { valid: false, error: 'Infinite loop detected (while True: without break/return)' };
+            }
+        }
+    }
+
+    // 2. Infinite while loop for C/C++/Java: while(true) or while(1) without break/return inside loop body
     const whileTrueMatch = cleanCode.match(/while\s*\(\s*(true|1)\s*\)\s*\{([^}]*)\}/i);
     if (whileTrueMatch) {
         const body = whileTrueMatch[2];
@@ -377,7 +455,7 @@ export function checkTimeLimitExceeded(code, language) {
         }
     }
 
-    // 2. Infinite for loop: for(;;) without break/return inside loop body
+    // 3. Infinite for loop for C/C++/Java: for(;;) without break/return inside loop body
     const forInfMatch = cleanCode.match(/for\s*\(\s*;\s*;\s*\)\s*\{([^}]*)\}/i);
     if (forInfMatch) {
         const body = forInfMatch[2];
@@ -398,13 +476,13 @@ export function evaluateAlgorithmAgainstTestCases(code, language, testCases = []
 
     // Check if starter template or stub returning empty/default
     const isStarterOrEmptyStub = (
-        (lowerCode.includes('return new int[]{};') || lowerCode.includes('return {};') || lowerCode.includes('return null;') || lowerCode.includes('return false;') || lowerCode.includes('return 0;') || lowerCode.includes('return "";')) &&
-        !lowerCode.includes('for') && !lowerCode.includes('while') && !lowerCode.includes('if') && !lowerCode.includes('map') && !lowerCode.includes('seen') && !lowerCode.includes('stack') && !lowerCode.includes('hash')
+        (lowerCode.includes('return new int[]{};') || lowerCode.includes('return {};') || lowerCode.includes('return null;') || lowerCode.includes('return false;') || lowerCode.includes('return 0;') || lowerCode.includes('return "";') || lowerCode.includes('return []') || lowerCode.includes('return none') || lowerCode.includes('return false') || lowerCode.includes('return ""') || trimmedCode.endsWith('pass')) &&
+        !lowerCode.includes('for ') && !lowerCode.includes('for(') && !lowerCode.includes('while ') && !lowerCode.includes('while(') && !lowerCode.includes('if ') && !lowerCode.includes('if(') && !lowerCode.includes('map') && !lowerCode.includes('seen') && !lowerCode.includes('stack') && !lowerCode.includes('hash') && !lowerCode.includes('dict') && !lowerCode.includes('set(')
     );
 
     // Check if code has meaningful algorithmic implementation
     const hasLoopsOrStructures = (
-        (lowerCode.includes('for') || lowerCode.includes('while') || lowerCode.includes('recursion') || lowerCode.includes('map') || lowerCode.includes('hash') || lowerCode.includes('stack') || lowerCode.includes('vector') || lowerCode.includes('set') || lowerCode.includes('dp') || lowerCode.includes('queue') || lowerCode.includes('pointer')) &&
+        (lowerCode.includes('for') || lowerCode.includes('while') || lowerCode.includes('recursion') || lowerCode.includes('map') || lowerCode.includes('hash') || lowerCode.includes('dict') || lowerCode.includes('stack') || lowerCode.includes('vector') || lowerCode.includes('set') || lowerCode.includes('dp') || lowerCode.includes('queue') || lowerCode.includes('pointer') || lowerCode.includes('range(') || lowerCode.includes('append(') || lowerCode.includes('len(')) &&
         lowerCode.includes('return')
     );
 
@@ -436,21 +514,21 @@ export function evaluateAlgorithmAgainstTestCases(code, language, testCases = []
 
             // Bug 1: Two Sum self-pairing bug (e.g., nums[i] + nums[i] == target)
             if (problemId.includes('two-sum') || problemId === 'code-1' || lowerCode.includes('twosum')) {
-                if (lowerCode.includes('nums[i] + nums[i]') || (lowerCode.includes('for (int i') && !lowerCode.includes('for (int j') && !lowerCode.includes('map') && !lowerCode.includes('seen'))) {
+                if (lowerCode.includes('nums[i] + nums[i]') || (lowerCode.includes('for i in range') && !lowerCode.includes('for j in range') && !lowerCode.includes('seen') && !lowerCode.includes('dict') && !lowerCode.includes('prev_map')) || (lowerCode.includes('for (int i') && !lowerCode.includes('for (int j') && !lowerCode.includes('map') && !lowerCode.includes('seen'))) {
                     hasBugOnThisTestCase = true;
                     actualOutput = '[0, 0]';
                 }
             }
 
             // Bug 2: Missing duplicate handling in 3Sum or Two Sum
-            if (tc.input && tc.input.includes('[3,3]') && !lowerCode.includes('map') && !lowerCode.includes('seen') && !lowerCode.includes('j = i + 1')) {
+            if (tc.input && tc.input.includes('[3,3]') && !lowerCode.includes('map') && !lowerCode.includes('seen') && !lowerCode.includes('dict') && !lowerCode.includes('prev_map') && !lowerCode.includes('j = i + 1') && !lowerCode.includes('i + 1, len')) {
                 hasBugOnThisTestCase = true;
                 actualOutput = '[]';
             }
 
-            // Bug 3: Valid Parentheses - not checking stack.isEmpty() at end
+            // Bug 3: Valid Parentheses - not checking stack is empty at end
             if (problemId.includes('valid-parentheses') || problemId === 'code-2' || lowerCode.includes('isvalid')) {
-                if (!lowerCode.includes('empty') && !lowerCode.includes('top == -1') && !lowerCode.includes('size() == 0')) {
+                if (!lowerCode.includes('empty') && !lowerCode.includes('top == -1') && !lowerCode.includes('size() == 0') && !lowerCode.includes('not stack') && !lowerCode.includes('len(stack) == 0') && !lowerCode.includes('stack == []')) {
                     if (tc.expected_output === 'false') {
                         hasBugOnThisTestCase = true;
                         actualOutput = 'true';
@@ -460,7 +538,7 @@ export function evaluateAlgorithmAgainstTestCases(code, language, testCases = []
 
             // Bug 4: Subarray sum / Maximum subarray - not handling all negative numbers
             if (problemId.includes('maximum-subarray') || problemId === 'code-3' || lowerCode.includes('maxsubarray')) {
-                if (lowerCode.includes('max = 0') && !lowerCode.includes('integer.min_value') && !lowerCode.includes('nums[0]') && !lowerCode.includes('int_min')) {
+                if ((lowerCode.includes('max = 0') || lowerCode.includes('max_sum = 0')) && !lowerCode.includes('integer.min_value') && !lowerCode.includes('nums[0]') && !lowerCode.includes('int_min') && !lowerCode.includes("float('-inf')") && !lowerCode.includes('-float(')) {
                     if (tc.input && tc.input.includes('-')) {
                         hasBugOnThisTestCase = true;
                         actualOutput = '0';

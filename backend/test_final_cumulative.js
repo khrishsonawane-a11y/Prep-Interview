@@ -26,13 +26,14 @@ async function runTests() {
     console.log('====================================================\n');
 
     // 1. Language Support Verification
-    console.log('--- 1. CODING LANGUAGES (JAVA, C, C++ ONLY) ---');
+    console.log('--- 1. CODING LANGUAGES (JAVA, C, C++, PYTHON) ---');
     const supportedKeys = Object.keys(SUPPORTED_LANGUAGES);
     assert(supportedKeys.includes('java'), 'Java is supported');
     assert(supportedKeys.includes('c'), 'C is supported');
     assert(supportedKeys.includes('cpp'), 'C++ is supported');
+    assert(supportedKeys.includes('python'), 'Python is supported');
     assert(!supportedKeys.includes('javascript') && !supportedKeys.includes('js'), 'JavaScript is completely removed from supported languages');
-    assert(supportedKeys.length === 3, 'Exactly 3 languages supported (java, c, cpp)');
+    assert(supportedKeys.length === 4, 'Exactly 4 languages supported (java, c, cpp, python)');
 
     // 2. Code Execution Service & Syntax Validator
     console.log('\n--- 2. CODE EXECUTION SERVICE & TEST CASE EVALUATION ---');
