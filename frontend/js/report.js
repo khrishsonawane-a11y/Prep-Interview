@@ -310,8 +310,10 @@ function prepareQuestionReviews(results, rawAnswers) {
     } else if (Array.isArray(rawAnswers) && rawAnswers.length > 0) {
         // Fallback: construct review objects from raw answer records
         allQuestionReviews = rawAnswers.map((ans, idx) => {
-            const isSkipped = ans.is_skipped || ans.evaluation?.is_skipped || !ans.user_answer;
-            const isCorrect = !isSkipped && (ans.evaluation?.is_correct === true || (ans.score || ans.evaluation?.score || 0) >= 70);
+            const isSkipped = ans.is_skipped || ans.evaluation?.is_skipped || !ans.user_answer || ans.user_answer === '[SKIPPED]';
+            const isCorrect = ans.round_type === 'coding'
+                ? (ans.is_correct === true && Number(ans.score || ans.evaluation?.score || 0) >= 75)
+                : (!isSkipped && (ans.evaluation?.is_correct === true || (ans.score || ans.evaluation?.score || 0) >= 70));
             const score = isSkipped ? 0 : (ans.score || ans.evaluation?.score || (isCorrect ? 100 : 0));
 
             return {
@@ -319,15 +321,17 @@ function prepareQuestionReviews(results, rawAnswers) {
                 question_index: idx + 1,
                 question_text: ans.question_text || `Question #${idx + 1}`,
                 topic: ans.topic || ans.evaluation?.topic || 'Core Concept',
-                user_answer: ans.user_answer || '(Skipped)',
-                reference_answer: ans.reference_answer || ans.evaluation?.reference_answer || 'Expected comprehensive response covering key architectural/algorithmic criteria.',
+                user_answer: isSkipped ? '(Skipped)' : ans.user_answer,
+                reference_answer: ans.reference_answer || ans.evaluation?.reference_answer || ans.ai_evaluation?.solution_code || 'Expected comprehensive response covering key architectural/algorithmic criteria.',
                 is_correct: isCorrect,
                 is_skipped: isSkipped,
                 score: score,
-                error_type: isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : (ans.evaluation?.error_type || 'Concept Missing')),
-                missing_concepts: ans.evaluation?.missing_concepts || [],
-                explanation: ans.evaluation?.explanation || ans.evaluation?.feedback || (isCorrect ? 'Accurate response.' : 'Response requires deeper coverage.'),
-                suggested_improvement: ans.evaluation?.suggested_improvement || 'Practice foundational principles.',
+                error_type: isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : (ans.error_type || ans.evaluation?.error_type || (ans.round_type === 'coding' ? 'Wrong Answer' : 'Concept Missing'))),
+                missing_concepts: ans.evaluation?.missing_concepts || ans.ai_evaluation?.mistakes || [],
+                explanation: ans.round_type === 'coding'
+                    ? (isCorrect ? 'Code is Correct / Accepted: All test cases passed with optimal logic.' : (ans.ai_evaluation?.feedback || 'Code is Incorrect: Failed required test case outputs.'))
+                    : (ans.evaluation?.explanation || ans.evaluation?.feedback || (isCorrect ? 'Accurate response.' : 'Response requires deeper coverage.')),
+                suggested_improvement: ans.ai_evaluation?.hint || ans.evaluation?.suggested_improvement || 'Practice foundational principles and trace test cases.',
                 viewed_answer: ans.viewed_answer || false
             };
         });

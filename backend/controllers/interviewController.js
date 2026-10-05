@@ -336,7 +336,9 @@ export const finalizeInterview = async (req, res, next) => {
                 if (isSkip) {
                     skipped++;
                 } else {
-                    const isCorr = a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60);
+                    const isCorr = roundType === 'coding'
+                        ? (a.is_correct === true && Number(a.score) >= 75)
+                        : (a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60));
                     if (isCorr) correct++;
                     totalScore += Number(a.score) || (isCorr ? 100 : 0);
                     evaluatedCount++;
@@ -385,20 +387,24 @@ export const finalizeInterview = async (req, res, next) => {
         // Map question-by-question review items
         const questionReviews = answers.map((a, idx) => {
             const isSkipped = a.is_skipped === true || a.user_answer === '[SKIPPED]';
-            const isCorrect = !isSkipped && (a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60));
+            const isCorrect = a.round_type === 'coding'
+                ? (a.is_correct === true && Number(a.score) >= 75)
+                : (!isSkipped && (a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60)));
             return {
                 id: a.id || `q-${idx + 1}`,
                 round_type: (a.round_type || 'technical').toUpperCase(),
                 question: a.question_text || `Question #${idx + 1}`,
                 topic: a.topic || 'Core Engineering',
                 user_answer: isSkipped ? '[SKIPPED]' : (a.user_answer || 'No answer submitted'),
-                reference_answer: a.reference_answer || (a.ai_evaluation?.sample_answer || 'Standard engineering reference answer'),
+                reference_answer: a.reference_answer || (a.ai_evaluation?.sample_answer || a.ai_evaluation?.reference_solution || 'Standard engineering reference answer'),
                 result: isSkipped ? 'Skipped' : (isCorrect ? 'Correct' : 'Incorrect'),
                 score: Number(a.score) || 0,
-                error_type: a.error_type || (isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : 'Concept Incomplete')),
-                missing_concepts: a.ai_evaluation?.missing_points || [],
-                explanation: a.ai_evaluation?.feedback || a.ai_evaluation?.explanation || 'Evaluated based on standard criteria.',
-                suggested_improvement: a.ai_evaluation?.improvement || 'Review core definitions and practice trade-offs.',
+                error_type: a.error_type || (isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : (a.round_type === 'coding' ? 'Wrong Answer' : 'Concept Incomplete'))),
+                missing_concepts: a.ai_evaluation?.missing_points || a.ai_evaluation?.mistakes || [],
+                explanation: a.round_type === 'coding'
+                    ? (isCorrect ? 'Code is Correct / Accepted: All test cases passed with optimal logic.' : (a.ai_evaluation?.feedback || 'Code is Incorrect / Failed Test Cases'))
+                    : (a.ai_evaluation?.feedback || a.ai_evaluation?.explanation || 'Evaluated based on standard criteria.'),
+                suggested_improvement: a.ai_evaluation?.hint || a.ai_evaluation?.improvement || 'Review core definitions and practice trade-offs.',
                 viewed_answer: Boolean(a.viewed_answer)
             };
         });

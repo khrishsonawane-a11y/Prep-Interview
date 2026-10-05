@@ -21,3 +21,7 @@ logs
 # Build outputs
 dist/
 build/
+*.exe
+*.out
+*.o
+*.class

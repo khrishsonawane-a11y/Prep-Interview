@@ -205,9 +205,25 @@ export const submitCode = async (req, res, next) => {
             execution: executionResult
         });
 
-        const score = isSkipped ? 0 : (aiReview.score !== undefined ? aiReview.score : (executionResult.isComplete ? 95 : 35));
-        const isCorrect = !isSkipped && executionResult.isComplete === true;
-        const errorType = isSkipped ? 'Did Not Answer' : (aiReview.error_type || (executionResult.isComplete ? 'None (Correct)' : 'Wrong Logic'));
+        const isAccepted = !isSkipped && executionResult.isComplete === true && executionResult.status === 'Accepted';
+        const isCorrect = isAccepted;
+        const errorType = isSkipped 
+            ? 'Did Not Answer' 
+            : (isAccepted 
+                ? 'None (Correct)' 
+                : (executionResult.status === 'Compilation Error' 
+                    ? 'Syntax/Implementation Error' 
+                    : (executionResult.status === 'Runtime Error' 
+                        ? 'Runtime Crash' 
+                        : (executionResult.status === 'Time Limit Exceeded' 
+                            ? 'Time Limit Exceeded' 
+                            : (executionResult.passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic')))));
+
+        const score = isSkipped 
+            ? 0 
+            : (isAccepted 
+                ? Math.max(90, Number(aiReview.score) || 95) 
+                : Math.min(40, executionResult.totalCount > 0 ? Math.round((executionResult.passedCount / executionResult.totalCount) * 35) + 5 : 15));
 
         const answerRecord = {
             id: randomUUID(),
@@ -230,7 +246,10 @@ export const submitCode = async (req, res, next) => {
                 score,
                 status: executionResult.status || (isCorrect ? 'Accepted' : 'Wrong Answer'),
                 error_type: errorType,
-                execution: executionResult
+                execution: executionResult,
+                hint: matching?.approach || 'Check problem constraints and step-by-step logic.',
+                correct_approach: matching?.algorithm_explanation || matching?.approach || 'Optimal algorithmic approach.',
+                solution_code: matching?.solution_code?.[language] || matching?.approach || 'Reference implementation'
             },
             time_taken_seconds: timeTakenSeconds,
             created_at: new Date().toISOString()

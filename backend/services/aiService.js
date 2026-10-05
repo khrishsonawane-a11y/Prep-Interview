@@ -325,26 +325,25 @@ export const evaluateCodingSubmission = async ({ problem, code, language = 'java
         strengths = ['Correct algorithmic direction'];
         mistakes = ['Execution exceeded 2000ms limit due to infinite loop or exponential O(2^N) complexity.'];
         improvements = ['Ensure loop termination conditions are met and optimize algorithm from exponential to polynomial time (e.g. O(N) or O(N log N)).'];
-        feedback = 'Execution exceeded time limit. Verify loop termination conditions and optimize time complexity.';
     } else {
-        // Wrong Answer
-        score = Math.max(20, Math.round((passedCount / totalCount) * 65 + 10));
+        // Wrong Answer score calculation: strictly capped at <= 35
+        score = totalCount > 0 ? Math.round((passedCount / totalCount) * 30) + 5 : 10;
         error_type = passedCount > 0 ? 'Edge Case Missed' : 'Wrong Logic';
         correctness = `${passedCount}/${totalCount} Test Cases Passed`;
         code_quality = 'Needs Optimization';
-        strengths = passedCount > 0 ? [`Passed ${passedCount} test case(s). Core algorithmic structure is present.`] : ['Code compiled and ran without fatal syntax errors.'];
+        strengths = passedCount > 0 ? [`Passed ${passedCount} test case(s).`] : ['Code compiled and executed.'];
         
         const firstFailed = (execution.results || testResults).find(r => !r.passed);
         if (firstFailed) {
             mistakes = [`Failed Test Case #${firstFailed.testCaseNumber} (Input: ${firstFailed.input}). Expected output was ${firstFailed.expected}, but received ${firstFailed.actual}.`];
         } else {
-            mistakes = ['One or more boundary or hidden test cases produced an incorrect output.'];
+            mistakes = ['One or more test cases produced incorrect output.'];
         }
         improvements = [
-            problem.approach ? `Review recommended approach: ${problem.approach}` : 'Trace code against failing test cases and handle edge cases.',
-            'Verify boundary conditions (empty inputs, single elements, duplicate values, extreme bounds).'
+            problem.approach ? `Recommended Approach: ${problem.approach}` : 'Trace code step-by-step against failing test cases.',
+            'Address edge cases and verify algorithm invariants.'
         ];
-        feedback = `Solution achieved partial pass (${passedCount}/${totalCount} test cases). Address edge cases and logical discrepancies identified in the failed test cases.`;
+        feedback = `Code is Incorrect: ${passedCount}/${totalCount} test cases passed. Algorithm produced output mismatch.`;
     }
 
     const fallbackReview = {
@@ -358,7 +357,10 @@ export const evaluateCodingSubmission = async ({ problem, code, language = 'java
         strengths,
         mistakes,
         improvements,
-        feedback
+        feedback,
+        hint: problem.approach || 'Verify constraints and edge cases.',
+        correct_approach: problem.algorithm_explanation || problem.approach || 'Optimal approach.',
+        reference_solution: problem.solution_code?.[language] || problem.approach || 'Reference solution'
     };
 
     const systemPrompt = `You are a strict Principal Software Engineer reviewing a candidate code submission in ${language.toUpperCase()}.
@@ -367,7 +369,7 @@ CRITICAL RULES:
    - Status: ${execStatus}
    - Passed: ${passedCount}/${totalCount} test cases
    - Errors: ${execution.error || 'None'}
-2. If the solution failed test cases (Status: ${execStatus}), YOU MUST NOT CALL IT CORRECT.
+2. If the solution failed test cases (Status: ${execStatus}), YOU MUST NEVER CALL IT CORRECT OR ACCURATE.
 3. Diagnose the exact bug based on the failed test case outputs and candidate code.
 4. If the solution passed all test cases, verify if time complexity and space complexity are optimal.`;
 
@@ -399,12 +401,15 @@ Return ONLY a valid JSON object matching this schema:
 
     // Enforce consistency: AI cannot overturn actual execution status
     parsed.status = execStatus;
-    if (!isAccepted && (parsed.error_type === 'None (Correct)' || parsed.score > 75)) {
+    if (!isAccepted) {
         parsed.error_type = error_type;
-        parsed.score = score;
+        parsed.score = Math.min(35, Number(parsed.score) || score);
+    } else {
+        parsed.error_type = 'None (Correct)';
+        parsed.score = Math.max(90, Number(parsed.score) || 95);
     }
-    if (!parsed.mistakes) parsed.mistakes = mistakes;
-    if (!parsed.improvements) parsed.improvements = improvements;
+    if (!parsed.mistakes || parsed.mistakes.length === 0) parsed.mistakes = mistakes;
+    if (!parsed.improvements || parsed.improvements.length === 0) parsed.improvements = improvements;
 
     return parsed;
 };
@@ -786,7 +791,9 @@ function getHeuristicFinalReport(interview, overallScore, aptAvg, techAvg, codeA
         if (isSkip) {
             skipped++;
         } else {
-            const isCorr = a.is_correct === true || (a.evaluation && a.evaluation.is_correct === true) || (Number(a.score) >= 70);
+            const isCorr = a.round_type === 'coding' 
+                ? (a.is_correct === true && Number(a.score) >= 75)
+                : (a.is_correct === true || (a.evaluation && a.evaluation.is_correct === true) || (Number(a.score) >= 70));
             if (isCorr) correct++;
             else wrong++;
         }
@@ -826,7 +833,9 @@ function getHeuristicFinalReport(interview, overallScore, aptAvg, techAvg, codeA
     // Map question reviews
     const questionReviews = answers.map((a, idx) => {
         const isSkip = a.is_skipped === true || a.user_answer === '[SKIPPED]' || !a.user_answer;
-        const isCorr = !isSkip && (a.is_correct === true || (a.evaluation && a.evaluation.is_correct === true) || (Number(a.score) >= 70));
+        const isCorr = a.round_type === 'coding'
+            ? (a.is_correct === true && Number(a.score) >= 75)
+            : (!isSkip && (a.is_correct === true || (a.evaluation && a.evaluation.is_correct === true) || (Number(a.score) >= 70)));
         return {
             round: a.round_type || 'Interview',
             question_index: idx + 1,
@@ -837,10 +846,10 @@ function getHeuristicFinalReport(interview, overallScore, aptAvg, techAvg, codeA
             is_correct: isCorr,
             is_skipped: isSkip,
             score: Number(a.score) || 0,
-            error_type: a.error_type || a.evaluation?.error_type || (isSkip ? 'Did Not Answer' : (isCorr ? 'None (Correct)' : 'Concept Missing')),
+            error_type: a.error_type || a.evaluation?.error_type || (isSkip ? 'Did Not Answer' : (isCorr ? 'None (Correct)' : (a.round_type === 'coding' ? 'Wrong Answer' : 'Concept Missing'))),
             missing_concepts: a.evaluation?.missing_concepts || a.missing_concepts || [],
-            explanation: a.evaluation?.explanation || a.evaluation?.feedback || (isCorr ? 'Accurate answer.' : 'Concept needs refinement.'),
-            suggested_improvement: a.evaluation?.suggested_improvement || 'Practice foundational principles.',
+            explanation: a.evaluation?.explanation || a.evaluation?.feedback || (isCorr ? 'Accurate answer.' : (a.round_type === 'coding' ? 'Code is Incorrect / Failed Test Cases' : 'Concept needs refinement.')),
+            suggested_improvement: a.evaluation?.suggested_improvement || a.ai_evaluation?.hint || a.ai_evaluation?.correct_approach || 'Practice foundational principles and trace test cases.',
             viewed_answer: Boolean(a.viewed_answer)
         };
     });
