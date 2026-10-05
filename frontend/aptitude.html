@@ -21,96 +21,104 @@
   <div id="navbar-mount"></div>
 
   <main class="container" style="padding: 2.5rem 1.5rem 5rem;">
-    <!-- Round Header & Timer -->
-    <div class="round-header-bar">
-      <div>
-        <span class="badge badge-primary">Round 1: Aptitude & Logic</span>
-        <h2 style="font-size: 1.4rem; margin-top: 0.25rem;">
-          <span id="display-role">Software Developer</span> • <span id="display-diff">Intermediate</span>
-        </h2>
+    <!-- Active Aptitude Workbench -->
+    <div id="aptitude-workbench">
+      <!-- Round Header & Timer -->
+      <div class="round-header-bar">
+        <div>
+          <span class="badge badge-primary">Round 1: Aptitude & Logic</span>
+          <h2 style="font-size: 1.4rem; margin-top: 0.25rem;">
+            <span id="display-role">Software Developer</span> • <span id="display-diff">Intermediate</span>
+          </h2>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button id="speak-apt-btn" class="btn btn-secondary btn-sm" type="button">
+            🔊 Read Question Aloud
+          </button>
+          <button id="view-apt-answer-btn" class="btn btn-secondary btn-sm" type="button">
+            💡 View Answer
+          </button>
+          <div class="timer-box">
+            <span>⏱️</span>
+            <span id="aptitude-timer">30:00</span>
+          </div>
+        </div>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <button id="speak-apt-btn" class="btn btn-secondary btn-sm" type="button">
-          🔊 Read Question Aloud
-        </button>
-        <button id="view-apt-answer-btn" class="btn btn-secondary btn-sm" type="button">
-          💡 View Answer
-        </button>
-        <div class="timer-box">
-          <span>⏱️</span>
-          <span id="aptitude-timer">30:00</span>
+      <!-- Aptitude Layout -->
+      <div class="aptitude-layout">
+        <!-- Left: Active Question -->
+        <div class="question-box">
+          <div class="question-meta">
+            <span class="badge badge-purple" id="question-topic-badge">Percentages</span>
+            <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-number-display">Question 1 of 30</span>
+          </div>
+
+          <div class="question-text" id="question-text">
+            Loading aptitude question...
+          </div>
+
+          <div class="options-list" id="options-container">
+            <!-- Populated by aptitude.js -->
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+            <button id="prev-q-btn" class="btn btn-secondary">← Previous</button>
+            <div style="display: flex; gap: 0.5rem;">
+              <button id="skip-apt-btn" class="btn btn-secondary">Skip Question ↷</button>
+              <button id="next-q-btn" class="btn btn-primary">Next Question →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Palette & Overview -->
+        <div>
+          <div class="question-palette-card">
+            <div class="palette-header">
+              <span class="palette-title">🧭 Question Palette</span>
+              <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
+            </div>
+
+            <div class="palette-grid" id="palette-container">
+              <!-- Numbers 1..30 populated by aptitude.js -->
+            </div>
+
+            <!-- Legend -->
+            <div class="palette-legend">
+              <div class="legend-item" title="Currently selected question">
+                <span class="legend-swatch current-swatch"></span>
+                <span>Current</span>
+              </div>
+              <div class="legend-item" title="Answer has been selected">
+                <span class="legend-swatch answered-swatch">✓</span>
+                <span>Answered</span>
+              </div>
+              <div class="legend-item" title="Question marked as skipped">
+                <span class="legend-swatch skipped-swatch">↷</span>
+                <span>Skipped</span>
+              </div>
+              <div class="legend-item" title="Question opened but not answered yet">
+                <span class="legend-swatch visited-swatch">•</span>
+                <span>Visited</span>
+              </div>
+              <div class="legend-item" title="Question has not been visited yet">
+                <span class="legend-swatch unvisited-swatch"></span>
+                <span>Unvisited</span>
+              </div>
+              <div class="legend-item" title="Reference answer was viewed">
+                <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+                <span>Viewed</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Aptitude Layout -->
-    <div class="aptitude-layout">
-      <!-- Left: Active Question -->
-      <div class="question-box">
-        <div class="question-meta">
-          <span class="badge badge-purple" id="question-topic-badge">Percentages</span>
-          <span style="font-size: 0.85rem; color: var(--text-dim);" id="question-number-display">Question 1 of 30</span>
-        </div>
-
-        <div class="question-text" id="question-text">
-          Loading aptitude question...
-        </div>
-
-        <div class="options-list" id="options-container">
-          <!-- Populated by aptitude.js -->
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
-          <button id="prev-q-btn" class="btn btn-secondary">← Previous</button>
-          <div style="display: flex; gap: 0.5rem;">
-            <button id="skip-apt-btn" class="btn btn-secondary">Skip Question ↷</button>
-            <button id="next-q-btn" class="btn btn-primary">Next Question →</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Palette & Overview -->
-      <div>
-        <div class="question-palette-card">
-          <div class="palette-header">
-            <span class="palette-title">🧭 Question Palette</span>
-            <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
-          </div>
-
-          <div class="palette-grid" id="palette-container">
-            <!-- Numbers 1..30 populated by aptitude.js -->
-          </div>
-
-          <!-- Legend -->
-          <div class="palette-legend">
-            <div class="legend-item" title="Currently selected question">
-              <span class="legend-swatch current-swatch"></span>
-              <span>Current</span>
-            </div>
-            <div class="legend-item" title="Answer has been selected">
-              <span class="legend-swatch answered-swatch">✓</span>
-              <span>Answered</span>
-            </div>
-            <div class="legend-item" title="Question marked as skipped">
-              <span class="legend-swatch skipped-swatch">↷</span>
-              <span>Skipped</span>
-            </div>
-            <div class="legend-item" title="Question opened but not answered yet">
-              <span class="legend-swatch visited-swatch">•</span>
-              <span>Visited</span>
-            </div>
-            <div class="legend-item" title="Question has not been visited yet">
-              <span class="legend-swatch unvisited-swatch"></span>
-              <span>Unvisited</span>
-            </div>
-            <div class="legend-item" title="Reference answer was viewed">
-              <span style="font-size: 0.8rem; line-height: 1;">💡</span>
-              <span>Viewed</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Dedicated Data-Based Result Screen (Shown Immediately on Completion) -->
+    <div id="aptitude-result-container" style="display: none;">
+      <!-- Populated dynamically with full ground-truth calculations by aptitude.js -->
     </div>
   </main>
 
