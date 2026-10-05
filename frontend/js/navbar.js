@@ -4,7 +4,7 @@
 
 // Initialize theme immediately to prevent UI flicker
 (function initTheme() {
-    const savedTheme = localStorage.getItem('app_theme') || 'light';
+    const savedTheme = localStorage.getItem('app_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -24,7 +24,7 @@ function renderNavbar() {
     const isAuth = window.authManager?.isAuthenticated();
     const user = window.authManager?.getUser();
     const currentPath = window.location.pathname;
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const currentTheme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('app_theme') || 'dark';
 
     const navHtml = `
     <nav class="navbar">
@@ -95,7 +95,7 @@ function renderNavbar() {
     const themeBtn = document.getElementById('theme-toggle-btn');
     if (themeBtn) {
         themeBtn.addEventListener('click', () => {
-            const nowTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const nowTheme = document.documentElement.getAttribute('data-theme') || localStorage.getItem('app_theme') || 'dark';
             const nextTheme = nowTheme === 'dark' ? 'light' : 'dark';
 
             document.documentElement.setAttribute('data-theme', nextTheme);

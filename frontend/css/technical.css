@@ -1,5 +1,5 @@
 /* =========================================================================
-   TECHNICAL ROUND STYLES - CLEAN WHITE THEME
+   TECHNICAL ROUND STYLES - ENTERPRISE LIGHT & DARK THEME
    ========================================================================= */
 
 .tech-container {
@@ -8,7 +8,7 @@
 }
 
 .ai-interviewer-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
@@ -22,13 +22,14 @@
   width: 42px;
   height: 42px;
   border-radius: var(--radius-sm);
-  background: #f1f5f9;
+  background: var(--bg-card-hover);
   border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   flex-shrink: 0;
+  color: var(--text-main);
 }
 
 .ai-dialog-body {
@@ -51,7 +52,7 @@
 
 /* Candidate Response Box */
 .response-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
@@ -72,7 +73,7 @@
 }
 
 .voice-input-btn {
-  background: #ffffff;
+  background: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border-subtle);
   padding: 0.3rem 0.75rem;
@@ -87,19 +88,19 @@
 }
 
 .voice-input-btn:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
+  background: var(--bg-card-hover);
+  border-color: var(--border-focus);
 }
 
 .voice-input-btn.recording {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: #fca5a5;
+  background: rgba(220, 38, 38, 0.15);
+  color: var(--accent-rose);
+  border-color: rgba(220, 38, 38, 0.35);
 }
 
 /* AI Feedback Card */
 .evaluation-card {
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
@@ -110,7 +111,7 @@
 .score-badge-large {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #047857;
+  color: var(--accent-emerald);
 }
 
 .eval-grid {
@@ -121,7 +122,7 @@
 }
 
 .eval-metric-box {
-  background: #f8fafc;
+  background: var(--bg-card-hover);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 0.85rem;

@@ -1,5 +1,5 @@
 /* =========================================================================
-   CODING & DSA ROUND STYLES - CLEAN WHITE THEME
+   CODING & DSA ROUND STYLES - ENTERPRISE LIGHT & DARK THEME
    ========================================================================= */
 
 .coding-workbench {
@@ -12,7 +12,7 @@
 
 /* Left Pane: Problem Specs */
 .problem-pane {
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   display: flex;
@@ -23,7 +23,7 @@
 
 .pane-header {
   padding: 0.75rem 1.25rem;
-  background: #f8fafc;
+  background: var(--bg-card-hover);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
@@ -44,13 +44,14 @@
 }
 
 .example-box {
-  background: #f8fafc;
+  background: var(--bg-card-hover);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   padding: 0.85rem;
   margin-bottom: 0.85rem;
   font-family: var(--font-mono);
   font-size: 0.82rem;
+  color: var(--text-main);
 }
 
 /* Right Pane: Code Editor & Execution Console */
@@ -63,7 +64,7 @@
 
 .editor-wrapper {
   flex: 1;
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   display: flex;
@@ -74,7 +75,7 @@
 
 .editor-toolbar {
   padding: 0.5rem 1rem;
-  background: #f8fafc;
+  background: var(--bg-card-hover);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
@@ -84,8 +85,8 @@
 .code-textarea {
   flex: 1;
   width: 100%;
-  background: #ffffff;
-  color: #0f172a;
+  background: var(--bg-input);
+  color: var(--text-main);
   font-family: var(--font-mono);
   font-size: 0.9rem;
   padding: 1rem;
@@ -98,7 +99,7 @@
 /* Console & Test Cases */
 .console-wrapper {
   height: 200px;
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   display: flex;
@@ -109,7 +110,7 @@
 
 .console-tabs {
   display: flex;
-  background: #f8fafc;
+  background: var(--bg-card-hover);
   border-bottom: 1px solid var(--border-subtle);
   padding: 0 0.75rem;
 }
@@ -132,16 +133,17 @@
   overflow-y: auto;
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  color: var(--text-muted);
+  color: var(--text-main);
+  background: var(--bg-input);
 }
 
 .test-badge-pass {
-  color: #059669;
+  color: var(--accent-emerald);
   font-weight: 600;
 }
 
 .test-badge-fail {
-  color: #dc2626;
+  color: var(--accent-rose);
   font-weight: 600;
 }
 

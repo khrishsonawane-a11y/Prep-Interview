@@ -1,5 +1,5 @@
 /* =========================================================================
-   HR & VOICE INTERVIEW STYLES - CLEAN WHITE THEME
+   HR & VOICE INTERVIEW STYLES - ENTERPRISE LIGHT & DARK THEME
    ========================================================================= */
 
 .hr-stage {
@@ -8,7 +8,7 @@
 }
 
 .hr-question-box {
-  background: #ffffff;
+  background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 2rem;
@@ -75,7 +75,7 @@
 .transcript-area {
   width: 100%;
   min-height: 120px;
-  background: #ffffff;
+  background: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 1rem;
