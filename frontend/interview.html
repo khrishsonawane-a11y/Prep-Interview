@@ -52,8 +52,37 @@
           <p>Choose the engineering role you want to practice. The AI calibrates architectural questions, coding challenges, and behavioral metrics specifically for this domain.</p>
         </div>
 
+        <!-- Job Role Search & Category Filter Bar -->
+        <div class="role-search-container">
+          <div class="role-search-wrap">
+            <span class="role-search-icon">🔍</span>
+            <input type="text" id="role-search-input" class="role-search-input" placeholder="Search job role or skills (e.g. Full Stack, AI Engineer, DevOps, Java, Python)..." autocomplete="off" spellcheck="false">
+            <button type="button" id="role-search-clear-btn" class="role-search-clear-btn" title="Clear search" style="display: none;">✕</button>
+          </div>
+
+          <div class="role-filter-row">
+            <div class="role-filter-pills" id="role-category-pills">
+              <!-- Populated dynamically from config.js -->
+            </div>
+            <div class="role-search-count" id="role-search-count">Showing 37 roles</div>
+          </div>
+        </div>
+
+        <!-- Role Grid -->
         <div class="role-grid" id="roles-grid">
           <!-- Dynamically populated from config.js -->
+        </div>
+
+        <!-- Empty State when no roles match search -->
+        <div class="role-empty-state" id="role-empty-state" style="display: none;">
+          <div class="role-empty-icon">🔎</div>
+          <div class="role-empty-title">No job roles found</div>
+          <div class="role-empty-desc">
+            We couldn't find any roles matching "<strong id="role-empty-query"></strong>". Try searching for a different keyword or skill.
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="role-empty-clear-btn">
+            Clear Search & Show All Roles
+          </button>
         </div>
 
         <!-- Role Preparation Banner -->

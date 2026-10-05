@@ -119,12 +119,168 @@
   line-height: 1.5;
 }
 
+/* Role Search Bar & Filter Controls */
+.role-search-container {
+  margin-bottom: 1.5rem;
+}
+
+.role-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.role-search-icon {
+  position: absolute;
+  left: 1rem;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.role-search-input {
+  width: 100%;
+  padding: 0.85rem 2.75rem 0.85rem 2.85rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: var(--transition);
+  outline: none;
+}
+
+.role-search-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  background: var(--bg-card);
+}
+
+.role-search-input::placeholder {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.role-search-clear-btn {
+  position: absolute;
+  right: 0.85rem;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: var(--transition);
+}
+
+.role-search-clear-btn:hover {
+  background: #f87171;
+  color: #ffffff;
+  border-color: #f87171;
+}
+
+/* Category Filter Pills */
+.role-filter-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.role-filter-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.role-pill-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.role-pill-btn:hover {
+  border-color: var(--border-focus);
+  color: var(--text-main);
+}
+
+.role-pill-btn.active {
+  background: var(--accent-blue);
+  color: #090d16;
+  border-color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.role-search-count {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* Empty State */
+.role-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+}
+
+.role-empty-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.role-empty-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+
+.role-empty-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin: 0 auto 1.25rem;
+  line-height: 1.5;
+}
+
 /* Role Grid */
 .role-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.role-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.role-grid::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 3px;
 }
 
 .role-card {

@@ -7,6 +7,8 @@ let currentStep = 1;
 let selectedRole = 'Software Developer';
 let selectedDifficulty = 'Intermediate';
 let selectedRounds = ['aptitude', 'technical', 'coding', 'hr'];
+let activeCategory = 'all';
+let searchQuery = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!window.authManager?.requireAuth()) return;
@@ -24,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    setupRoleSearchAndFilters();
     renderRoleCards();
     setupDifficultyCards();
     setupRoundsCheckboxes();
@@ -32,23 +35,145 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * 1. Render Step 1 Role Cards
+ * 1. Setup Role Search and Category Filters
+ */
+function setupRoleSearchAndFilters() {
+    // 1a. Render Category Pills
+    const pillsContainer = document.getElementById('role-category-pills');
+    if (pillsContainer) {
+        const categories = window.CONFIG?.ROLE_CATEGORIES || [
+            { id: 'all', name: 'All Roles' },
+            { id: 'software', name: 'Software / Development' },
+            { id: 'data_ai', name: 'Data / AI' },
+            { id: 'cloud_infra', name: 'Cloud / Infrastructure' },
+            { id: 'security', name: 'Security' },
+            { id: 'qa_testing', name: 'Testing / Quality' },
+            { id: 'other_tech', name: 'Other Technology Roles' }
+        ];
+
+        pillsContainer.innerHTML = categories.map(cat => `
+            <button type="button" class="role-pill-btn ${cat.id === activeCategory ? 'active' : ''}" data-cat="${cat.id}">
+                ${cat.name}
+            </button>
+        `).join('');
+
+        pillsContainer.querySelectorAll('.role-pill-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                pillsContainer.querySelectorAll('.role-pill-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeCategory = btn.getAttribute('data-cat') || 'all';
+                renderRoleCards();
+            });
+        });
+    }
+
+    // 1b. Search Input Listener
+    const searchInput = document.getElementById('role-search-input');
+    const clearBtn = document.getElementById('role-search-clear-btn');
+    const emptyClearBtn = document.getElementById('role-empty-clear-btn');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = (e.target.value || '').trim().toLowerCase();
+            if (clearBtn) {
+                clearBtn.style.display = searchQuery ? 'flex' : 'none';
+            }
+            renderRoleCards();
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchQuery = '';
+                searchInput.value = '';
+                if (clearBtn) clearBtn.style.display = 'none';
+                renderRoleCards();
+            }
+        });
+    }
+
+    const handleClear = () => {
+        searchQuery = '';
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.focus();
+        }
+        if (clearBtn) clearBtn.style.display = 'none';
+        renderRoleCards();
+    };
+
+    if (clearBtn) clearBtn.addEventListener('click', handleClear);
+    if (emptyClearBtn) emptyClearBtn.addEventListener('click', handleClear);
+}
+
+/**
+ * 2. Render Step 1 Role Cards (Filtered by category & search query)
  */
 function renderRoleCards() {
     const container = document.getElementById('roles-grid');
+    const emptyState = document.getElementById('role-empty-state');
+    const emptyQueryEl = document.getElementById('role-empty-query');
+    const countEl = document.getElementById('role-search-count');
     if (!container) return;
 
-    const roles = window.CONFIG?.JOB_ROLES || [];
-    container.innerHTML = roles.map(r => `
-        <div class="role-card ${r.id === selectedRole ? 'selected' : ''}" data-role="${r.id}">
+    const allRoles = window.CONFIG?.JOB_ROLES || [];
+
+    // Filter by Category and Search Query
+    const filtered = allRoles.filter(role => {
+        // Category check
+        if (activeCategory !== 'all' && role.category !== activeCategory) {
+            return false;
+        }
+
+        // Search query check (case-insensitive across title, desc, category, skills)
+        if (searchQuery) {
+            const titleMatch = (role.title || '').toLowerCase().includes(searchQuery);
+            const descMatch = (role.desc || '').toLowerCase().includes(searchQuery);
+            const catMatch = (role.categoryName || '').toLowerCase().includes(searchQuery);
+            const skillsMatch = Array.isArray(role.skills) && role.skills.some(s => s.toLowerCase().includes(searchQuery));
+            return titleMatch || descMatch || catMatch || skillsMatch;
+        }
+
+        return true;
+    });
+
+    // Update Count Display
+    if (countEl) {
+        if (searchQuery) {
+            countEl.textContent = `Found ${filtered.length} of ${allRoles.length} roles`;
+        } else if (activeCategory !== 'all') {
+            countEl.textContent = `Showing ${filtered.length} roles in category`;
+        } else {
+            countEl.textContent = `Showing all ${allRoles.length} job roles`;
+        }
+    }
+
+    // Handle Empty State
+    if (filtered.length === 0) {
+        container.style.display = 'none';
+        if (emptyState) {
+            emptyState.style.display = 'block';
+            if (emptyQueryEl) emptyQueryEl.textContent = searchQuery || activeCategory;
+        }
+        return;
+    }
+
+    container.style.display = 'grid';
+    if (emptyState) emptyState.style.display = 'none';
+
+    container.innerHTML = filtered.map(r => `
+        <div class="role-card ${r.id === selectedRole ? 'selected' : ''}" data-role="${escapeHtml(r.id)}">
             <div class="role-card-header">
                 <div class="role-card-icon">${r.icon}</div>
-                <div class="role-card-title">${r.title}</div>
+                <div>
+                    <div class="role-card-title">${escapeHtml(r.title)}</div>
+                    <div style="font-size: 0.72rem; color: var(--accent-blue); font-weight: 500;">${escapeHtml(r.categoryName || '')}</div>
+                </div>
             </div>
-            <div class="role-card-desc">${r.desc}</div>
+            <div class="role-card-desc">${escapeHtml(r.desc)}</div>
             ${r.skills && r.skills.length > 0 ? `
                 <div class="role-skill-tags">
-                    ${r.skills.slice(0, 3).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    ${r.skills.slice(0, 4).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}
+                    ${r.skills.length > 4 ? `<span class="skill-tag" style="color:var(--accent-blue);">+${r.skills.length - 4} more</span>` : ''}
                 </div>
             ` : ''}
         </div>
@@ -73,7 +198,7 @@ function updateRoleDependentUI() {
     const summaryRoleVal = document.getElementById('summary-role-val');
 
     if (roleDesc) {
-        roleDesc.innerHTML = `Explore the detailed curriculum, roadmap, and core topics recommended for <strong>${selectedRole}</strong>.`;
+        roleDesc.innerHTML = `Explore the detailed curriculum, roadmap, and core topics recommended for <strong>${escapeHtml(selectedRole)}</strong>.`;
     }
     if (prepBtn) {
         prepBtn.href = `preparation.html?role=${encodeURIComponent(selectedRole)}`;
@@ -87,7 +212,7 @@ function updateRoleDependentUI() {
 }
 
 /**
- * 2. Setup Step 2 Difficulty Cards
+ * 3. Setup Step 2 Difficulty Cards
  */
 function setupDifficultyCards() {
     const diffCards = document.querySelectorAll('.diff-card');
@@ -104,7 +229,7 @@ function setupDifficultyCards() {
 }
 
 /**
- * 3. Setup Step 3 Rounds Checkboxes
+ * 4. Setup Step 3 Rounds Checkboxes
  */
 function setupRoundsCheckboxes() {
     const checkboxes = document.querySelectorAll('input[name="round-select"]');
@@ -128,7 +253,7 @@ function updateSelectedRounds() {
 }
 
 /**
- * 4. Step Navigation Management (Next / Back / State Validation)
+ * 5. Step Navigation Management (Next / Back / State Validation)
  */
 function setupStepNavigation() {
     // Step 1 -> Step 2
@@ -277,4 +402,14 @@ async function resumeInterviewSession(interviewId) {
     } catch (err) {
         console.error('Failed to resume interview:', err);
     }
+}
+
+function escapeHtml(text) {
+    if (text == null) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
