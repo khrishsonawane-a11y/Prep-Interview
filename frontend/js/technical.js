@@ -490,6 +490,7 @@ function setupButtons() {
                     difficulty: currentDifficulty,
                     topic: q.topic || 'Engineering Architecture',
                     reference_answer: q.sample_answer || '',
+                    expected_concepts: q.expected_concepts || [],
                     viewed_answer: !!viewedAnswers[currentIndex]
                 });
 
@@ -534,28 +535,139 @@ function displayEvaluation(evalData, scroll = true) {
         panel.scrollIntoView({ behavior: 'smooth' });
     }
 
-    document.getElementById('eval-score').textContent = `${evalData.score || 80}/100`;
-    document.getElementById('eval-correctness').textContent = evalData.correctness || 'High';
-    document.getElementById('eval-relevance').textContent = evalData.relevance || 'High';
-    document.getElementById('eval-feedback-text').textContent = evalData.feedback || 'Good explanation.';
-    document.getElementById('eval-improvement-text').textContent = evalData.improvement || 'Deepen production trade-offs.';
+    const q = questions[currentIndex] || {};
 
-    const errorBadge = document.getElementById('eval-error-type-badge');
-    if (errorBadge) {
-        errorBadge.textContent = evalData.error_type || (evalData.score >= 70 ? 'None (Correct)' : 'Concept Incomplete');
-        errorBadge.className = `badge ${evalData.score >= 70 ? 'badge-success' : 'badge-warning'}`;
+    // 1. Scores & Classification
+    const scoreOutOf10 = evalData.score_out_of_10 !== undefined 
+        ? Number(evalData.score_out_of_10).toFixed(1) 
+        : (evalData.score !== undefined ? (evalData.score / 10).toFixed(1) : '7.5');
+    const scorePct = evalData.score !== undefined ? Math.round(evalData.score) : Math.round(Number(scoreOutOf10) * 10);
+    const classification = evalData.classification || evalData.verdict || (scorePct >= 75 ? 'Mostly Correct' : (scorePct >= 50 ? 'Partially Correct' : 'Incomplete'));
+
+    const scoreEl = document.getElementById('eval-score');
+    if (scoreEl) scoreEl.textContent = `${scoreOutOf10} / 10`;
+
+    const scorePctEl = document.getElementById('eval-score-pct');
+    if (scorePctEl) scorePctEl.textContent = `${scorePct}% Technical Score`;
+
+    const classBadge = document.getElementById('eval-classification-badge');
+    if (classBadge) {
+        classBadge.textContent = classification;
+        if (classification.includes('Correct') && !classification.includes('Partially')) {
+            classBadge.className = 'badge badge-success';
+        } else if (classification.includes('Partially') || classification.includes('Incomplete')) {
+            classBadge.className = 'badge badge-warning';
+        } else if (classification.includes('Incorrect') || classification.includes('Irrelevant')) {
+            classBadge.className = 'badge badge-danger';
+        } else {
+            classBadge.className = 'badge badge-primary';
+        }
     }
 
-    // Missing Points
-    const missingWrap = document.getElementById('eval-missing-points');
-    if (missingWrap) {
-        missingWrap.innerHTML = (evalData.missing_points || []).map(p => `<li>⚠️ ${p}</li>`).join('');
+    // 2. Metrics (Correctness, Error Type, Coverage)
+    const correctnessEl = document.getElementById('eval-correctness');
+    if (correctnessEl) correctnessEl.textContent = evalData.correctness || (scorePct >= 80 ? 'High' : (scorePct >= 50 ? 'Moderate' : 'Low'));
+
+    const errorTypeEl = document.getElementById('eval-error-type');
+    if (errorTypeEl) {
+        errorTypeEl.textContent = evalData.error_type || (scorePct >= 80 ? 'None (Correct)' : 'Concept Missing');
     }
 
-    // Strengths
-    const strengthsWrap = document.getElementById('eval-strengths');
-    if (strengthsWrap) {
-        strengthsWrap.innerHTML = (evalData.strengths || []).map(s => `<li>✓ ${s}</li>`).join('');
+    // 3. Concept Coverage Breakdown
+    const coverageObj = evalData.concept_coverage || {};
+    let conceptsList = coverageObj.concepts || [];
+    if (!conceptsList || conceptsList.length === 0) {
+        const expected = q.expected_concepts || ['Core Concept', 'Implementation Detail', 'Trade-offs'];
+        conceptsList = expected.map(c => ({
+            name: c,
+            status: scorePct >= 70 ? 'covered' : (scorePct >= 40 ? 'missing' : 'missing')
+        }));
+    }
+
+    const coveredCount = coverageObj.covered_count !== undefined 
+        ? coverageObj.covered_count 
+        : conceptsList.filter(c => c.status === 'covered').length;
+    const totalCount = coverageObj.total_count !== undefined 
+        ? coverageObj.total_count 
+        : conceptsList.length;
+    const coveragePct = coverageObj.percentage !== undefined 
+        ? coverageObj.percentage 
+        : (totalCount > 0 ? Math.round((coveredCount / totalCount) * 100) : 0);
+
+    const covValEl = document.getElementById('eval-concept-coverage-val');
+    if (covValEl) covValEl.textContent = `${coveredCount} / ${totalCount} (${coveragePct}%)`;
+
+    const covPillEl = document.getElementById('eval-coverage-pill');
+    if (covPillEl) covPillEl.textContent = `Coverage: ${coveragePct}%`;
+
+    const conceptsGridEl = document.getElementById('eval-concepts-list');
+    if (conceptsGridEl) {
+        conceptsGridEl.innerHTML = conceptsList.map(item => {
+            const status = (item.status || 'covered').toLowerCase();
+            const icon = status === 'covered' ? '✓' : (status === 'incorrect' ? '❌' : '✗');
+            const label = status === 'covered' ? 'Covered' : (status === 'incorrect' ? 'Incorrect' : 'Missing');
+            return `
+                <div class="concept-pill ${status}">
+                    <span>${icon}</span>
+                    <span><strong>${item.name}</strong> (${label})</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 4. What You Got Right (Strengths)
+    const strengths = evalData.correct_points || evalData.strengths || [];
+    const strengthsBox = document.getElementById('eval-strengths-box');
+    const strengthsList = document.getElementById('eval-strengths');
+    if (strengthsList) {
+        if (strengths.length > 0) {
+            strengthsList.innerHTML = strengths.map(s => `<li>✓ ${s}</li>`).join('');
+            if (strengthsBox) strengthsBox.style.display = 'block';
+        } else {
+            strengthsList.innerHTML = `<li>No specific accurate technical statements detected in response.</li>`;
+        }
+    }
+
+    // 5. What Is Missing
+    const missing = evalData.missing_concepts || evalData.missing_points || [];
+    const missingBox = document.getElementById('eval-missing-box');
+    const missingList = document.getElementById('eval-missing-points');
+    if (missingList) {
+        if (missing.length > 0) {
+            missingList.innerHTML = missing.map(m => `<li>⚠️ ${m}</li>`).join('');
+            if (missingBox) missingBox.style.display = 'block';
+        } else {
+            missingList.innerHTML = `<li>All expected core concepts and architectural criteria were addressed.</li>`;
+        }
+    }
+
+    // 6. Technical Issues / Mistakes
+    const mistakes = evalData.technical_mistakes || evalData.mistakes || [];
+    const mistakesBox = document.getElementById('eval-mistakes-box');
+    const mistakesList = document.getElementById('eval-mistakes-list');
+    if (mistakesBox && mistakesList) {
+        if (mistakes && mistakes.length > 0) {
+            mistakesList.innerHTML = mistakes.map(m => `<li>❌ ${m}</li>`).join('');
+            mistakesBox.style.display = 'block';
+        } else {
+            mistakesBox.style.display = 'none';
+        }
+    }
+
+    // 7. How to Improve This Answer
+    const improveEl = document.getElementById('eval-improvement-text');
+    if (improveEl) {
+        improveEl.textContent = evalData.improvement || 'Deepen technical precision with specific runtime mechanisms, complexity constraints, and production trade-offs.';
+    }
+
+    // 8. Expected Technical Reference Answer
+    const refTextEl = document.getElementById('eval-reference-text');
+    if (refTextEl) {
+        const refAnswer = evalData.reference_answer || q.sample_answer || 'Expected comprehensive technical explanation covering key principles, runtime architecture, and edge-case management.';
+        refTextEl.innerHTML = `
+            <p style="margin-bottom: 0.5rem; font-weight: 600; color: var(--text-main);">Reference Architectural Blueprint:</p>
+            <p style="color: var(--text-muted); line-height: 1.6;">${refAnswer}</p>
+        `;
     }
 
     const nextBtn = document.getElementById('next-stage-btn');

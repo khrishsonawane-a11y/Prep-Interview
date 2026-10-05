@@ -125,6 +125,7 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             difficulty = 'Intermediate',
             topic = 'Engineering Architecture',
             reference_answer = '',
+            expected_concepts = [],
             is_skipped = false,
             viewed_answer = false,
             timeTakenSeconds = 0
@@ -140,10 +141,13 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             question: questionText,
             answer: answerText,
             role,
-            difficulty
+            difficulty,
+            topic,
+            reference_answer: reference_answer || req.body.expected_answer || req.body.sample_answer || '',
+            expected_concepts: expected_concepts && expected_concepts.length > 0 ? expected_concepts : (req.body.concepts || [])
         });
 
-        const score = isSkipped ? 0 : (evaluation.score || 75);
+        const score = isSkipped ? 0 : (evaluation.score !== undefined ? evaluation.score : 75);
         const isCorrect = !isSkipped && score >= 60;
         const errorType = isSkipped ? 'Did Not Answer' : (evaluation.error_type || (score >= 80 ? 'None (Correct)' : 'Concept Missing'));
 
@@ -156,11 +160,13 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             question_text: questionText,
             topic: topic || 'Architecture',
             user_answer: answerText,
-            reference_answer: reference_answer || 'Key concepts and architectural trade-offs.',
+            reference_answer: evaluation.reference_answer || reference_answer || 'Key concepts and architectural trade-offs.',
             is_correct: isCorrect,
             is_skipped: isSkipped,
             viewed_answer: Boolean(viewed_answer),
             score: score,
+            score_out_of_10: evaluation.score_out_of_10 !== undefined ? evaluation.score_out_of_10 : Math.round((score / 10) * 10) / 10,
+            classification: evaluation.classification || (isCorrect ? 'Correct' : 'Partially Correct'),
             error_type: errorType,
             ai_evaluation: {
                 ...evaluation,

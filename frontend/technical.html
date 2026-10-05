@@ -100,54 +100,91 @@
 
         <!-- AI Live Evaluation Breakdown -->
         <div class="evaluation-card" id="ai-eval-panel" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+          <div class="eval-header-banner">
             <div>
-              <span class="badge badge-success" style="margin-bottom: 0.25rem;">AI Evaluation Report</span>
-              <h3 id="eval-verdict-title">Performance Analysis</h3>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <span class="badge badge-primary">Technical Evaluation</span>
+                <span class="badge" id="eval-classification-badge">Mostly Correct</span>
+              </div>
+              <h3 id="eval-verdict-title" style="margin: 0; font-size: 1.25rem;">Candidate Response Assessment</h3>
             </div>
             <div style="text-align: right;">
-              <div class="score-badge-large" id="eval-score">85/100</div>
-              <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase;" id="eval-verdict-label">Score</div>
+              <div class="score-badge-large" id="eval-score">8.0 / 10</div>
+              <div style="font-size: 0.78rem; color: var(--text-dim);" id="eval-score-pct">80% Technical Score</div>
             </div>
           </div>
 
+          <!-- Key Metrics Grid -->
           <div class="eval-grid">
             <div class="eval-metric-box">
-              <div class="eval-metric-title">Correctness</div>
-              <div class="eval-metric-val" id="eval-correctness" style="color: #34d399;">High</div>
+              <div class="eval-metric-title">Concept Coverage</div>
+              <div class="eval-metric-val" id="eval-concept-coverage-val" style="color: var(--accent-emerald);">3 / 4 (75%)</div>
             </div>
             <div class="eval-metric-box">
-              <div class="eval-metric-title">Topic Relevance</div>
-              <div class="eval-metric-val" id="eval-relevance" style="color: #60a5fa;">High</div>
+              <div class="eval-metric-title">Correctness Level</div>
+              <div class="eval-metric-val" id="eval-correctness" style="color: var(--accent-blue);">High</div>
+            </div>
+            <div class="eval-metric-box">
+              <div class="eval-metric-title">Assessment Type</div>
+              <div class="eval-metric-val" id="eval-error-type" style="font-size: 0.85rem; color: var(--text-main);">Concept Missing</div>
             </div>
           </div>
 
-          <div style="margin-bottom: 1rem;">
-            <strong style="font-size: 0.9rem; color: var(--text-main);">Error Classification / Assessment:</strong>
-            <span class="badge badge-warning" id="eval-error-type-badge" style="margin-left: 0.5rem;">None (Correct)</span>
+          <!-- Concept Level Evaluation List -->
+          <div class="eval-section-box" id="eval-concept-coverage-section">
+            <div class="eval-section-title">
+              <span>🎯 Concept-Level Verification</span>
+              <span id="eval-coverage-pill" class="badge badge-primary" style="font-size: 0.75rem;">Coverage: 75%</span>
+            </div>
+            <div id="eval-concepts-list" class="eval-concepts-grid">
+              <!-- Dynamically populated concept status pills/cards -->
+            </div>
           </div>
 
-          <div style="margin-bottom: 1rem;">
-            <strong style="font-size: 0.9rem; color: var(--text-main);">Analysis & Feedback:</strong>
-            <p id="eval-feedback-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
+          <!-- What You Got Right -->
+          <div class="eval-feedback-card eval-card-correct" id="eval-strengths-box">
+            <div class="eval-feedback-header" style="color: #10b981;">
+              <span>✅ What You Got Right</span>
+            </div>
+            <ul id="eval-strengths" class="eval-feedback-list"></ul>
           </div>
 
-          <div style="margin-bottom: 1rem;">
-            <strong style="font-size: 0.9rem; color: var(--text-main);">Missing Architectural Concepts:</strong>
-            <ul id="eval-missing-points" style="list-style: none; font-size: 0.85rem; color: #f87171; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+          <!-- What Is Missing -->
+          <div class="eval-feedback-card eval-card-missing" id="eval-missing-box">
+            <div class="eval-feedback-header" style="color: #f59e0b;">
+              <span>⚠️ What Is Missing</span>
+            </div>
+            <ul id="eval-missing-points" class="eval-feedback-list"></ul>
           </div>
 
-          <div style="margin-bottom: 1rem;">
-            <strong style="font-size: 0.9rem; color: var(--text-main);">Identified Strengths:</strong>
-            <ul id="eval-strengths" style="list-style: none; font-size: 0.85rem; color: #34d399; display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.35rem;"></ul>
+          <!-- Technical Issues / Mistakes -->
+          <div class="eval-feedback-card eval-card-mistakes" id="eval-mistakes-box" style="display: none;">
+            <div class="eval-feedback-header" style="color: #ef4444;">
+              <span>❌ Technical Issues / Mistakes</span>
+            </div>
+            <ul id="eval-mistakes-list" class="eval-feedback-list"></ul>
           </div>
 
-          <div style="margin-bottom: 1.5rem;">
-            <strong style="font-size: 0.9rem; color: var(--text-main);">Actionable Improvement:</strong>
-            <p id="eval-improvement-text" style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-top: 0.25rem;"></p>
+          <!-- Feedback Summary & Improvement -->
+          <div class="eval-feedback-card eval-card-improvement" id="eval-improvement-box">
+            <div class="eval-feedback-header" style="color: #3b82f6;">
+              <span>💡 How to Improve This Answer</span>
+            </div>
+            <p id="eval-improvement-text" style="font-size: 0.9rem; color: var(--text-main); line-height: 1.55; margin: 0;"></p>
           </div>
 
-          <div style="display: flex; justify-content: flex-end;">
+          <!-- Expected Technical Reference Answer -->
+          <details class="eval-reference-details" id="eval-reference-details">
+            <summary class="eval-reference-summary">
+              <span>📖 View Expected Technical Answer & Key Mechanics</span>
+            </summary>
+            <div class="eval-reference-body" id="eval-reference-text">
+              <!-- Reference Answer Text -->
+            </div>
+          </details>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+            <span style="font-size: 0.8rem; color: var(--text-dim);" id="eval-footer-note">Answer recorded and scored.</span>
             <button id="next-stage-btn" class="btn btn-primary btn-lg">
               Next Technical Question →
             </button>

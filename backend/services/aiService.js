@@ -72,69 +72,129 @@ Return ONLY a valid JSON object matching the standard schema for ${round}.`;
 };
 
 /**
- * 2. Evaluate Technical Answer
+ * 2. Evaluate Technical Answer Against Structured Expected Answer
  */
 export const evaluateTechnicalAnswer = async (arg1, arg2, arg3) => {
-    let question, answer, role = 'Software Developer', difficulty = 'Intermediate';
+    let question = '', answer = '', role = 'Software Developer', difficulty = 'Intermediate', topic = '', reference_answer = '', expected_concepts = [];
     if (typeof arg1 === 'object' && arg1 !== null && !arg2) {
         question = arg1.question || arg1.question_text || '';
-        answer = arg1.answer || '';
+        answer = arg1.answer || arg1.answerText || '';
         role = arg1.role || 'Software Developer';
         difficulty = arg1.difficulty || 'Intermediate';
+        topic = arg1.topic || '';
+        reference_answer = arg1.reference_answer || arg1.sample_answer || '';
+        expected_concepts = arg1.expected_concepts || arg1.required_concepts || arg1.key_points || [];
     } else {
         question = (typeof arg1 === 'object' && arg1 !== null) ? (arg1.question_text || arg1.question || '') : (arg1 || '');
         answer = arg2 || '';
-        role = (typeof arg3 === 'object' && arg3 !== null) ? (arg3.role || 'Software Developer') : (arg3 || 'Software Developer');
+        role = (typeof arg3 === 'object' && arg3 !== null) ? (arg3.role || 'Software Developer') : (typeof arg3 === 'string' ? arg3 : 'Software Developer');
+        difficulty = (typeof arg3 === 'object' && arg3 !== null) ? (arg3.difficulty || 'Intermediate') : 'Intermediate';
+        if (typeof arg1 === 'object' && arg1 !== null) {
+            expected_concepts = arg1.expected_concepts || arg1.required_concepts || arg1.key_points || [];
+            reference_answer = arg1.reference_answer || arg1.sample_answer || '';
+            topic = arg1.topic || '';
+        }
     }
 
-    if (!answer || answer.trim().length < 5 || answer.trim() === '[SKIPPED]') {
-        return getHeuristicTechnicalEvaluation(question, answer);
+    // Lookup question in mockStore if expected_concepts or reference_answer are empty
+    if ((!expected_concepts || expected_concepts.length === 0 || !reference_answer) && question) {
+        const found = mockStore.technicalQuestions.find(q =>
+            (q.question && (q.question.toLowerCase() === question.toLowerCase() || question.toLowerCase().includes(q.question.toLowerCase()) || q.question.toLowerCase().includes(question.toLowerCase()))) ||
+            (q.id && q.id === arg1?.question_id)
+        );
+        if (found) {
+            if (!expected_concepts || expected_concepts.length === 0) expected_concepts = found.expected_concepts || [];
+            if (!reference_answer) reference_answer = found.sample_answer || '';
+            if (!topic) topic = found.topic || '';
+        }
     }
 
-    const systemPrompt = `You are a strict Principal Engineering Interviewer evaluating a candidate's answer for a ${role} role (${difficulty} difficulty).
-CRITICAL EVALUATION RULES:
-1. Determine if the answer addresses the actual question asked.
-2. If off-topic, nonsense, or totally incorrect, assign:
-   - score: 10 - 25
-   - verdict: "Irrelevant" or "Completely Incorrect"
-   - error_type: "Irrelevant Answer" or "Concept Incorrect"
-   - correctness: "Very Low"
-   - relevance: "Very Low"
-   - strengths: []
-3. Classify error_type strictly as one of:
-   - "None (Correct)"
-   - "Concept Missing"
-   - "Concept Incorrect"
-   - "Incomplete Answer"
-   - "Wrong Logic"
-   - "Syntax/Implementation Error"
-   - "Poor Explanation"
-   - "Did Not Answer"
-   - "Irrelevant Answer"
-   - "Edge Case Missed"
-   - "Time Complexity Issue"`;
+    if (!expected_concepts || expected_concepts.length === 0) {
+        if (question.toLowerCase().includes('overloading') && question.toLowerCase().includes('overriding')) {
+            expected_concepts = ['Method Overloading (Compile-time)', 'Method Overriding (Runtime & Inheritance)', 'Parameter signatures vs Implementation replacement'];
+        } else if (question.toLowerCase().includes('acid')) {
+            expected_concepts = ['Atomicity', 'Consistency', 'Isolation', 'Durability'];
+        } else {
+            expected_concepts = ['Core Definition & Principle', 'Mechanism & Implementation Details', 'Trade-offs & Real-World Application'];
+        }
+    }
+
+    const rawAnswer = (answer || '').trim();
+    if (!rawAnswer || rawAnswer === '[SKIPPED]' || rawAnswer.length < 5) {
+        return getHeuristicTechnicalEvaluation(question, answer, { role, difficulty, topic, reference_answer, expected_concepts });
+    }
+
+    const systemPrompt = `You are a strict, objective Principal Engineering Interviewer evaluating a technical interview response for a ${role} candidate (${difficulty} level).
+CRITICAL EVALUATION INSTRUCTIONS:
+1. EVALUATE AGAINST THE STRUCTURED EXPECTED ANSWER AND REQUIRED CONCEPTS.
+2. DO NOT GIVE A GENERIC OPINION. Compare the candidate's actual statements against each required concept.
+3. CONCEPTS STATUS: For each required concept in the list, evaluate if it is:
+   - "covered": Candidate correctly explained or utilized the concept (accept equivalent phrasing and valid alternative examples).
+   - "missing": Candidate omitted the concept completely.
+   - "incorrect": Candidate made a factually wrong or confused technical claim about this concept.
+4. WHAT YOU GOT RIGHT (correct_points): List explicit, accurate statements/concepts from the candidate's answer. Do NOT use generic praise.
+5. WHAT IS MISSING (missing_concepts): Explicitly state which required concepts or architectural points were missing.
+6. TECHNICAL ISSUES / MISTAKES (technical_mistakes): Explicitly identify any factually incorrect statements, misconceptions, or misleading technical claims made by the candidate. If none, return [].
+7. REAL SCORE OUT OF 10 (score_out_of_10):
+   - 9-10: Excellent — accurate, complete, covers all major concepts with solid technical explanation.
+   - 7-8: Good — mostly correct, covers core concepts, minor details missing.
+   - 5-6: Partially Correct — demonstrates basic understanding but important concepts missing or explanation is shallow.
+   - 3-4: Weak — limited grasp, major concepts missing, or significant confusion/errors.
+   - 1-2: Very Weak — mostly incorrect, confused, or minimal.
+   - 0: Completely incorrect, irrelevant, or non-technical gibberish.
+8. CLASSIFICATION: Strictly one of: "Correct" | "Mostly Correct" | "Partially Correct" | "Incomplete" | "Incorrect" | "Irrelevant / Did Not Answer".
+9. ACTIONABLE IMPROVEMENT: Specific advice on how to improve this exact answer based on missing concepts and mistakes.`;
 
     const userPrompt = `Question: "${question}"
 Candidate Answer: "${answer}"
 Target Role: ${role}
 Difficulty: ${difficulty}
+Topic: ${topic || 'Engineering Architecture'}
+Reference Answer: "${reference_answer}"
+Required Concepts to Verify: ${JSON.stringify(expected_concepts)}
 
-Return ONLY a valid JSON object:
+Return ONLY a valid JSON object matching this schema:
 {
-  "score": 85,
-  "verdict": "Correct | Mostly Correct | Partially Correct | Mostly Incorrect | Completely Incorrect | Irrelevant",
-  "error_type": "None (Correct) | Concept Missing | Concept Incorrect | Incomplete Answer | Wrong Logic | Syntax/Implementation Error | Poor Explanation | Did Not Answer | Irrelevant Answer | Edge Case Missed | Time Complexity Issue",
+  "score_out_of_10": 8,
+  "score": 80,
+  "classification": "Correct | Mostly Correct | Partially Correct | Incomplete | Incorrect | Irrelevant / Did Not Answer",
+  "verdict": "Correct | Mostly Correct | Partially Correct | Incomplete | Incorrect | Irrelevant / Did Not Answer",
+  "error_type": "None (Correct) | Concept Missing | Concept Incorrect | Incomplete Answer | Wrong Logic | Syntax/Implementation Error | Poor Explanation | Did Not Answer | Irrelevant Answer",
   "correctness": "High | Moderate | Low | Very Low",
   "relevance": "High | Moderate | Low | Very Low",
-  "missing_concepts": ["Omission 1", "Omission 2"],
-  "strengths": ["Clear strength 1"],
-  "feedback": "Honest, constructive analysis.",
-  "improvement": "Actionable technical concepts to master."
+  "correct_points": ["Specific statement 1 that candidate got right", "Specific statement 2..."],
+  "missing_concepts": ["Did not mention concept X", "Did not explain mechanism Y..."],
+  "technical_mistakes": ["Explicit misconception if any..."],
+  "concept_coverage": {
+    "covered_count": 3,
+    "total_count": 4,
+    "percentage": 75,
+    "concepts": [
+      { "name": "Concept A", "status": "covered" },
+      { "name": "Concept B", "status": "missing" }
+    ]
+  },
+  "feedback": "Concise evaluation summary.",
+  "improvement": "Step-by-step guidance on what to add/fix in this answer.",
+  "reference_answer": "${reference_answer.replace(/"/g, '\\"')}"
 }`;
 
-    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.2 });
-    const parsed = safeParseJSON(raw, getHeuristicTechnicalEvaluation(question, answer));
+    const raw = await callLLM({ systemPrompt, userPrompt, temperature: 0.15 });
+    const fallback = getHeuristicTechnicalEvaluation(question, answer, { role, difficulty, topic, reference_answer, expected_concepts });
+    const parsed = safeParseJSON(raw, fallback);
+
+    if (parsed.score_out_of_10 === undefined && parsed.score !== undefined) {
+        parsed.score_out_of_10 = Math.round((parsed.score / 10) * 10) / 10;
+    } else if (parsed.score === undefined && parsed.score_out_of_10 !== undefined) {
+        parsed.score = Math.round(parsed.score_out_of_10 * 10);
+    }
+    if (!parsed.classification) parsed.classification = parsed.verdict || 'Partially Correct';
+    if (!parsed.verdict) parsed.verdict = parsed.classification;
+    if (!parsed.correct_points) parsed.correct_points = parsed.strengths || [];
     if (!parsed.missing_concepts) parsed.missing_concepts = parsed.missing_points || [];
+    if (!parsed.technical_mistakes) parsed.technical_mistakes = [];
+    if (!parsed.reference_answer) parsed.reference_answer = reference_answer;
+
     return parsed;
 };
 
@@ -309,27 +369,66 @@ function getHeuristicQuestion(round, role, difficulty, topic, previousQuestions 
     }
 }
 
-export function getHeuristicTechnicalEvaluation(question, answer) {
+export function getHeuristicTechnicalEvaluation(question, answer, options = {}) {
     const rawAnswer = (answer || '').trim();
-    const len = rawAnswer.length;
     const lowerAns = rawAnswer.toLowerCase();
     const lowerQ = (question || '').toLowerCase();
+    const optObj = typeof options === 'string' ? { difficulty: options } : (options || {});
+    let { role = 'Software Developer', difficulty = 'Intermediate', topic = '', reference_answer = '', expected_concepts = [] } = optObj;
 
+    if (!expected_concepts || expected_concepts.length === 0) {
+        expected_concepts = optObj.key_points || optObj.required_concepts || [];
+    }
+
+    // Lookup in mockStore if not provided
+    if ((!expected_concepts || expected_concepts.length === 0 || !reference_answer) && question) {
+        const found = mockStore.technicalQuestions.find(q =>
+            (q.question && (q.question.toLowerCase() === lowerQ || lowerQ.includes(q.question.toLowerCase()) || q.question.toLowerCase().includes(lowerQ))) ||
+            (q.id && q.id === optObj.question_id)
+        );
+        if (found) {
+            if (!expected_concepts || expected_concepts.length === 0) expected_concepts = found.expected_concepts || [];
+            if (!reference_answer) reference_answer = found.sample_answer || '';
+            if (!topic) topic = found.topic || '';
+        }
+    }
+
+    if (!expected_concepts || expected_concepts.length === 0) {
+        if (lowerQ.includes('overloading') && lowerQ.includes('overriding')) {
+            expected_concepts = ['Method Overloading (Compile-time)', 'Method Overriding (Runtime & Inheritance)', 'Signatures vs Implementations'];
+        } else if (lowerQ.includes('acid')) {
+            expected_concepts = ['Atomicity', 'Consistency', 'Isolation', 'Durability'];
+        } else {
+            expected_concepts = ['Core Definition & Principle', 'Mechanism & Implementation Details', 'Trade-offs & Practical Application'];
+        }
+    }
+
+    // 1. Empty / Skipped
     if (!rawAnswer || rawAnswer === '[SKIPPED]') {
         return {
+            score_out_of_10: 0,
             score: 0,
+            classification: 'Irrelevant / Did Not Answer',
             verdict: 'Did Not Answer',
             error_type: 'Did Not Answer',
             correctness: 'Very Low',
             relevance: 'Very Low',
-            missing_points: ['Question was skipped by candidate.'],
-            strengths: [],
+            correct_points: [],
+            missing_concepts: expected_concepts.map(c => `Did not mention or cover: ${c}`),
+            technical_mistakes: [],
+            concept_coverage: {
+                covered_count: 0,
+                total_count: expected_concepts.length,
+                percentage: 0,
+                concepts: expected_concepts.map(c => ({ name: c, status: 'missing' }))
+            },
             feedback: 'The question was skipped without an answer.',
-            improvement: 'Review core definitions for this topic to prepare for future attempts.'
+            improvement: 'Review core definitions and concepts for this topic to prepare for technical screenings.',
+            reference_answer: reference_answer || 'Expected architectural explanation covering core mechanisms and principles.'
         };
     }
 
-    // Extract significant keywords from question (ignore generic stop words)
+    // 2. Extract keywords to detect off-topic/irrelevant text
     const stopWords = new Set([
         'explain', 'difference', 'differences', 'between', 'what', 'which', 'when', 'where', 'how', 'why',
         'is', 'are', 'was', 'were', 'the', 'and', 'for', 'with', 'from', 'into', 'about', 'your', 'you',
@@ -349,46 +448,185 @@ export function getHeuristicTechnicalEvaluation(question, answer) {
         }
     }
 
-    const isObviousOffTopic = (qWords.length >= 2 && matchedKeywords === 0 && len > 20) ||
+    const isObviousOffTopic = (qWords.length >= 2 && matchedKeywords === 0 && rawAnswer.length > 15) ||
                               (lowerQ.includes('polymorphism') && lowerAns.includes('cloud computing') && !lowerAns.includes('poly') && !lowerAns.includes('class') && !lowerAns.includes('object')) ||
                               (lowerQ.includes('index') && lowerAns.includes('css') && !lowerAns.includes('query') && !lowerAns.includes('table'));
 
     if (isObviousOffTopic) {
         return {
-            score: 18,
+            score_out_of_10: 0,
+            score: 0,
+            classification: 'Irrelevant / Did Not Answer',
             verdict: 'Irrelevant',
             error_type: 'Irrelevant Answer',
             correctness: 'Very Low',
             relevance: 'Very Low',
-            missing_points: ['The candidate response discusses an unrelated topic and does not address the core subject.'],
-            strengths: [],
-            feedback: 'The answer does not address the technical subject matter of the question.',
-            improvement: 'Focus directly on the architectural definitions and concepts required by the question prompt.'
+            correct_points: [],
+            missing_concepts: expected_concepts.map(c => `Missing core concept: ${c}`),
+            technical_mistakes: ['The submitted answer discusses an unrelated topic and does not address the technical subject matter of the question.'],
+            concept_coverage: {
+                covered_count: 0,
+                total_count: expected_concepts.length,
+                percentage: 0,
+                concepts: expected_concepts.map(c => ({ name: c, status: 'missing' }))
+            },
+            feedback: 'The response does not address the technical subject matter of the question.',
+            improvement: 'Focus directly on the architectural definitions and concepts required by the question prompt.',
+            reference_answer: reference_answer || 'Expected technical explanation addressing core mechanisms.'
         };
     }
 
-    let score = 40;
-    if (len >= 120) score = 92;
-    else if (len >= 80) score = 85;
-    else if (len >= 50) score = 75;
-    else if (len >= 25) score = 62;
-    else score = Math.max(25, Math.round(15 + len));
+    // 3. Detect known technical misconceptions / mistakes
+    const technical_mistakes = [];
+    if (lowerAns.includes('multiple inheritance') && (lowerAns.includes('class ') || lowerAns.includes('classes')) && (lowerQ.includes('java') || lowerAns.includes('java')) && !lowerAns.includes('not support') && !lowerAns.includes("doesn't") && !lowerAns.includes('interface')) {
+        technical_mistakes.push("Stated that Java supports multiple inheritance through classes. Java does not support multiple inheritance with classes (to prevent ambiguity like the diamond problem); multiple inheritance of type is achieved using interfaces.");
+    }
+    if (lowerAns.includes('tcp is connectionless') || lowerAns.includes('udp is connection-oriented') || lowerAns.includes('udp is connection oriented')) {
+        technical_mistakes.push("Incorrectly swapped connection protocols: TCP is connection-oriented with 3-way handshakes; UDP is connectionless and lightweight.");
+    }
+    if (lowerAns.includes('primary key can be null') || lowerAns.includes('primary key allows null')) {
+        technical_mistakes.push("Claimed primary keys allow NULL values. Primary keys strictly enforce uniqueness and NOT NULL constraints.");
+    }
+    if (lowerAns.includes('const prevents') && (lowerAns.includes('mutation') || lowerAns.includes('mutating')) && lowerAns.includes('object')) {
+        technical_mistakes.push("Claimed const prevents object mutation. In JavaScript, const prevents identifier reassignment, but properties within an object can still be mutated.");
+    }
 
-    const verdict = score >= 88 ? 'Correct' : score >= 75 ? 'Mostly Correct' : score >= 60 ? 'Partially Correct' : score >= 40 ? 'Mostly Incorrect' : 'Completely Incorrect';
-    const error_type = score >= 85 ? 'None (Correct)' : score >= 70 ? 'Concept Missing' : score >= 50 ? 'Incomplete Answer' : 'Concept Incorrect';
+    // 4. Evaluate Concept Coverage
+    const conceptsStatus = [];
+    const correct_points = [];
+    const missing_concepts = [];
+
+    for (const concept of expected_concepts) {
+        const lowerC = concept.toLowerCase().trim();
+        const cWords = lowerC.replace(/[^a-z0-9_]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+
+        let isCovered = false;
+        if (lowerAns.includes(lowerC)) {
+            isCovered = true;
+        } else if (cWords.length > 0) {
+            let matchCount = 0;
+            for (const cw of cWords) {
+                if (lowerAns.includes(cw)) {
+                    matchCount++;
+                    continue;
+                }
+                const stem = cw.length >= 6 ? cw.substring(0, cw.length - 2) : (cw.length >= 4 ? cw.substring(0, cw.length - 1) : cw);
+                if (stem.length >= 3 && lowerAns.includes(stem)) {
+                    matchCount++;
+                    continue;
+                }
+                if (cw.startsWith('ack') && (lowerAns.includes('ack') || lowerAns.includes('acknowledg'))) {
+                    matchCount++;
+                    continue;
+                }
+                if (cw.startsWith('reliab') && (lowerAns.includes('reliab') || lowerAns.includes('guarantee'))) {
+                    matchCount++;
+                    continue;
+                }
+                if (cw.startsWith('order') && (lowerAns.includes('order') || lowerAns.includes('sequence') || lowerAns.includes('ordered'))) {
+                    matchCount++;
+                    continue;
+                }
+            }
+
+            if (matchCount >= Math.ceil(cWords.length * 0.4)) {
+                isCovered = true;
+            }
+        }
+
+        // Specific concept synonym mapping
+        if (!isCovered) {
+            if (lowerC.includes('encapsulation') && (lowerAns.includes('private') || lowerAns.includes('getter') || lowerAns.includes('setter') || lowerAns.includes('data hiding') || lowerAns.includes('bundle state') || lowerAns.includes('bundling'))) isCovered = true;
+            else if (lowerC.includes('abstraction') && (lowerAns.includes('interface') || lowerAns.includes('abstract class') || lowerAns.includes('hiding detail') || lowerAns.includes('hide implementation') || lowerAns.includes('hiding complexity'))) isCovered = true;
+            else if (lowerC.includes('inheritance') && (lowerAns.includes('extends') || lowerAns.includes('parent') || lowerAns.includes('child') || lowerAns.includes('subclass') || lowerAns.includes('super') || lowerAns.includes('reuse') || lowerAns.includes('reusability'))) isCovered = true;
+            else if (lowerC.includes('polymorphism') && (lowerAns.includes('override') || lowerAns.includes('overload') || lowerAns.includes('overriding') || lowerAns.includes('overloading') || lowerAns.includes('many forms') || lowerAns.includes('multiple forms'))) isCovered = true;
+            else if (lowerC.includes('acid') && (lowerAns.includes('atomicity') || lowerAns.includes('consistency') || lowerAns.includes('isolation') || lowerAns.includes('durability'))) isCovered = true;
+            else if ((lowerC.includes('latency') || lowerC.includes('use case')) && (lowerAns.includes('latency') || lowerAns.includes('streaming') || lowerAns.includes('real-time') || lowerAns.includes('gaming') || lowerAns.includes('trade-off') || lowerAns.includes('tradeoff'))) isCovered = true;
+        }
+
+        if (isCovered) {
+            conceptsStatus.push({ name: concept, status: 'covered' });
+            correct_points.push(`✓ Correctly explained and applied the concept of ${concept}.`);
+        } else {
+            conceptsStatus.push({ name: concept, status: 'missing' });
+            missing_concepts.push(`✗ Did not mention or adequately explain ${concept}.`);
+        }
+    }
+
+    const coveredCount = conceptsStatus.filter(c => c.status === 'covered').length;
+    const totalCount = conceptsStatus.length;
+    const coveragePercent = totalCount > 0 ? Math.round((coveredCount / totalCount) * 1000) / 10 : 0;
+
+    // 5. Calculate Score out of 10
+    let scoreOutOf10 = 0;
+    if (totalCount > 0) {
+        if (coveredCount === totalCount) {
+            scoreOutOf10 = 9.5;
+        } else if (coveragePercent >= 75) {
+            scoreOutOf10 = 8.5;
+        } else if (coveragePercent >= 60) {
+            scoreOutOf10 = 7.5;
+        } else if (coveragePercent >= 40) {
+            scoreOutOf10 = 5.5;
+        } else if (coveredCount > 0) {
+            scoreOutOf10 = 4.0;
+        } else {
+            scoreOutOf10 = 2.0;
+        }
+    }
+
+    // Length and depth refinement
+    if (rawAnswer.length < 30 && scoreOutOf10 > 5) {
+        scoreOutOf10 = Math.max(4.0, scoreOutOf10 - 2.0);
+    }
+    if (technical_mistakes.length > 0) {
+        scoreOutOf10 = Math.max(1.0, scoreOutOf10 - (technical_mistakes.length * 2.5));
+    }
+
+    scoreOutOf10 = Math.min(10, Math.max(0, Math.round(scoreOutOf10 * 10) / 10));
+    const score = Math.round(scoreOutOf10 * 10);
+
+    // 6. Classification
+    let classification = 'Partially Correct';
+    if (scoreOutOf10 >= 9.0) classification = 'Correct';
+    else if (scoreOutOf10 >= 7.0) classification = 'Mostly Correct';
+    else if (scoreOutOf10 >= 5.0) classification = 'Partially Correct';
+    else if (scoreOutOf10 >= 3.0) classification = 'Incomplete';
+    else classification = 'Incorrect';
+
+    const error_type = technical_mistakes.length > 0 ? 'Concept Incorrect' : (missing_concepts.length > 0 ? 'Concept Missing' : 'None (Correct)');
+
+    // 7. Improvement text
+    let improvementText = 'Your answer covers the essential principles well.';
+    if (missing_concepts.length > 0 || technical_mistakes.length > 0) {
+        const missingList = conceptsStatus.filter(c => c.status === 'missing').map(c => c.name).join(', ');
+        improvementText = `To improve this answer, provide a concise definition, explicitly discuss ${missingList || 'implementation trade-offs'}, and include a concrete production code example.`;
+    }
 
     return {
+        score_out_of_10: scoreOutOf10,
         score,
-        verdict,
+        classification,
+        verdict: classification,
         error_type,
-        correctness: score >= 75 ? 'High' : score >= 60 ? 'Moderate' : score >= 40 ? 'Low' : 'Very Low',
-        relevance: score >= 50 ? 'High' : 'Moderate',
-        missing_points: score < 85 ? ['Production trade-offs and bottleneck considerations', 'Memory overhead versus compute efficiency'] : [],
-        strengths: score >= 60 ? ['Clear explanation of core technical mechanism', 'Practical perspective'] : [],
-        feedback: score >= 60
-            ? 'Good response demonstrating foundational engineering understanding.'
-            : 'Incomplete or minimal response. Elaborate with deeper technical rationale.',
-        improvement: 'Structure future answers by highlighting production trade-offs and performance boundaries.'
+        correctness: score >= 75 ? 'High' : score >= 50 ? 'Moderate' : score >= 25 ? 'Low' : 'Very Low',
+        relevance: isObviousOffTopic ? 'Very Low' : 'High',
+        correct_points,
+        missing_concepts,
+        technical_mistakes,
+        concept_coverage: {
+            covered_count: coveredCount,
+            total_count: totalCount,
+            percentage: coveragePercent,
+            concepts: conceptsStatus
+        },
+        feedback: classification === 'Correct'
+            ? 'Excellent, complete technical explanation demonstrating solid engineering rigor.'
+            : (classification === 'Mostly Correct'
+                ? 'Strong answer covering core mechanisms with minor concept omissions.'
+                : 'Partially correct explanation. Review the missing concepts to strengthen conceptual depth.'),
+        improvement: improvementText,
+        reference_answer: reference_answer || 'Expected technical answer with core mechanisms and trade-offs.'
     };
 }
 
