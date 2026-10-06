@@ -15,6 +15,7 @@ import hrRoutes from './routes/hrRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
+import configRoutes from './routes/configRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 import { isSupabaseConfigured } from './config/supabase.js';
 
@@ -29,9 +30,58 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
-// Security Headers
+// Security Headers with CSP configured for Supabase & CDNs
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com",
+                "https://unpkg.com"
+            ],
+            scriptSrcElem: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com",
+                "https://unpkg.com"
+            ],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'",
+                "https://fonts.googleapis.com",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com",
+                "data:"
+            ],
+            imgSrc: [
+                "'self'",
+                "data:",
+                "blob:",
+                "https:"
+            ],
+            connectSrc: [
+                "'self'",
+                "https://*.supabase.co",
+                "wss://*.supabase.co",
+                "https://api.groq.com",
+                "https://generativelanguage.googleapis.com",
+                "https://cdn.jsdelivr.net",
+                "https://cdnjs.cloudflare.com"
+            ],
+            frameSrc: ["'self'"],
+            objectSrc: ["'none'"]
+        }
+    }
 }));
 
 // CORS Configuration
@@ -83,6 +133,7 @@ app.use(express.static(frontendPath));
 
 // API Routes
 app.use('/api/health', healthRoutes);
+app.use('/api/config', configRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/aptitude', aptitudeRoutes);
 app.use('/api/technical', technicalRoutes);
