@@ -23,11 +23,11 @@ router.get('/', async (req, res) => {
         }
     }
 
-    let aiProvider = 'Heuristic Engine (Local Fallback)';
-    if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('placeholder')) {
+    let aiProvider = 'Groq / OpenAI (openai/gpt-oss-120b)';
+    if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('placeholder')) {
+        aiProvider = `Groq (${process.env.GROQ_MODEL || 'openai/gpt-oss-120b'})`;
+    } else if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('placeholder')) {
         aiProvider = `Google Gemini (${process.env.GEMINI_MODEL || 'gemini-2.5-flash'})`;
-    } else if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('placeholder')) {
-        aiProvider = `Groq (${process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'})`;
     }
 
     res.json({
