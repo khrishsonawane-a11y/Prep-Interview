@@ -14,7 +14,54 @@ dotenv.config();
  * Low-level caller to LLM endpoint with multi-tier provider (Groq -> Gemini -> Fallback)
  */
 async function callLLM({ systemPrompt, userPrompt, temperature = 0.2 }) {
-    // Tier 1: Try Groq API (High quality, ultra-fast 1s latency)
+    // Tier 1: Try Google Gemini API with current generation models
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && !geminiKey.includes('placeholder')) {
+        const geminiModels = [
+            process.env.GEMINI_MODEL,
+            'gemini-3.5-flash-lite',
+            'gemini-3.1-flash-lite',
+            'gemini-flash-latest',
+            'gemini-3.8-flash'
+        ].filter(Boolean);
+
+        // Remove duplicates
+        const uniqueGeminiModels = [...new Set(geminiModels)];
+
+        for (const model of uniqueGeminiModels) {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 8000);
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [
+                            { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
+                        ],
+                        generationConfig: {
+                            temperature,
+                            responseMimeType: 'application/json'
+                        }
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text && text.trim().length > 0) {
+                        return text.trim();
+                    }
+                }
+            } catch (err) {
+                // Continue to next Gemini model
+            }
+        }
+    }
+
+    // Tier 2: Try Groq API (High quality backup)
     const groqKey = process.env.GROQ_API_KEY;
     if (groqKey && !groqKey.includes('placeholder')) {
         const groqModels = [
@@ -55,50 +102,7 @@ async function callLLM({ systemPrompt, userPrompt, temperature = 0.2 }) {
                     }
                 }
             } catch (err) {
-                // Continue to next model/provider
-            }
-        }
-    }
-
-    // Tier 2: Try Google Gemini API
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (geminiKey && !geminiKey.includes('placeholder')) {
-        const geminiModels = [
-            process.env.GEMINI_MODEL,
-            'gemini-2.5-flash',
-            'gemini-3.8-flash',
-            'gemini-2.5-flash-lite'
-        ].filter(Boolean);
-
-        for (const model of geminiModels) {
-            try {
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 7000);
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [
-                            { role: 'user', parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }
-                        ],
-                        generationConfig: {
-                            temperature,
-                            responseMimeType: 'application/json'
-                        }
-                    }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeout);
-
-                if (res.ok) {
-                    const data = await res.json();
-                    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text && text.trim().length > 0) {
-                        return text.trim();
-                    }
-                }
-            } catch (err) {
-                // Continue
+                // Continue to next model
             }
         }
     }

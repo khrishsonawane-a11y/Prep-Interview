@@ -23,11 +23,11 @@ router.get('/', async (req, res) => {
         }
     }
 
-    let aiProvider = 'Groq / OpenAI (openai/gpt-oss-120b)';
-    if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('placeholder')) {
+    let aiProvider = 'Google Gemini (gemini-3.5-flash-lite)';
+    if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('placeholder')) {
+        aiProvider = `Google Gemini (${process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'})`;
+    } else if (process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('placeholder')) {
         aiProvider = `Groq (${process.env.GROQ_MODEL || 'openai/gpt-oss-120b'})`;
-    } else if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('placeholder')) {
-        aiProvider = `Google Gemini (${process.env.GEMINI_MODEL || 'gemini-2.5-flash'})`;
     }
 
     res.json({
