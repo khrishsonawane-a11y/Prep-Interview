@@ -16,6 +16,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import healthRoutes from './routes/healthRoutes.js';
 import configRoutes from './routes/configRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 import { isSupabaseConfigured } from './config/supabase.js';
 
@@ -134,6 +135,7 @@ app.use(express.static(frontendPath));
 // API Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/aptitude', aptitudeRoutes);
 app.use('/api/technical', technicalRoutes);

@@ -101,56 +101,96 @@ class SupabaseAuthManager {
 
     async signUp(email, password, fullName) {
         const client = await this.getClient();
+        const apiBase = window.CONFIG?.API_BASE_URL || '/api';
 
-        if (client) {
-            const { data, error } = await client.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        full_name: fullName
-                    }
-                }
+        // Step 1: Attempt auto-confirmed signup via backend API
+        try {
+            const signupRes = await fetch(`${apiBase}/auth/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, fullName })
             });
-            if (error) throw error;
 
-            if (data?.session) {
-                this.saveSession(data.session.access_token, data.user);
-                return { success: true, user: data.user, session: data.session };
+            const signupData = await signupRes.json();
+
+            if (!signupRes.ok || !signupData.success) {
+                throw new Error(signupData.error || 'Registration failed.');
             }
 
-            // Attempt immediate login if email confirmation is not required or auto-confirmed
-            try {
-                const loginRes = await client.auth.signInWithPassword({ email, password });
-                if (loginRes.data?.session) {
-                    this.saveSession(loginRes.data.session.access_token, loginRes.data.user);
-                    return { success: true, user: loginRes.data.user, session: loginRes.data.session };
+            // Step 2: Now that user is confirmed in Supabase Auth, sign in immediately
+            if (client) {
+                const { data: signinData, error: signinError } = await client.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (signinError) throw signinError;
+
+                if (signinData?.session) {
+                    this.saveSession(signinData.session.access_token, signinData.user);
+                    return { success: true, user: signinData.user, session: signinData.session };
                 }
-            } catch (loginErr) {
-                console.warn('[SupabaseAuthManager] Auto sign-in notice:', loginErr.message);
             }
 
             return {
                 success: true,
-                user: data?.user,
+                user: signupData.user,
                 session: null,
-                message: 'Account created! Please check your email for confirmation if required, or sign in.'
+                message: 'Account created! Please sign in with your credentials.'
             };
-        }
+        } catch (backendErr) {
+            console.warn('[SupabaseAuthManager] Backend signup notice, trying client fallback:', backendErr.message);
 
-        // Only fall back to local mock if Supabase URL is explicitly not configured or placeholder
-        if (!window.CONFIG?.SUPABASE_URL || window.CONFIG?.SUPABASE_URL.includes('placeholder')) {
-            const user = {
-                id: 'demo-user-123',
-                email,
-                user_metadata: { full_name: fullName }
-            };
-            const token = 'mock_' + user.id;
-            this.saveSession(token, user);
-            return { success: true, user, session: { access_token: token } };
-        }
+            // Step 3: Direct Client Fallback if backend route is unreachable
+            if (client) {
+                const { data, error } = await client.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            full_name: fullName
+                        }
+                    }
+                });
+                if (error) throw error;
 
-        throw new Error('Supabase client failed to initialize. Please check your network connection and reload.');
+                if (data?.session) {
+                    this.saveSession(data.session.access_token, data.user);
+                    return { success: true, user: data.user, session: data.session };
+                }
+
+                try {
+                    const loginRes = await client.auth.signInWithPassword({ email, password });
+                    if (loginRes.data?.session) {
+                        this.saveSession(loginRes.data.session.access_token, loginRes.data.user);
+                        return { success: true, user: loginRes.data.user, session: loginRes.data.session };
+                    }
+                } catch (loginErr) {
+                    console.warn('[SupabaseAuthManager] Direct auto sign-in notice:', loginErr.message);
+                }
+
+                return {
+                    success: true,
+                    user: data?.user,
+                    session: null,
+                    message: 'Account created! Please check your email for confirmation if required, or sign in.'
+                };
+            }
+
+            // Mock / Offline fallback
+            if (!window.CONFIG?.SUPABASE_URL || window.CONFIG?.SUPABASE_URL.includes('placeholder')) {
+                const user = {
+                    id: 'demo-user-123',
+                    email,
+                    user_metadata: { full_name: fullName }
+                };
+                const token = 'mock_' + user.id;
+                this.saveSession(token, user);
+                return { success: true, user, session: { access_token: token } };
+            }
+
+            throw new Error(backendErr.message || 'Supabase client failed to initialize. Please reload the page.');
+        }
     }
 
     async signIn(email, password) {
