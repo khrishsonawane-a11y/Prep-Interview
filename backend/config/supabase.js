@@ -27,6 +27,14 @@ export const isSupabaseConfigured = () => {
     );
 };
 
+export const isServiceRoleConfigured = () => {
+    return Boolean(
+        supabaseServiceRoleKey &&
+        !supabaseServiceRoleKey.includes('placeholder') &&
+        supabaseServiceRoleKey.length > 20
+    );
+};
+
 const supabaseOptions = {
     auth: {
         autoRefreshToken: false,
@@ -38,7 +46,7 @@ const supabaseOptions = {
 };
 
 // Client initialized with Service Role Key for backend operations
-export const supabaseAdmin = isSupabaseConfigured() && supabaseServiceRoleKey && !supabaseServiceRoleKey.includes('placeholder')
+export const supabaseAdmin = isSupabaseConfigured() && isServiceRoleConfigured()
     ? createClient(supabaseUrl, supabaseServiceRoleKey, supabaseOptions)
     : isSupabaseConfigured()
         ? createClient(supabaseUrl, supabaseAnonKey, supabaseOptions)
@@ -46,7 +54,7 @@ export const supabaseAdmin = isSupabaseConfigured() && supabaseServiceRoleKey &&
 
 // Helper to create a user-scoped client that respects Row Level Security
 export const createUserClient = (accessToken) => {
-    if (!isSupabaseConfigured()) return null;
+    if (!isSupabaseConfigured() || !accessToken) return null;
     return createClient(supabaseUrl, supabaseAnonKey, {
         ...supabaseOptions,
         global: {
@@ -57,8 +65,27 @@ export const createUserClient = (accessToken) => {
     });
 };
 
+/**
+ * Returns the best available Supabase client for a request:
+ * 1. supabaseAdmin with Service Role Key (bypasses RLS) if configured.
+ * 2. createUserClient with Bearer token (respects RLS where auth.uid() == user.id) if anon key only.
+ */
+export const getDbClient = (req) => {
+    if (!isSupabaseConfigured()) return null;
+    if (isServiceRoleConfigured() && supabaseAdmin) {
+        return supabaseAdmin;
+    }
+    if (req?.token && typeof req.token === 'string' && !req.token.startsWith('mock_')) {
+        const userClient = createUserClient(req.token);
+        if (userClient) return userClient;
+    }
+    return supabaseAdmin;
+};
+
 export default {
     supabaseAdmin,
     createUserClient,
-    isSupabaseConfigured
+    getDbClient,
+    isSupabaseConfigured,
+    isServiceRoleConfigured
 };

@@ -8,5 +8,7 @@ router.use(requireAuth);
 
 router.get('/', getProfile);
 router.put('/', updateProfile);
+router.post('/', updateProfile);
+router.patch('/', updateProfile);
 
 export default router;

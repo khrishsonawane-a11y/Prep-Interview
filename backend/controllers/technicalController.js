@@ -1,4 +1,4 @@
-import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
+import { getDbClient, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion, evaluateTechnicalAnswer as aiEvalTech } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
@@ -19,28 +19,31 @@ export const getTechnicalQuestions = async (req, res, next) => {
         const { count = 30, role = 'Software Developer', difficulty = 'Intermediate', topic } = { ...req.query, ...req.body };
         const limit = Math.min(35, Math.max(1, parseInt(count, 10) || 30));
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
-            try {
-                let query = supabaseAdmin
-                    .from('technical_questions')
-                    .select('*')
-                    .limit(100);
+        if (isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (db) {
+                try {
+                    let query = db
+                        .from('technical_questions')
+                        .select('*')
+                        .limit(100);
 
-                const { data, error } = await query;
-                if (!error && data && data.length > 0) {
-                    let candidates = data;
-                    if (topic) {
-                        const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
-                        if (topicMatches.length > 0) candidates = topicMatches;
+                    const { data, error } = await query;
+                    if (!error && data && data.length > 0) {
+                        let candidates = data;
+                        if (topic) {
+                            const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+                            if (topicMatches.length > 0) candidates = topicMatches;
+                        }
+                        const shuffled = shuffleArray(candidates);
+                        return res.json({ success: true, questions: shuffled.slice(0, limit) });
                     }
-                    const shuffled = shuffleArray(candidates);
-                    return res.json({ success: true, questions: shuffled.slice(0, limit) });
+                    if (error) {
+                        console.warn('[Supabase Notice] technical_questions query:', error.message);
+                    }
+                } catch (supErr) {
+                    console.warn('[Supabase Exception] technical_questions:', supErr.message);
                 }
-                if (error) {
-                    console.warn('[Supabase Notice] technical_questions query:', error.message);
-                }
-            } catch (supErr) {
-                console.warn('[Supabase Exception] technical_questions:', supErr.message);
             }
         }
 
@@ -75,31 +78,34 @@ export const getTechnicalQuestion = async (req, res, next) => {
             return res.json({ success: true, question: aiQ });
         }
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
-            try {
-                let query = supabaseAdmin
-                    .from('technical_questions')
-                    .select('*')
-                    .limit(100);
+        if (isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (db) {
+                try {
+                    let query = db
+                        .from('technical_questions')
+                        .select('*')
+                        .limit(100);
 
-                const { data, error } = await query;
-                if (!error && data && data.length > 0) {
-                    let candidates = data;
-                    if (topic) {
-                        const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
-                        if (topicMatches.length > 0) candidates = topicMatches;
+                    const { data, error } = await query;
+                    if (!error && data && data.length > 0) {
+                        let candidates = data;
+                        if (topic) {
+                            const topicMatches = candidates.filter(q => q.topic && q.topic.toLowerCase() === topic.toLowerCase());
+                            if (topicMatches.length > 0) candidates = topicMatches;
+                        }
+
+                        const unasked = candidates.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
+                        const pool = unasked.length > 0 ? unasked : candidates;
+                        const shuffled = shuffleArray(pool);
+                        return res.json({ success: true, question: shuffled[0] });
                     }
-
-                    const unasked = candidates.filter(q => !previousQuestions.includes(q.question) && !previousQuestions.includes(q.id));
-                    const pool = unasked.length > 0 ? unasked : candidates;
-                    const shuffled = shuffleArray(pool);
-                    return res.json({ success: true, question: shuffled[0] });
+                    if (error) {
+                        console.warn('[Supabase Notice] single technical_question query:', error.message);
+                    }
+                } catch (supErr) {
+                    console.warn('[Supabase Exception] single technical_question:', supErr.message);
                 }
-                if (error) {
-                    console.warn('[Supabase Notice] single technical_question query:', error.message);
-                }
-            } catch (supErr) {
-                console.warn('[Supabase Exception] single technical_question:', supErr.message);
             }
         }
 
@@ -186,9 +192,14 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
             created_at: new Date().toISOString()
         };
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data, error } = await supabaseAdmin
+                const { data, error } = await db
                     .from('interview_answers')
                     .insert([dbAnswer])
                     .select()
@@ -202,7 +213,7 @@ export const evaluateTechnicalAnswer = async (req, res, next) => {
                 return res.json({ success: true, evaluation, answer: data });
             } catch (supErr) {
                 console.error('[Supabase Exception] evaluateTechnicalAnswer:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database exception during technical answer evaluation.' });
+                return res.status(500).json({ success: false, error: 'Database exception during technical answer evaluation: ' + supErr.message });
             }
         }
 

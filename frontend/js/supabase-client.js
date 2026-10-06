@@ -1,5 +1,5 @@
 /**
- * Supabase Client Integration & Local Auth Fallback Layer
+ * Supabase Client Integration & Auth Layer
  */
 class SupabaseAuthManager {
     constructor() {
@@ -16,7 +16,7 @@ class SupabaseAuthManager {
         if (isRealSupabase) {
             try {
                 this.client = window.supabase.createClient(url, key);
-                console.log('Supabase initialized successfully');
+                console.log('Supabase Auth Client initialized successfully');
             } catch (err) {
                 console.warn('Failed to initialize Supabase client:', err);
             }
@@ -35,21 +35,44 @@ class SupabaseAuthManager {
                 }
             });
             if (error) throw error;
-            if (data.session) {
+
+            if (data?.session) {
                 this.saveSession(data.session.access_token, data.user);
+                return { success: true, user: data.user, session: data.session };
             }
-            return data;
+
+            // Attempt immediate login if auto-confirm is enabled
+            try {
+                const loginRes = await this.client.auth.signInWithPassword({ email, password });
+                if (loginRes.data?.session) {
+                    this.saveSession(loginRes.data.session.access_token, loginRes.data.user);
+                    return { success: true, user: loginRes.data.user, session: loginRes.data.session };
+                }
+            } catch (loginErr) {
+                console.warn('Auto sign-in pending email confirmation:', loginErr.message);
+            }
+
+            return {
+                success: true,
+                user: data?.user,
+                session: null,
+                message: 'Account created! Please verify your email if required, then sign in.'
+            };
         }
 
-        // Local Auth Fallback
-        const user = {
-            id: 'usr_' + Date.now(),
-            email,
-            user_metadata: { full_name: fullName }
-        };
-        const token = 'mock_' + user.id;
-        this.saveSession(token, user);
-        return { user, session: { access_token: token } };
+        // Only fall back to local mock if Supabase URL is explicitly not configured
+        if (!window.CONFIG?.SUPABASE_URL || window.CONFIG?.SUPABASE_URL.includes('placeholder')) {
+            const user = {
+                id: 'demo-user-123',
+                email,
+                user_metadata: { full_name: fullName }
+            };
+            const token = 'mock_' + user.id;
+            this.saveSession(token, user);
+            return { success: true, user, session: { access_token: token } };
+        }
+
+        throw new Error('Supabase client failed to initialize. Please reload the page.');
     }
 
     async signIn(email, password) {
@@ -59,26 +82,35 @@ class SupabaseAuthManager {
                 password
             });
             if (error) throw error;
-            if (data.session) {
+
+            if (data?.session) {
                 this.saveSession(data.session.access_token, data.user);
             }
             return data;
         }
 
-        // Local Auth Fallback
-        const user = {
-            id: 'usr_' + btoa(email).replace(/[^a-zA-Z0-9]/g, '').slice(0, 10),
-            email,
-            user_metadata: { full_name: email.split('@')[0] }
-        };
-        const token = 'mock_' + user.id;
-        this.saveSession(token, user);
-        return { user, session: { access_token: token } };
+        // Only fall back to local mock if Supabase URL is explicitly not configured
+        if (!window.CONFIG?.SUPABASE_URL || window.CONFIG?.SUPABASE_URL.includes('placeholder')) {
+            const user = {
+                id: 'demo-user-123',
+                email,
+                user_metadata: { full_name: email.split('@')[0] }
+            };
+            const token = 'mock_' + user.id;
+            this.saveSession(token, user);
+            return { user, session: { access_token: token } };
+        }
+
+        throw new Error('Supabase client failed to initialize. Please reload the page.');
     }
 
     async signOut() {
         if (this.client) {
-            await this.client.auth.signOut();
+            try {
+                await this.client.auth.signOut();
+            } catch (err) {
+                console.warn('SignOut error:', err);
+            }
         }
         localStorage.removeItem('ai_interview_token');
         localStorage.removeItem('ai_interview_user');
@@ -90,7 +122,7 @@ class SupabaseAuthManager {
         localStorage.setItem('ai_interview_user', JSON.stringify({
             id: user.id,
             email: user.email,
-            full_name: user.user_metadata?.full_name || user.email.split('@')[0]
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Candidate'
         }));
     }
 

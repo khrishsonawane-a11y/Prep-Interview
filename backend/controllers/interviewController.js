@@ -1,4 +1,4 @@
-import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
+import { getDbClient, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 import { generateFinalReport } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
@@ -104,9 +104,14 @@ export const createInterview = async (req, res, next) => {
             created_at: new Date().toISOString()
         };
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data, error } = await supabaseAdmin
+                const { data, error } = await db
                     .from('interviews')
                     .insert([newInterview])
                     .select()
@@ -120,7 +125,7 @@ export const createInterview = async (req, res, next) => {
                 return res.status(201).json({ success: true, interview: data });
             } catch (supErr) {
                 console.error('[Supabase Exception] createInterview:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database connection failed during interview creation.' });
+                return res.status(500).json({ success: false, error: 'Database connection failed during interview creation: ' + supErr.message });
             }
         }
 
@@ -141,9 +146,14 @@ export const getInterviews = async (req, res, next) => {
         const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const { role, status, search } = req.query;
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                let query = supabaseAdmin
+                let query = db
                     .from('interviews')
                     .select(`
                         id,
@@ -181,7 +191,7 @@ export const getInterviews = async (req, res, next) => {
                 return res.json({ success: true, count: filtered.length, interviews: filtered });
             } catch (supErr) {
                 console.error('[Supabase Exception] getInterviews:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database query failed.' });
+                return res.status(500).json({ success: false, error: 'Database query failed: ' + supErr.message });
             }
         }
 
@@ -224,9 +234,14 @@ export const getInterviewById = async (req, res, next) => {
         const { id } = req.params;
         const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data: interview, error: intErr } = await supabaseAdmin
+                const { data: interview, error: intErr } = await db
                     .from('interviews')
                     .select('*')
                     .eq('id', id)
@@ -242,7 +257,7 @@ export const getInterviewById = async (req, res, next) => {
                     return res.status(404).json({ success: false, error: 'Interview not found or unauthorized.' });
                 }
 
-                const { data: answers, error: ansErr } = await supabaseAdmin
+                const { data: answers, error: ansErr } = await db
                     .from('interview_answers')
                     .select('*')
                     .eq('interview_id', id)
@@ -253,7 +268,7 @@ export const getInterviewById = async (req, res, next) => {
                     console.error('[Supabase Error] getInterviewById answers query:', ansErr.message);
                 }
 
-                const { data: results, error: resErr } = await supabaseAdmin
+                const { data: results, error: resErr } = await db
                     .from('interview_results')
                     .select('*')
                     .eq('interview_id', id)
@@ -272,7 +287,7 @@ export const getInterviewById = async (req, res, next) => {
                 });
             } catch (supErr) {
                 console.error('[Supabase Exception] getInterviewById:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database retrieval exception.' });
+                return res.status(500).json({ success: false, error: 'Database retrieval exception: ' + supErr.message });
             }
         }
 
@@ -309,9 +324,14 @@ export const updateInterviewProgress = async (req, res, next) => {
         if (typeof roundIndex === 'number') updates.current_round_index = roundIndex;
         if (status) updates.status = status;
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data, error } = await supabaseAdmin
+                const { data, error } = await db
                     .from('interviews')
                     .update(updates)
                     .eq('id', id)
@@ -327,7 +347,7 @@ export const updateInterviewProgress = async (req, res, next) => {
                 return res.json({ success: true, interview: data });
             } catch (supErr) {
                 console.error('[Supabase Exception] updateInterviewProgress:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database exception during progress update.' });
+                return res.status(500).json({ success: false, error: 'Database exception during progress update: ' + supErr.message });
             }
         }
 
@@ -352,8 +372,13 @@ export const finalizeInterview = async (req, res, next) => {
         let interview = null;
         let answers = [];
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
-            const { data: intData, error: intErr } = await supabaseAdmin
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
+            const { data: intData, error: intErr } = await db
                 .from('interviews')
                 .select('*')
                 .eq('id', id)
@@ -366,7 +391,7 @@ export const finalizeInterview = async (req, res, next) => {
             }
             interview = intData;
 
-            const { data: ansData, error: ansErr } = await supabaseAdmin
+            const { data: ansData, error: ansErr } = await db
                 .from('interview_answers')
                 .select('*')
                 .eq('interview_id', id)
@@ -391,9 +416,10 @@ export const finalizeInterview = async (req, res, next) => {
         // Look up previous completed interview for this user to compute improvement
         let prevInterview = null;
         let prevResult = null;
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
             try {
-                const { data: prevList } = await supabaseAdmin
+                const { data: prevList } = await db
                     .from('interviews')
                     .select('*, interview_results(*)')
                     .eq('user_id', userId)
@@ -586,9 +612,10 @@ export const finalizeInterview = async (req, res, next) => {
             created_at: new Date().toISOString()
         };
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
             try {
-                const { error: updErr } = await supabaseAdmin
+                const { error: updErr } = await db
                     .from('interviews')
                     .update({
                         status: 'completed',
@@ -603,7 +630,7 @@ export const finalizeInterview = async (req, res, next) => {
                     return res.status(500).json({ success: false, error: 'Failed to update interview status in database: ' + updErr.message });
                 }
 
-                const { error: resErr } = await supabaseAdmin
+                const { error: resErr } = await db
                     .from('interview_results')
                     .upsert([dbResultRecord], { onConflict: 'interview_id' });
 
@@ -613,7 +640,7 @@ export const finalizeInterview = async (req, res, next) => {
                 }
             } catch (supErr) {
                 console.error('[Supabase Exception] finalizeInterview:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database exception during finalization.' });
+                return res.status(500).json({ success: false, error: 'Database exception during finalization: ' + supErr.message });
             }
         }
 

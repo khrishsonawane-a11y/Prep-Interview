@@ -1,4 +1,4 @@
-import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
+import { getDbClient, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 
 const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
@@ -12,9 +12,15 @@ export const getProfile = async (req, res, next) => {
         let interviews = [];
         let allAnswers = [];
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data: profData, error: profErr } = await supabaseAdmin
+                // 1. Fetch profile row
+                const { data: profData, error: profErr } = await db
                     .from('profiles')
                     .select('*')
                     .eq('id', userId)
@@ -27,7 +33,7 @@ export const getProfile = async (req, res, next) => {
                 if (profData) {
                     profile = profData;
                 } else {
-                    // Initialize profile row if trigger hasn't fired yet
+                    // Profile does not exist yet; create it in Supabase
                     const initialProfile = {
                         id: userId,
                         email: req.user.email,
@@ -37,28 +43,52 @@ export const getProfile = async (req, res, next) => {
                         experience_level: 'Intermediate',
                         bio: 'Passionate developer preparing for high-impact tech roles.'
                     };
-                    const { data: createdProf } = await supabaseAdmin
+
+                    const { data: createdProf, error: createErr } = await db
                         .from('profiles')
-                        .upsert([initialProfile])
+                        .upsert([initialProfile], { onConflict: 'id' })
                         .select()
                         .single();
+
+                    if (createErr) {
+                        console.error('[Supabase Error] getProfile initial upsert:', createErr.message);
+                        return res.status(500).json({
+                            success: false,
+                            error: `Failed to create initial profile in database: ${createErr.message}`
+                        });
+                    }
+
                     profile = createdProf || initialProfile;
                 }
 
-                const { data: intData, error: intErr } = await supabaseAdmin
+                // 2. Fetch interviews for statistics
+                const { data: intData, error: intErr } = await db
                     .from('interviews')
                     .select('id, status, overall_score, role, created_at')
                     .eq('user_id', userId);
-                if (!intErr && intData) interviews = intData;
 
-                const { data: ansData, error: ansErr } = await supabaseAdmin
+                if (intErr) {
+                    console.error('[Supabase Error] getProfile interviews fetch:', intErr.message);
+                }
+                if (intData) interviews = intData;
+
+                // 3. Fetch answers for accuracy statistics
+                const { data: ansData, error: ansErr } = await db
                     .from('interview_answers')
                     .select('is_correct, score')
                     .eq('user_id', userId);
-                if (!ansErr && ansData) allAnswers = ansData;
+
+                if (ansErr) {
+                    console.error('[Supabase Error] getProfile answers fetch:', ansErr.message);
+                }
+                if (ansData) allAnswers = ansData;
+
             } catch (supErr) {
                 console.error('[Supabase Exception] getProfile:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Failed to retrieve profile data from database.' });
+                return res.status(500).json({
+                    success: false,
+                    error: `Database error retrieving profile: ${supErr.message}`
+                });
             }
         } else {
             profile = mockStore.profiles.get(userId) || {
@@ -118,37 +148,49 @@ export const updateProfile = async (req, res, next) => {
         const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const { full_name, target_role, experience_level, bio } = req.body;
 
-        const updates = {
-            ...(full_name && { full_name }),
+        const profilePayload = {
+            id: userId,
+            email: req.user.email,
+            full_name: full_name || req.user.full_name || req.user.email.split('@')[0] || 'Candidate',
             ...(target_role && { target_role }),
             ...(experience_level && { experience_level }),
             ...(bio !== undefined && { bio }),
             updated_at: new Date().toISOString()
         };
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data, error } = await supabaseAdmin
+                const { data, error } = await db
                     .from('profiles')
-                    .update(updates)
-                    .eq('id', userId)
+                    .upsert([profilePayload], { onConflict: 'id' })
                     .select()
                     .single();
 
                 if (error) {
                     console.error('[Supabase Error] updateProfile:', error.message);
-                    return res.status(500).json({ success: false, error: 'Failed to update profile in database: ' + error.message });
+                    return res.status(500).json({
+                        success: false,
+                        error: `Failed to update profile in database: ${error.message}`
+                    });
                 }
 
                 return res.json({ success: true, message: 'Profile updated successfully', profile: data });
             } catch (supErr) {
                 console.error('[Supabase Exception] updateProfile:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Failed to update profile: ' + supErr.message });
+                return res.status(500).json({
+                    success: false,
+                    error: `Database exception during profile update: ${supErr.message}`
+                });
             }
         }
 
         const existing = mockStore.profiles.get(userId) || { id: userId, email: req.user.email };
-        const updated = { ...existing, ...updates };
+        const updated = { ...existing, ...profilePayload };
         mockStore.profiles.set(userId, updated);
 
         return res.json({ success: true, message: 'Profile updated successfully', profile: updated });

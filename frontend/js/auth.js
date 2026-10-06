@@ -90,12 +90,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner"></span> Creating Account...';
 
-                await window.authManager.signUp(email, password, fullName);
-                window.Toast.success('Account created successfully! Welcome aboard.');
+                const res = await window.authManager.signUp(email, password, fullName);
 
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 800);
+                if (res?.session) {
+                    window.Toast.success('Account created successfully! Welcome aboard.');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 800);
+                } else {
+                    window.Toast.success('Account created! Please sign in with your credentials.');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1200);
+                }
             } catch (err) {
                 console.error('Signup Error:', err);
                 window.Toast.error(err.message || 'Registration failed. Please try again.');

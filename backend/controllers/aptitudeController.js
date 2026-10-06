@@ -1,4 +1,4 @@
-import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
+import { getDbClient, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
@@ -29,25 +29,28 @@ export const getAptitudeQuestions = async (req, res, next) => {
             return res.json({ success: true, questions: [aiQ] });
         }
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
-            try {
-                let query = supabaseAdmin
-                    .from('aptitude_questions')
-                    .select('*')
-                    .limit(100);
+        if (isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (db) {
+                try {
+                    let query = db
+                        .from('aptitude_questions')
+                        .select('*')
+                        .limit(100);
 
-                if (topic) query = query.eq('topic', topic);
+                    if (topic) query = query.eq('topic', topic);
 
-                const { data, error } = await query;
-                if (!error && data && data.length > 0) {
-                    const shuffled = shuffleArray(data);
-                    return res.json({ success: true, questions: shuffled.slice(0, limit) });
+                    const { data, error } = await query;
+                    if (!error && data && data.length > 0) {
+                        const shuffled = shuffleArray(data);
+                        return res.json({ success: true, questions: shuffled.slice(0, limit) });
+                    }
+                    if (error) {
+                        console.warn('[Supabase Notice] aptitude_questions query:', error.message);
+                    }
+                } catch (supErr) {
+                    console.warn('[Supabase Exception] aptitude_questions:', supErr.message);
                 }
-                if (error) {
-                    console.warn('[Supabase Notice] aptitude_questions query:', error.message);
-                }
-            } catch (supErr) {
-                console.warn('[Supabase Exception] aptitude_questions:', supErr.message);
             }
         }
 
@@ -120,9 +123,14 @@ export const submitAptitudeAnswer = async (req, res, next) => {
             created_at: new Date().toISOString()
         };
 
-        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured()) {
+            const db = getDbClient(req);
+            if (!db) {
+                return res.status(500).json({ success: false, error: 'Database client could not be initialized.' });
+            }
+
             try {
-                const { data, error } = await supabaseAdmin
+                const { data, error } = await db
                     .from('interview_answers')
                     .insert([dbAnswer])
                     .select()
@@ -136,7 +144,7 @@ export const submitAptitudeAnswer = async (req, res, next) => {
                 return res.json({ success: true, isCorrect, score, answer: data });
             } catch (supErr) {
                 console.error('[Supabase Exception] submitAptitudeAnswer:', supErr.message);
-                return res.status(500).json({ success: false, error: 'Database exception while saving answer.' });
+                return res.status(500).json({ success: false, error: 'Database exception while saving answer: ' + supErr.message });
             }
         }
 
