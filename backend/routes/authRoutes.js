@@ -1,5 +1,5 @@
 import express from 'express';
-import { supabaseAdmin, isSupabaseConfigured, getDbClient } from '../config/supabase.js';
+import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
 
 const router = express.Router();
 
@@ -124,6 +124,66 @@ router.post('/signup', async (req, res) => {
             success: false,
             error: err.message || 'Internal server error during account creation.'
         });
+    }
+});
+
+/**
+ * Auto-Confirm User Endpoint
+ * If an existing user has an unconfirmed email status, this endpoint confirms it immediately
+ * so they can log in with their password without email barriers.
+ */
+router.post('/auto-confirm', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email is required.' });
+        }
+
+        const trimmedEmail = email.trim().toLowerCase();
+
+        if (isSupabaseConfigured() && supabaseAdmin) {
+            const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+            if (listError) {
+                return res.status(500).json({ success: false, error: listError.message });
+            }
+
+            const user = listData?.users?.find(u => u.email?.toLowerCase() === trimmedEmail);
+            if (!user) {
+                return res.status(404).json({ success: false, error: 'User account not found.' });
+            }
+
+            if (!user.email_confirmed_at) {
+                const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+                    email_confirm: true
+                });
+                if (updateError) {
+                    return res.status(500).json({ success: false, error: updateError.message });
+                }
+            }
+
+            // Ensure profile exists in public.profiles
+            try {
+                await supabaseAdmin
+                    .from('profiles')
+                    .upsert([{
+                        id: user.id,
+                        email: trimmedEmail,
+                        full_name: user.user_metadata?.full_name || trimmedEmail.split('@')[0],
+                        target_role: 'Software Developer',
+                        experience_level: 'Intermediate',
+                        updated_at: new Date().toISOString()
+                    }], { onConflict: 'id' });
+            } catch (pErr) {
+                console.warn('[authRoutes] auto-confirm profile warning:', pErr.message);
+            }
+
+            return res.json({ success: true, message: 'Account confirmed successfully.' });
+        }
+
+        return res.json({ success: true, message: 'Offline mode active.' });
+    } catch (err) {
+        console.error('[authRoutes] auto-confirm error:', err);
+        return res.status(500).json({ success: false, error: err.message });
     }
 });
 

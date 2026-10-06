@@ -195,12 +195,35 @@ class SupabaseAuthManager {
 
     async signIn(email, password) {
         const client = await this.getClient();
+        const apiBase = window.CONFIG?.API_BASE_URL || '/api';
 
         if (client) {
-            const { data, error } = await client.auth.signInWithPassword({
+            let { data, error } = await client.auth.signInWithPassword({
                 email,
                 password
             });
+
+            // If sign-in failed due to unconfirmed email, auto-confirm via backend and retry
+            if (error && (error.message?.toLowerCase().includes('not confirmed') || error.code === 'email_not_confirmed')) {
+                try {
+                    console.log('[SupabaseAuthManager] Auto-confirming unconfirmed email account...');
+                    const confirmRes = await fetch(`${apiBase}/auth/auto-confirm`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    if (confirmRes.ok) {
+                        const retryRes = await client.auth.signInWithPassword({ email, password });
+                        if (!retryRes.error && retryRes.data?.session) {
+                            data = retryRes.data;
+                            error = null;
+                        }
+                    }
+                } catch (autoErr) {
+                    console.warn('[SupabaseAuthManager] Auto-confirm retry notice:', autoErr.message);
+                }
+            }
+
             if (error) throw error;
 
             if (data?.session) {
