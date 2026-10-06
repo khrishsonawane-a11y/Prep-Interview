@@ -1037,1645 +1037,1549 @@ export const mockStore = {
     // 3. CODING / DSA QUESTIONS POOL (32 Questions) - Java, C, C++
     // =========================================================================
     codingQuestions: [
-        {
-                "id": "code-1",
-                "title": "Two Sum",
-                "role": "Software Developer",
-                "topic": "Arrays & Hash Maps",
-                "difficulty": "Beginner",
-                "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.",
-                "examples": [
-                        {
-                                "input": "nums = [2,7,11,15], target = 9",
-                                "output": "[0,1]",
-                                "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+                {
+                        "id": "code-1",
+                        "title": "Two Sum",
+                        "role": "Software Developer",
+                        "topic": "Arrays & Hash Maps",
+                        "difficulty": "Beginner",
+                        "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.",
+                        "examples": [
+                                {
+                                        "input": "nums = [2,7,11,15], target = 9",
+                                        "output": "[0,1]",
+                                        "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+                                },
+                                {
+                                        "input": "nums = [3,2,4], target = 6",
+                                        "output": "[1,2]",
+                                        "explanation": "nums[1] + nums[2] == 6."
+                                }
+                        ],
+                        "constraints": [
+                                "2 <= nums.length <= 10^4",
+                                "-10^9 <= nums[i] <= 10^9",
+                                "Only one valid answer exists."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [3,2,4], target = 6",
-                                "output": "[1,2]",
-                                "explanation": "nums[1] + nums[2] == 6."
-                        }
-                ],
-                "constraints": [
-                        "2 <= nums.length <= 10^4",
-                        "-10^9 <= nums[i] <= 10^9",
-                        "Only one valid answer exists."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Write your code here\n        return new int[]{};\n    }\n}",
-                        "c": "#include <stdio.h>\n#include <stdlib.h>\n\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    int* res = (int*)malloc(2 * sizeof(int));\n    for (int i = 0; i < numsSize; i++) {\n        for (int j = i + 1; j < numsSize; j++) {\n            if (nums[i] + nums[j] == target) {\n                res[0] = i;\n                res[1] = j;\n                *returnSize = 2;\n                return res;\n            }\n        }\n    }\n    *returnSize = 0;\n    return NULL;\n}",
-                        "cpp": "#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> seen;\n        for (int i = 0; i < nums.size(); i++) {\n            int complement = target - nums[i];\n            if (seen.find(complement) != seen.end()) {\n                return {seen[complement], i};\n            }\n            seen[nums[i]] = i;\n        }\n        return {};\n    }\n};",
-                        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        # Write your code here\n        return []"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        Map<Integer, Integer> map = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            int comp = target - nums[i];\n            if (map.containsKey(comp)) return new int[]{map.get(comp), i};\n            map.put(nums[i], i);\n        }\n        return new int[]{};\n    }\n}",
-                        "c": "int* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    *returnSize = 2;\n    int* res = (int*)malloc(sizeof(int) * 2);\n    for (int i = 0; i < numsSize; i++) {\n        for (int j = i + 1; j < numsSize; j++) {\n            if (nums[i] + nums[j] == target) {\n                res[0] = i; res[1] = j;\n                return res;\n            }\n        }\n    }\n    *returnSize = 0;\n    return NULL;\n}",
-                        "cpp": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> seen;\n        for (int i = 0; i < (int)nums.size(); i++) {\n            int comp = target - nums[i];\n            if (seen.count(comp)) return {seen[comp], i};\n            seen[nums[i]] = i;\n        }\n        return {};\n    }\n};",
-                        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        seen = {}\n        for i, num in enumerate(nums):\n            comp = target - num\n            if comp in seen:\n                return [seen[comp], i]\n            seen[num] = i\n        return []"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [2,7,11,15], target = 9",
-                                "expected_output": "[0,1]",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> seen;\n        for (int i = 0; i < (int)nums.size(); i++) {\n            int comp = target - nums[i];\n            if (seen.count(comp)) return {seen[comp], i};\n            seen[nums[i]] = i;\n        }\n        return {};\n    }\n};"
                         },
-                        {
-                                "input": "nums = [3,2,4], target = 6",
-                                "expected_output": "[1,2]",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "nums = [2,7,11,15], target = 9",
+                                        "expected_output": "[0,1]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [3,2,4], target = 6",
+                                        "expected_output": "[1,2]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [3,3], target = 6",
+                                        "expected_output": "[0,1]",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Use a Hash Map to store seen complements in a single pass O(N).",
+                        "algorithm_explanation": "1. Initialize an empty hash map (value -> index).\n2. Iterate through each element nums[i].\n3. Calculate complement = target - nums[i].\n4. If complement is in map, return [map[complement], i].\n5. Otherwise, store nums[i] -> i in map.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-2",
+                        "title": "Valid Parentheses",
+                        "role": "Software Developer",
+                        "topic": "Stack",
+                        "difficulty": "Beginner",
+                        "description": "Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nAn input string is valid if brackets are closed in the correct order with matching pairs.",
+                        "examples": [
+                                {
+                                        "input": "s = \"()[]{}\"",
+                                        "output": "true",
+                                        "explanation": "All matched in correct order."
+                                },
+                                {
+                                        "input": "s = \"(]\"",
+                                        "output": "false",
+                                        "explanation": "Mismatched bracket types."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= s.length <= 10^4",
+                                "s consists of parentheses only."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [3,3], target = 6",
-                                "expected_output": "[0,1]",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Use a Hash Map to store seen complements in a single pass O(N).",
-                "algorithm_explanation": "1. Initialize an empty hash map (value -> index).\n2. Iterate through each element nums[i].\n3. Calculate complement = target - nums[i].\n4. If complement is in map, return [map[complement], i].\n5. Otherwise, store nums[i] -> i in map.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-2",
-                "title": "Valid Parentheses",
-                "role": "Software Developer",
-                "topic": "Stack",
-                "difficulty": "Beginner",
-                "description": "Given a string `s` containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nAn input string is valid if brackets are closed in the correct order with matching pairs.",
-                "examples": [
-                        {
-                                "input": "s = \"()[]{}\"",
-                                "output": "true",
-                                "explanation": "All matched in correct order."
+                        "solution_code": {
+                                "cpp": "#include <string>\n#include <stack>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        for (char c : s) {\n            if (c == '(') st.push(')');\n            else if (c == '{') st.push('}');\n            else if (c == '[') st.push(']');\n            else if (st.empty() || st.top() != c) return false;\n            else st.pop();\n        }\n        return st.empty();\n    }\n};"
                         },
-                        {
-                                "input": "s = \"(]\"",
-                                "output": "false",
-                                "explanation": "Mismatched bracket types."
-                        }
-                ],
-                "constraints": [
-                        "1 <= s.length <= 10^4",
-                        "s consists of parentheses only."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public boolean isValid(String s) {\n        // Write your code here\n        return false;\n    }\n}",
-                        "c": "#include <stdbool.h>\n#include <string.h>\n#include <stdlib.h>\n\nbool isValid(char* s) {\n    int len = strlen(s);\n    char* stack = (char*)malloc(len + 1);\n    int top = -1;\n    for (int i = 0; i < len; i++) {\n        char c = s[i];\n        if (c == '(' || c == '{' || c == '[') {\n            stack[++top] = c;\n        } else {\n            if (top == -1) { free(stack); return false; }\n            char open = stack[top--];\n            if (c == ')' && open != '(') { free(stack); return false; }\n            if (c == '}' && open != '{') { free(stack); return false; }\n            if (c == ']' && open != '[') { free(stack); return false; }\n        }\n    }\n    bool valid = (top == -1);\n    free(stack);\n    return valid;\n}",
-                        "cpp": "#include <string>\n#include <stack>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        for (char c : s) {\n            if (c == '(' || c == '{' || c == '[') {\n                st.push(c);\n            } else {\n                if (st.empty()) return false;\n                char top = st.top();\n                st.pop();\n                if (c == ')' && top != '(') return false;\n                if (c == '}' && top != '{') return false;\n                if (c == ']' && top != '[') return false;\n            }\n        }\n        return st.empty();\n    }\n};",
-                        "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        # Write your code here\n        return False"
+                        "test_cases": [
+                                {
+                                        "input": "s = \"()\"",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"()[]{}\"",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"(]\"",
+                                        "expected_output": "false",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"([{}])\"",
+                                        "expected_output": "true",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Use a LIFO Stack to match opening brackets with corresponding closing brackets.",
+                        "algorithm_explanation": "1. For each character, if it is an opening bracket '(', '{', or '[', push expected closing bracket onto stack.\n2. If it is a closing bracket, verify that stack is not empty and matches the top element.\n3. Return true if stack is completely empty.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    public boolean isValid(String s) {\n        Stack<Character> stack = new Stack<>();\n        for (char c : s.toCharArray()) {\n            if (c == '(') stack.push(')');\n            else if (c == '{') stack.push('}');\n            else if (c == '[') stack.push(']');\n            else if (stack.isEmpty() || stack.pop() != c) return false;\n        }\n        return stack.isEmpty();\n    }\n}",
-                        "c": "bool isValid(char* s) {\n    int len = strlen(s);\n    char* stack = (char*)malloc(len + 1);\n    int top = -1;\n    for (int i = 0; i < len; i++) {\n        char c = s[i];\n        if (c == '(' || c == '{' || c == '[') stack[++top] = c;\n        else {\n            if (top == -1) { free(stack); return false; }\n            char open = stack[top--];\n            if ((c == ')' && open != '(') || (c == '}' && open != '{') || (c == ']' && open != '[')) {\n                free(stack); return false;\n            }\n        }\n    }\n    bool valid = (top == -1);\n    free(stack);\n    return valid;\n}",
-                        "cpp": "class Solution {\npublic:\n    bool isValid(string s) {\n        stack<char> st;\n        for (char c : s) {\n            if (c == '(') st.push(')');\n            else if (c == '{') st.push('}');\n            else if (c == '[') st.push(']');\n            else if (st.empty() || st.top() != c) return false;\n            else st.pop();\n        }\n        return st.empty();\n    }\n};",
-                        "python": "class Solution:\n    def isValid(self, s: str) -> bool:\n        stack = []\n        pairs = {')': '(', '}': '{', ']': '['}\n        for char in s:\n            if char in pairs.values():\n                stack.append(char)\n            elif char in pairs:\n                if not stack or stack.pop() != pairs[char]:\n                    return False\n        return len(stack) == 0"
-                },
-                "test_cases": [
-                        {
-                                "input": "s = \"()\"",
-                                "expected_output": "true",
-                                "is_hidden": false
+                {
+                        "id": "code-3",
+                        "title": "Reverse Linked List",
+                        "role": "Software Developer",
+                        "topic": "Linked Lists",
+                        "difficulty": "Intermediate",
+                        "description": "Given the head of a singly linked list, reverse the list, and return the reversed list.",
+                        "examples": [
+                                {
+                                        "input": "head = [1,2,3,4,5]",
+                                        "output": "[5,4,3,2,1]",
+                                        "explanation": "The list pointers are reversed."
+                                }
+                        ],
+                        "constraints": [
+                                "0 <= number of nodes <= 5000",
+                                "-5000 <= Node.val <= 5000"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = \"()[]{}\"",
-                                "expected_output": "true",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr) {\n            ListNode* next = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n};"
                         },
-                        {
-                                "input": "s = \"(]\"",
-                                "expected_output": "false",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "head = [1,2,3,4,5]",
+                                        "expected_output": "[5,4,3,2,1]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "head = [1,2]",
+                                        "expected_output": "[2,1]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "head = []",
+                                        "expected_output": "[]",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Use three pointer iteration (prev, curr, next) to reverse in-place.",
+                        "algorithm_explanation": "1. Set prev = NULL, curr = head.\n2. In loop while curr != NULL: save next = curr.next, point curr.next = prev, move prev = curr, curr = next.\n3. Return prev as new head.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-4",
+                        "title": "Best Time to Buy and Sell Stock",
+                        "role": "Software Developer",
+                        "topic": "Arrays & Sliding Window",
+                        "difficulty": "Beginner",
+                        "description": "You are given an array `prices` where `prices[i]` is the price of a given stock on the `i-th` day. You want to maximize your profit by choosing a single day to buy and a different day in the future to sell. Return the maximum profit.",
+                        "examples": [
+                                {
+                                        "input": "prices = [7,1,5,3,6,4]",
+                                        "output": "5",
+                                        "explanation": "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6 - 1 = 5."
+                                },
+                                {
+                                        "input": "prices = [7,6,4,3,1]",
+                                        "output": "0",
+                                        "explanation": "In this case, no transactions are done and max profit = 0."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= prices.length <= 10^5",
+                                "0 <= prices[i] <= 10^4"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = \"([{}])\"",
-                                "expected_output": "true",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Use a LIFO Stack to match opening brackets with corresponding closing brackets.",
-                "algorithm_explanation": "1. For each character, if it is an opening bracket '(', '{', or '[', push expected closing bracket onto stack.\n2. If it is a closing bracket, verify that stack is not empty and matches the top element.\n3. Return true if stack is completely empty.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-3",
-                "title": "Reverse Linked List",
-                "role": "Software Developer",
-                "topic": "Linked Lists",
-                "difficulty": "Intermediate",
-                "description": "Given the head of a singly linked list, reverse the list, and return the reversed list.",
-                "examples": [
-                        {
-                                "input": "head = [1,2,3,4,5]",
-                                "output": "[5,4,3,2,1]",
-                                "explanation": "The list pointers are reversed."
-                        }
-                ],
-                "constraints": [
-                        "0 <= number of nodes <= 5000",
-                        "-5000 <= Node.val <= 5000"
-                ],
-                "starter_code": {
-                        "java": "/**\n * Definition for singly-linked list.\n * public class ListNode { int val; ListNode next; ListNode(int x) { val = x; } }\n */\nclass Solution {\n    public ListNode reverseList(ListNode head) {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <limits.h>\n\nint maxSubArray(int* nums, int numsSize) {\n    if (numsSize == 0) return 0;\n    int maxSum = nums[0];\n    int currSum = nums[0];\n    for (int i = 1; i < numsSize; i++) {\n        currSum = (currSum > 0 ? currSum : 0) + nums[i];\n        if (currSum > maxSum) maxSum = currSum;\n    }\n    return maxSum;\n}",
-                        "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        if (nums.empty()) return 0;\n        int maxSum = nums[0];\n        int currSum = nums[0];\n        for (size_t i = 1; i < nums.size(); i++) {\n            currSum = max(nums[i], currSum + nums[i]);\n            maxSum = max(maxSum, currSum);\n        }\n        return maxSum;\n    }\n};",
-                        "python": "class Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        return None"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    public ListNode reverseList(ListNode head) {\n        ListNode prev = null, curr = head;\n        while (curr != null) {\n            ListNode next = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n}",
-                        "c": "struct ListNode* reverseList(struct ListNode* head) {\n    struct ListNode *prev = NULL, *curr = head;\n    while (curr != NULL) {\n        struct ListNode *next = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = next;\n    }\n    return prev;\n}",
-                        "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr) {\n            ListNode* next = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n};",
-                        "python": "class Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        prev = None\n        curr = head\n        while curr:\n            nxt = curr.next\n            curr.next = prev\n            prev = curr\n            curr = nxt\n        return prev"
-                },
-                "test_cases": [
-                        {
-                                "input": "head = [1,2,3,4,5]",
-                                "expected_output": "[5,4,3,2,1]",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        if (prices.size() <= 1) return 0;\n        int minP = prices[0], maxP = 0;\n        for (size_t i = 1; i < prices.size(); i++) {\n            minP = min(minP, prices[i]);\n            maxP = max(maxP, prices[i] - minP);\n        }\n        return maxP;\n    }\n};"
                         },
-                        {
-                                "input": "head = [1,2]",
-                                "expected_output": "[2,1]",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "prices = [7,1,5,3,6,4]",
+                                        "expected_output": "5",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "prices = [7,6,4,3,1]",
+                                        "expected_output": "0",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "prices = [2,4,1]",
+                                        "expected_output": "2",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Track the running minimum price and calculate max profit in a single linear pass.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Arrays & Sliding Window algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-5",
+                        "title": "Maximum Subarray (Kadane's Algorithm)",
+                        "role": "Software Developer",
+                        "topic": "Dynamic Programming & Arrays",
+                        "difficulty": "Intermediate",
+                        "description": "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.",
+                        "examples": [
+                                {
+                                        "input": "nums = [-2,1,-3,4,-1,2,1,-5,4]",
+                                        "output": "6",
+                                        "explanation": "The subarray [4,-1,2,1] has the largest sum 6."
+                                },
+                                {
+                                        "input": "nums = [1]",
+                                        "output": "1",
+                                        "explanation": "Subarray [1] has sum 1."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 10^5",
+                                "-10^4 <= nums[i] <= 10^4"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "head = []",
-                                "expected_output": "[]",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Use three pointer iteration (prev, curr, next) to reverse in-place.",
-                "algorithm_explanation": "1. Set prev = NULL, curr = head.\n2. In loop while curr != NULL: save next = curr.next, point curr.next = prev, move prev = curr, curr = next.\n3. Return prev as new head.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-4",
-                "title": "Best Time to Buy and Sell Stock",
-                "role": "Software Developer",
-                "topic": "Arrays & Sliding Window",
-                "difficulty": "Beginner",
-                "description": "You are given an array `prices` where `prices[i]` is the price of a given stock on the `i-th` day. You want to maximize your profit by choosing a single day to buy and a different day in the future to sell. Return the maximum profit.",
-                "examples": [
-                        {
-                                "input": "prices = [7,1,5,3,6,4]",
-                                "output": "5",
-                                "explanation": "Buy on day 2 (price = 1) and sell on day 5 (price = 6), profit = 6 - 1 = 5."
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        if (nums.empty()) return 0;\n        int maxSum = nums[0];\n        int currSum = nums[0];\n        for (size_t i = 1; i < nums.size(); i++) {\n            currSum = max(nums[i], currSum + nums[i]);\n            maxSum = max(maxSum, currSum);\n        }\n        return maxSum;\n    }\n};"
                         },
-                        {
-                                "input": "prices = [7,6,4,3,1]",
-                                "output": "0",
-                                "explanation": "In this case, no transactions are done and max profit = 0."
-                        }
-                ],
-                "constraints": [
-                        "1 <= prices.length <= 10^5",
-                        "0 <= prices[i] <= 10^4"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public int maxProfit(int[] prices) {\n        // Write your code here\n        return 0;\n    }\n}",
-                        "c": "int maxProfit(int* prices, int pricesSize) {\n    if (pricesSize <= 1) return 0;\n    int minPrice = prices[0];\n    int maxProf = 0;\n    for (int i = 1; i < pricesSize; i++) {\n        if (prices[i] < minPrice) minPrice = prices[i];\n        else if (prices[i] - minPrice > maxProf) maxProf = prices[i] - minPrice;\n    }\n    return maxProf;\n}",
-                        "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        if (prices.size() <= 1) return 0;\n        int minPrice = prices[0];\n        int maxProf = 0;\n        for (size_t i = 1; i < prices.size(); i++) {\n            minPrice = min(minPrice, prices[i]);\n            maxProf = max(maxProf, prices[i] - minPrice);\n        }\n        return maxProf;\n    }\n};",
-                        "python": "class Solution:\n    def maxProfit(self, prices: list[int]) -> int:\n        # Write your code here\n        return 0"
+                        "test_cases": [
+                                {
+                                        "input": "nums = [-2,1,-3,4,-1,2,1,-5,4]",
+                                        "expected_output": "6",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [1]",
+                                        "expected_output": "1",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [5,4,-1,7,8]",
+                                        "expected_output": "23",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Dynamic Programming & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming & Arrays algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    public int maxProfit(int[] prices) {\n        int min = Integer.MAX_VALUE, max = 0;\n        for (int p : prices) {\n            if (p < min) min = p;\n            else if (p - min > max) max = p - min;\n        }\n        return max;\n    }\n}",
-                        "c": "int maxProfit(int* prices, int pricesSize) {\n    int min = 1e9, max = 0;\n    for (int i = 0; i < pricesSize; i++) {\n        if (prices[i] < min) min = prices[i];\n        else if (prices[i] - min > max) max = prices[i] - min;\n    }\n    return max;\n}",
-                        "cpp": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        int minP = 1e9, maxP = 0;\n        for (int p : prices) {\n            minP = min(minP, p);\n            maxP = max(maxP, p - minP);\n        }\n        return maxP;\n    }\n};",
-                        "python": "class Solution:\n    def maxProfit(self, prices: list[int]) -> int:\n        min_price = float('inf')\n        max_profit = 0\n        for price in prices:\n            if price < min_price:\n                min_price = price\n            elif price - min_price > max_profit:\n                max_profit = price - min_price\n        return max_profit"
-                },
-                "test_cases": [
-                        {
-                                "input": "prices = [7,1,5,3,6,4]",
-                                "expected_output": "5",
-                                "is_hidden": false
+                {
+                        "id": "code-6",
+                        "title": "Valid Anagram",
+                        "role": "Software Developer",
+                        "topic": "Strings & Hash Table",
+                        "difficulty": "Beginner",
+                        "description": "Given two strings `s` and `t`, return `true` if `t` is an anagram of `s`, and `false` otherwise.",
+                        "examples": [
+                                {
+                                        "input": "s = \"anagram\", t = \"nagaram\"",
+                                        "output": "true",
+                                        "explanation": "All character frequencies match."
+                                },
+                                {
+                                        "input": "s = \"rat\", t = \"car\"",
+                                        "output": "false",
+                                        "explanation": "Characters differ."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= s.length, t.length <= 5 * 10^4",
+                                "s and t consist of lowercase English letters."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "prices = [7,6,4,3,1]",
-                                "expected_output": "0",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <string>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isAnagram(string s, string t) {\n        if (s.length() != t.length()) return false;\n        vector<int> count(26, 0);\n        for (int i = 0; i < (int)s.length(); i++) {\n            count[s[i] - 'a']++;\n            count[t[i] - 'a']--;\n        }\n        for (int c : count) {\n            if (c != 0) return false;\n        }\n        return true;\n    }\n};"
                         },
-                        {
-                                "input": "prices = [2,4,1]",
-                                "expected_output": "2",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Track the running minimum price and calculate max profit in a single linear pass.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Arrays & Sliding Window algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-5",
-                "title": "Maximum Subarray (Kadane's Algorithm)",
-                "role": "Software Developer",
-                "topic": "Dynamic Programming & Arrays",
-                "difficulty": "Intermediate",
-                "description": "Given an integer array `nums`, find the subarray with the largest sum, and return its sum.",
-                "examples": [
-                        {
-                                "input": "nums = [-2,1,-3,4,-1,2,1,-5,4]",
-                                "output": "6",
-                                "explanation": "The subarray [4,-1,2,1] has the largest sum 6."
+                        "test_cases": [
+                                {
+                                        "input": "s = \"anagram\", t = \"nagaram\"",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"rat\", t = \"car\"",
+                                        "expected_output": "false",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"a\", t = \"ab\"",
+                                        "expected_output": "false",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Strings & Hash Table pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Strings & Hash Table algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-7",
+                        "title": "Binary Search",
+                        "role": "Software Developer",
+                        "topic": "Searching",
+                        "difficulty": "Beginner",
+                        "description": "Given an array of integers `nums` sorted in ascending order, and an integer `target`, write a function to search `target` in `nums`. If `target` exists, then return its index. Otherwise, return `-1` in O(log n) time.",
+                        "examples": [
+                                {
+                                        "input": "nums = [-1,0,3,5,9,12], target = 9",
+                                        "output": "4",
+                                        "explanation": "9 exists in nums and its index is 4."
+                                },
+                                {
+                                        "input": "nums = [-1,0,3,5,9,12], target = 2",
+                                        "output": "-1",
+                                        "explanation": "2 does not exist in nums so return -1."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 10^4",
+                                "All elements are unique and sorted."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [1]",
-                                "output": "1",
-                                "explanation": "Subarray [1] has sum 1."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 10^5",
-                        "-10^4 <= nums[i] <= 10^4"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Maximum Subarray (Kadane's Algorithm)\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "struct ListNode* reverseList(struct ListNode* head) {\n    struct ListNode* prev = NULL;\n    struct ListNode* curr = head;\n    while (curr != NULL) {\n        struct ListNode* nextNode = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = nextNode;\n    }\n    return prev;\n}",
-                        "cpp": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr != nullptr) {\n            ListNode* nextNode = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = nextNode;\n        }\n        return prev;\n    }\n};",
-                        "python": "class Solution:\n    def maxSubArray(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Maximum Subarray (Kadane's Algorithm)\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Maximum Subarray (Kadane's Algorithm)\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Maximum Subarray (Kadane's Algorithm)\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def maxSubArray(self, nums: list[int]) -> int:\n        max_sum = nums[0]\n        current_sum = nums[0]\n        for num in nums[1:]:\n            current_sum = max(num, current_sum + num)\n            max_sum = max(max_sum, current_sum)\n        return max_sum"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [-2,1,-3,4,-1,2,1,-5,4]",
-                                "expected_output": "6",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n};"
                         },
-                        {
-                                "input": "nums = [1]",
-                                "expected_output": "1",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "nums = [-1,0,3,5,9,12], target = 9",
+                                        "expected_output": "4",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [-1,0,3,5,9,12], target = 2",
+                                        "expected_output": "-1",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [5], target = 5",
+                                        "expected_output": "0",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Divide and conquer by iteratively halving the search space on the sorted array.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Searching algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-8",
+                        "title": "Merge Two Sorted Lists",
+                        "role": "Software Developer",
+                        "topic": "Linked Lists",
+                        "difficulty": "Beginner",
+                        "description": "You are given the heads of two sorted linked lists `list1` and `list2`. Merge the two lists into one sorted list and return its head.",
+                        "examples": [
+                                {
+                                        "input": "list1 = [1,2,4], list2 = [1,3,4]",
+                                        "output": "[1,1,2,3,4,4]",
+                                        "explanation": "Merged in ascending sorted order."
+                                }
+                        ],
+                        "constraints": [
+                                "The number of nodes in both lists is in the range [0, 50].",
+                                "-100 <= Node.val <= 100"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [5,4,-1,7,8]",
-                                "expected_output": "23",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Dynamic Programming & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming & Arrays algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-6",
-                "title": "Valid Anagram",
-                "role": "Software Developer",
-                "topic": "Strings & Hash Table",
-                "difficulty": "Beginner",
-                "description": "Given two strings `s` and `t`, return `true` if `t` is an anagram of `s`, and `false` otherwise.",
-                "examples": [
-                        {
-                                "input": "s = \"anagram\", t = \"nagaram\"",
-                                "output": "true",
-                                "explanation": "All character frequencies match."
+                        "solution_code": {
+                                "cpp": "class Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {\n        ListNode dummy(0);\n        ListNode* tail = &dummy;\n        while (list1 && list2) {\n            if (list1->val <= list2->val) {\n                tail->next = list1;\n                list1 = list1->next;\n            } else {\n                tail->next = list2;\n                list2 = list2->next;\n            }\n            tail = tail->next;\n        }\n        tail->next = list1 ? list1 : list2;\n        return dummy.next;\n    }\n};"
                         },
-                        {
-                                "input": "s = \"rat\", t = \"car\"",
-                                "output": "false",
-                                "explanation": "Characters differ."
-                        }
-                ],
-                "constraints": [
-                        "1 <= s.length, t.length <= 5 * 10^4",
-                        "s and t consist of lowercase English letters."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public boolean isAnagram(String s, String t) {\n        // Write your code here\n        return false;\n    }\n}",
-                        "c": "#include <stdbool.h>\n#include <string.h>\n\nbool isAnagram(char* s, char* t) {\n    int lenS = strlen(s);\n    int lenT = strlen(t);\n    if (lenS != lenT) return false;\n    int count[26] = {0};\n    for (int i = 0; i < lenS; i++) {\n        count[s[i] - 'a']++;\n        count[t[i] - 'a']--;\n    }\n    for (int i = 0; i < 26; i++) {\n        if (count[i] != 0) return false;\n    }\n    return true;\n}",
-                        "cpp": "#include <string>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isAnagram(string s, string t) {\n        if (s.length() != t.length()) return false;\n        vector<int> count(26, 0);\n        for (int i = 0; i < s.length(); i++) {\n            count[s[i] - 'a']++;\n            count[t[i] - 'a']--;\n        }\n        for (int c : count) {\n            if (c != 0) return false;\n        }\n        return true;\n    }\n};",
-                        "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        # Write your code here\n        return False"
+                        "test_cases": [
+                                {
+                                        "input": "list1 = [1,2,4], list2 = [1,3,4]",
+                                        "expected_output": "[1,1,2,3,4,4]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "list1 = [], list2 = []",
+                                        "expected_output": "[]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Linked Lists pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Linked Lists algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Valid Anagram\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Valid Anagram\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Valid Anagram\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        if len(s) != len(t):\n            return False\n        count = {}\n        for c in s:\n            count[c] = count.get(c, 0) + 1\n        for c in t:\n            if c not in count or count[c] == 0:\n                return False\n            count[c] -= 1\n        return True"
-                },
-                "test_cases": [
-                        {
-                                "input": "s = \"anagram\", t = \"nagaram\"",
-                                "expected_output": "true",
-                                "is_hidden": false
+                {
+                        "id": "code-9",
+                        "title": "Invert Binary Tree",
+                        "role": "Software Developer",
+                        "topic": "Trees",
+                        "difficulty": "Beginner",
+                        "description": "Given the root of a binary tree, invert the tree (swap left and right children recursively), and return its root.",
+                        "examples": [
+                                {
+                                        "input": "root = [4,2,7,1,3,6,9]",
+                                        "output": "[4,7,2,9,6,3,1]",
+                                        "explanation": "Every left and right subtree swapped."
+                                }
+                        ],
+                        "constraints": [
+                                "The number of nodes in the tree is in the range [0, 100]."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = \"rat\", t = \"car\"",
-                                "expected_output": "false",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "class Solution {\npublic:\n    TreeNode* invertTree(TreeNode* root) {\n        if (!root) return nullptr;\n        TreeNode* temp = root->left;\n        root->left = invertTree(root->right);\n        root->right = invertTree(temp);\n        return root;\n    }\n};"
                         },
-                        {
-                                "input": "s = \"a\", t = \"ab\"",
-                                "expected_output": "false",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Strings & Hash Table pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Strings & Hash Table algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-7",
-                "title": "Binary Search",
-                "role": "Software Developer",
-                "topic": "Searching",
-                "difficulty": "Beginner",
-                "description": "Given an array of integers `nums` sorted in ascending order, and an integer `target`, write a function to search `target` in `nums`. If `target` exists, then return its index. Otherwise, return `-1` in O(log n) time.",
-                "examples": [
-                        {
-                                "input": "nums = [-1,0,3,5,9,12], target = 9",
-                                "output": "4",
-                                "explanation": "9 exists in nums and its index is 4."
+                        "test_cases": [
+                                {
+                                        "input": "root = [4,2,7,1,3,6,9]",
+                                        "expected_output": "[4,7,2,9,6,3,1]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "root = [2,1,3]",
+                                        "expected_output": "[2,3,1]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Trees pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Trees algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-10",
+                        "title": "Climbing Stairs",
+                        "role": "Software Developer",
+                        "topic": "Dynamic Programming",
+                        "difficulty": "Beginner",
+                        "description": "You are climbing a staircase. It takes `n` steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
+                        "examples": [
+                                {
+                                        "input": "n = 2",
+                                        "output": "2",
+                                        "explanation": "1. 1 step + 1 step\n2. 2 steps"
+                                },
+                                {
+                                        "input": "n = 3",
+                                        "output": "3",
+                                        "explanation": "1. 1+1+1\n2. 1+2\n3. 2+1"
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= n <= 45"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [-1,0,3,5,9,12], target = 2",
-                                "output": "-1",
-                                "explanation": "2 does not exist in nums so return -1."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 10^4",
-                        "All elements are unique and sorted."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public int search(int[] nums, int target) {\n        // Write your code here\n        return -1;\n    }\n}",
-                        "c": "int search(int* nums, int numsSize, int target) {\n    int l = 0, r = numsSize - 1;\n    while (l <= r) {\n        int mid = l + (r - l) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[mid] < target) l = mid + 1;\n        else r = mid - 1;\n    }\n    return -1;\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n};",
-                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        # Write your code here\n        return -1"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    public int search(int[] nums, int target) {\n        int l = 0, r = nums.length - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n}",
-                        "c": "int search(int* nums, int numsSize, int target) {\n    int l = 0, r = numsSize - 1;\n    while (l <= r) {\n        int mid = l + (r - l) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[mid] < target) l = mid + 1;\n        else r = mid - 1;\n    }\n    return -1;\n}",
-                        "cpp": "class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[mid] < target) l = mid + 1;\n            else r = mid - 1;\n        }\n        return -1;\n    }\n};",
-                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left, right = 0, len(nums) - 1\n        while left <= right:\n            mid = (left + right) // 2\n            if nums[mid] == target:\n                return mid\n            elif nums[mid] < target:\n                left = mid + 1\n            else:\n                right = mid - 1\n        return -1"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [-1,0,3,5,9,12], target = 9",
-                                "expected_output": "4",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b;\n            b = c;\n        }\n        return b;\n    }\n};"
                         },
-                        {
-                                "input": "nums = [-1,0,3,5,9,12], target = 2",
-                                "expected_output": "-1",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "n = 2",
+                                        "expected_output": "2",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "n = 3",
+                                        "expected_output": "3",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "n = 5",
+                                        "expected_output": "8",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Dynamic programming / Fibonacci space-optimized O(1) state transitions.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-11",
+                        "title": "Contains Duplicate",
+                        "role": "Software Developer",
+                        "topic": "Arrays & Hash Sets",
+                        "difficulty": "Beginner",
+                        "description": "Given an integer array `nums`, return `true` if any value appears at least twice in the array, and return `false` if every element is distinct.",
+                        "examples": [
+                                {
+                                        "input": "nums = [1,2,3,1]",
+                                        "output": "true",
+                                        "explanation": "1 occurs twice."
+                                },
+                                {
+                                        "input": "nums = [1,2,3,4]",
+                                        "output": "false",
+                                        "explanation": "All elements are unique."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 10^5",
+                                "-10^9 <= nums[i] <= 10^9"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [5], target = 5",
-                                "expected_output": "0",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Divide and conquer by iteratively halving the search space on the sorted array.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Searching algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-8",
-                "title": "Merge Two Sorted Lists",
-                "role": "Software Developer",
-                "topic": "Linked Lists",
-                "difficulty": "Beginner",
-                "description": "You are given the heads of two sorted linked lists `list1` and `list2`. Merge the two lists into one sorted list and return its head.",
-                "examples": [
-                        {
-                                "input": "list1 = [1,2,4], list2 = [1,3,4]",
-                                "output": "[1,1,2,3,4,4]",
-                                "explanation": "Merged in ascending sorted order."
-                        }
-                ],
-                "constraints": [
-                        "The number of nodes in both lists is in the range [0, 50].",
-                        "-100 <= Node.val <= 100"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "struct ListNode* mergeTwoLists(struct ListNode* list1, struct ListNode* list2) {\n    struct ListNode dummy;\n    struct ListNode* tail = &dummy;\n    dummy.next = NULL;\n    while (list1 != NULL && list2 != NULL) {\n        if (list1->val <= list2->val) {\n            tail->next = list1;\n            list1 = list1->next;\n        } else {\n            tail->next = list2;\n            list2 = list2->next;\n        }\n        tail = tail->next;\n    }\n    tail->next = (list1 != NULL) ? list1 : list2;\n    return dummy.next;\n}",
-                        "cpp": "class Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {\n        ListNode dummy(0);\n        ListNode* tail = &dummy;\n        while (list1 && list2) {\n            if (list1->val <= list2->val) {\n                tail->next = list1;\n                list1 = list1->next;\n            } else {\n                tail->next = list2;\n                list2 = list2->next;\n            }\n            tail = tail->next;\n        }\n        tail->next = list1 ? list1 : list2;\n        return dummy.next;\n    }\n};",
-                        "python": "class Solution:\n    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        return None"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Merge Two Sorted Lists\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Merge Two Sorted Lists\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Merge Two Sorted Lists\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:\n        dummy = ListNode(0)\n        curr = dummy\n        while list1 and list2:\n            if list1.val <= list2.val:\n                curr.next = list1\n                list1 = list1.next\n            else:\n                curr.next = list2\n                list2 = list2.next\n            curr = curr.next\n        curr.next = list1 if list1 else list2\n        return dummy.next"
-                },
-                "test_cases": [
-                        {
-                                "input": "list1 = [1,2,4], list2 = [1,3,4]",
-                                "expected_output": "[1,1,2,3,4,4]",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <unordered_set>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool containsDuplicate(vector<int>& nums) {\n        unordered_set<int> seen;\n        for (int x : nums) {\n            if (seen.count(x)) return true;\n            seen.insert(x);\n        }\n        return false;\n    }\n};"
                         },
-                        {
-                                "input": "list1 = [], list2 = []",
-                                "expected_output": "[]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Linked Lists pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Linked Lists algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-9",
-                "title": "Invert Binary Tree",
-                "role": "Software Developer",
-                "topic": "Trees",
-                "difficulty": "Beginner",
-                "description": "Given the root of a binary tree, invert the tree (swap left and right children recursively), and return its root.",
-                "examples": [
-                        {
-                                "input": "root = [4,2,7,1,3,6,9]",
-                                "output": "[4,7,2,9,6,3,1]",
-                                "explanation": "Every left and right subtree swapped."
-                        }
-                ],
-                "constraints": [
-                        "The number of nodes in the tree is in the range [0, 100]."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Invert Binary Tree\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "struct TreeNode* invertTree(struct TreeNode* root) {\n    if (root == NULL) return NULL;\n    struct TreeNode* temp = root->left;\n    root->left = invertTree(root->right);\n    root->right = invertTree(temp);\n    return root;\n}",
-                        "cpp": "class Solution {\npublic:\n    TreeNode* invertTree(TreeNode* root) {\n        if (!root) return nullptr;\n        TreeNode* temp = root->left;\n        root->left = invertTree(root->right);\n        root->right = invertTree(temp);\n        return root;\n    }\n};",
-                        "python": "class Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        # Write your code here\n        return root"
+                        "test_cases": [
+                                {
+                                        "input": "nums = [1,2,3,1]",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [1,2,3,4]",
+                                        "expected_output": "false",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [1,1,1,3,3,4,3,2,4,2]",
+                                        "expected_output": "true",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Arrays & Hash Sets pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Arrays & Hash Sets algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Invert Binary Tree\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Invert Binary Tree\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Invert Binary Tree\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        if not root:\n            return None\n        root.left, root.right = self.invertTree(root.right), self.invertTree(root.left)\n        return root"
-                },
-                "test_cases": [
-                        {
-                                "input": "root = [4,2,7,1,3,6,9]",
-                                "expected_output": "[4,7,2,9,6,3,1]",
-                                "is_hidden": false
+                {
+                        "id": "code-12",
+                        "title": "Valid Palindrome",
+                        "role": "Software Developer",
+                        "topic": "Two Pointers & Strings",
+                        "difficulty": "Beginner",
+                        "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Return `true` if it is a palindrome.",
+                        "examples": [
+                                {
+                                        "input": "s = \"A man, a plan, a canal: Panama\"",
+                                        "output": "true",
+                                        "explanation": "\"amanaplanacanalpanama\" is a palindrome."
+                                },
+                                {
+                                        "input": "s = \"race a car\"",
+                                        "output": "false",
+                                        "explanation": "\"raceacar\" is not a palindrome."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= s.length <= 2 * 10^5",
+                                "s consists only of printable ASCII characters."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "root = [2,1,3]",
-                                "expected_output": "[2,3,1]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Trees pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Trees algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-10",
-                "title": "Climbing Stairs",
-                "role": "Software Developer",
-                "topic": "Dynamic Programming",
-                "difficulty": "Beginner",
-                "description": "You are climbing a staircase. It takes `n` steps to reach the top. Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?",
-                "examples": [
-                        {
-                                "input": "n = 2",
-                                "output": "2",
-                                "explanation": "1. 1 step + 1 step\n2. 2 steps"
+                        "solution_code": {
+                                "cpp": "#include <string>\n#include <cctype>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isPalindrome(string s) {\n        int l = 0, r = (int)s.length() - 1;\n        while (l < r) {\n            while (l < r && !isalnum((unsigned char)s[l])) l++;\n            while (l < r && !isalnum((unsigned char)s[r])) r--;\n            if (tolower((unsigned char)s[l]) != tolower((unsigned char)s[r])) return false;\n            l++; r--;\n        }\n        return true;\n    }\n};"
                         },
-                        {
-                                "input": "n = 3",
-                                "output": "3",
-                                "explanation": "1. 1+1+1\n2. 1+2\n3. 2+1"
-                        }
-                ],
-                "constraints": [
-                        "1 <= n <= 45"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public int climbStairs(int n) {\n        // Write your code here\n        return 0;\n    }\n}",
-                        "c": "int climbStairs(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;\n    for (int i = 3; i <= n; i++) {\n        int c = a + b;\n        a = b;\n        b = c;\n    }\n    return b;\n}",
-                        "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b;\n            b = c;\n        }\n        return b;\n    }\n};",
-                        "python": "class Solution:\n    def climbStairs(self, n: int) -> int:\n        # Write your code here\n        return 0"
+                        "test_cases": [
+                                {
+                                        "input": "s = \"A man, a plan, a canal: Panama\"",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"race a car\"",
+                                        "expected_output": "false",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \" \"",
+                                        "expected_output": "true",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Two Pointers & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Strings algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    public int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b;\n            b = c;\n        }\n        return b;\n    }\n}",
-                        "c": "int climbStairs(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;\n    for (int i = 3; i <= n; i++) {\n        int c = a + b;\n        a = b; b = c;\n    }\n    return b;\n}",
-                        "cpp": "class Solution {\npublic:\n    int climbStairs(int n) {\n        if (n <= 2) return n;\n        int a = 1, b = 2;\n        for (int i = 3; i <= n; i++) {\n            int c = a + b;\n            a = b; b = c;\n        }\n        return b;\n    }\n};",
-                        "python": "class Solution:\n    def climbStairs(self, n: int) -> int:\n        if n <= 2:\n            return n\n        first, second = 1, 2\n        for _ in range(3, n + 1):\n            first, second = second, first + second\n        return second"
-                },
-                "test_cases": [
-                        {
-                                "input": "n = 2",
-                                "expected_output": "2",
-                                "is_hidden": false
+                {
+                        "id": "code-13",
+                        "title": "Maximum Depth of Binary Tree",
+                        "role": "Software Developer",
+                        "topic": "Trees",
+                        "difficulty": "Beginner",
+                        "description": "Given the root of a binary tree, return its maximum depth (the number of nodes along the longest path from the root node down to the farthest leaf node).",
+                        "examples": [
+                                {
+                                        "input": "root = [3,9,20,null,null,15,7]",
+                                        "output": "3",
+                                        "explanation": "Longest branch is 3 -> 20 -> 15 (depth 3)."
+                                }
+                        ],
+                        "constraints": [
+                                "The number of nodes in the tree is in the range [0, 10^4]."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "n = 3",
-                                "expected_output": "3",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxDepth(TreeNode* root) {\n        if (!root) return 0;\n        return 1 + max(maxDepth(root->left), maxDepth(root->right));\n    }\n};"
                         },
-                        {
-                                "input": "n = 5",
-                                "expected_output": "8",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Dynamic programming / Fibonacci space-optimized O(1) state transitions.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-11",
-                "title": "Contains Duplicate",
-                "role": "Software Developer",
-                "topic": "Arrays & Hash Sets",
-                "difficulty": "Beginner",
-                "description": "Given an integer array `nums`, return `true` if any value appears at least twice in the array, and return `false` if every element is distinct.",
-                "examples": [
-                        {
-                                "input": "nums = [1,2,3,1]",
-                                "output": "true",
-                                "explanation": "1 occurs twice."
+                        "test_cases": [
+                                {
+                                        "input": "root = [3,9,20,null,null,15,7]",
+                                        "expected_output": "3",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "root = [1,null,2]",
+                                        "expected_output": "2",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "root = []",
+                                        "expected_output": "0",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Trees pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Trees algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-14",
+                        "title": "Single Number",
+                        "role": "Software Developer",
+                        "topic": "Bit Manipulation & Arrays",
+                        "difficulty": "Beginner",
+                        "description": "Given a non-empty array of integers `nums`, every element appears twice except for one. Find that single one. Implement a solution with linear runtime complexity and constant extra space using XOR.",
+                        "examples": [
+                                {
+                                        "input": "nums = [2,2,1]",
+                                        "output": "1",
+                                        "explanation": "1 occurs once."
+                                },
+                                {
+                                        "input": "nums = [4,1,2,1,2]",
+                                        "output": "4",
+                                        "explanation": "4 occurs once."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 3 * 10^4",
+                                "-3 * 10^4 <= nums[i] <= 3 * 10^4"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [1,2,3,4]",
-                                "output": "false",
-                                "explanation": "All elements are unique."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 10^5",
-                        "-10^9 <= nums[i] <= 10^9"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    public boolean containsDuplicate(int[] nums) {\n        // Write your code here\n        return false;\n    }\n}",
-                        "c": "#include <stdbool.h>\n#include <stdlib.h>\n\nstatic int cmp(const void* a, const void* b) {\n    return (*(int*)a - *(int*)b);\n}\n\nbool containsDuplicate(int* nums, int numsSize) {\n    qsort(nums, numsSize, sizeof(int), cmp);\n    for (int i = 1; i < numsSize; i++) {\n        if (nums[i] == nums[i - 1]) return true;\n    }\n    return false;\n}",
-                        "cpp": "#include <vector>\n#include <unordered_set>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool containsDuplicate(vector<int>& nums) {\n        unordered_set<int> seen;\n        for (int x : nums) {\n            if (seen.count(x)) return true;\n            seen.insert(x);\n        }\n        return false;\n    }\n};",
-                        "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        # Write your code here\n        return False"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Contains Duplicate\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Contains Duplicate\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Contains Duplicate\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        seen = set()\n        for num in nums:\n            if num in seen:\n                return True\n            seen.add(num)\n        return False"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [1,2,3,1]",
-                                "expected_output": "true",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int singleNumber(vector<int>& nums) {\n        int res = 0;\n        for (int x : nums) res ^= x;\n        return res;\n    }\n};"
                         },
-                        {
-                                "input": "nums = [1,2,3,4]",
-                                "expected_output": "false",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "nums = [2,2,1]",
+                                        "expected_output": "1",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [4,1,2,1,2]",
+                                        "expected_output": "4",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [1]",
+                                        "expected_output": "1",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Bit Manipulation & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Bit Manipulation & Arrays algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-15",
+                        "title": "Intersection of Two Arrays",
+                        "role": "Software Developer",
+                        "topic": "Hash Maps & Sets",
+                        "difficulty": "Beginner",
+                        "description": "Given two integer arrays `nums1` and `nums2`, return an array of their intersection. Each element in the result must be unique.",
+                        "examples": [
+                                {
+                                        "input": "nums1 = [1,2,2,1], nums2 = [2,2]",
+                                        "output": "[2]",
+                                        "explanation": "Common unique value is 2."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums1.length, nums2.length <= 1000"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [1,1,1,3,3,4,3,2,4,2]",
-                                "expected_output": "true",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Arrays & Hash Sets pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Arrays & Hash Sets algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-12",
-                "title": "Valid Palindrome",
-                "role": "Software Developer",
-                "topic": "Two Pointers & Strings",
-                "difficulty": "Beginner",
-                "description": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Return `true` if it is a palindrome.",
-                "examples": [
-                        {
-                                "input": "s = \"A man, a plan, a canal: Panama\"",
-                                "output": "true",
-                                "explanation": "\"amanaplanacanalpanama\" is a palindrome."
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <unordered_set>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {\n        unordered_set<int> set1(nums1.begin(), nums1.end());\n        unordered_set<int> res;\n        for (int x : nums2) {\n            if (set1.count(x)) res.insert(x);\n        }\n        return vector<int>(res.begin(), res.end());\n    }\n};"
                         },
-                        {
-                                "input": "s = \"race a car\"",
-                                "output": "false",
-                                "explanation": "\"raceacar\" is not a palindrome."
-                        }
-                ],
-                "constraints": [
-                        "1 <= s.length <= 2 * 10^5",
-                        "s consists only of printable ASCII characters."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Valid Palindrome\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <stdbool.h>\n#include <string.h>\n#include <ctype.h>\n\nbool isPalindrome(char* s) {\n    int l = 0, r = strlen(s) - 1;\n    while (l < r) {\n        while (l < r && !isalnum(s[l])) l++;\n        while (l < r && !isalnum(s[r])) r--;\n        if (tolower(s[l]) != tolower(s[r])) return false;\n        l++;\n        r--;\n    }\n    return true;\n}",
-                        "cpp": "#include <string>\n#include <cctype>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isPalindrome(string s) {\n        int l = 0, r = (int)s.length() - 1;\n        while (l < r) {\n            while (l < r && !isalnum(s[l])) l++;\n            while (l < r && !isalnum(s[r])) r--;\n            if (tolower(s[l]) != tolower(s[r])) return false;\n            l++;\n            r--;\n        }\n        return true;\n    }\n};",
-                        "python": "class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        # Write your code here\n        return False"
+                        "test_cases": [
+                                {
+                                        "input": "nums1 = [1,2,2,1], nums2 = [2,2]",
+                                        "expected_output": "[2]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums1 = [4,9,5], nums2 = [9,4,9,8,4]",
+                                        "expected_output": "[4,9]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Hash Maps & Sets pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Hash Maps & Sets algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Valid Palindrome\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Valid Palindrome\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Valid Palindrome\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        filtered = [c.lower() for c in s if c.isalnum()]\n        return filtered == filtered[::-1]"
-                },
-                "test_cases": [
-                        {
-                                "input": "s = \"A man, a plan, a canal: Panama\"",
-                                "expected_output": "true",
-                                "is_hidden": false
+                {
+                        "id": "code-16",
+                        "title": "Move Zeroes",
+                        "role": "Software Developer",
+                        "topic": "Two Pointers & Arrays",
+                        "difficulty": "Beginner",
+                        "description": "Given an integer array `nums`, move all `0`'s to the end of it while maintaining the relative order of the non-zero elements in-place.",
+                        "examples": [
+                                {
+                                        "input": "nums = [0,1,0,3,12]",
+                                        "output": "[1,3,12,0,0]",
+                                        "explanation": "All zeros shifted to end."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 10^4",
+                                "-2^31 <= nums[i] <= 2^31 - 1"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = \"race a car\"",
-                                "expected_output": "false",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void moveZeroes(vector<int>& nums) {\n        int insertPos = 0;\n        for (int x : nums) {\n            if (x != 0) nums[insertPos++] = x;\n        }\n        while (insertPos < (int)nums.size()) nums[insertPos++] = 0;\n    }\n};"
                         },
-                        {
-                                "input": "s = \" \"",
-                                "expected_output": "true",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Two Pointers & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Strings algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-13",
-                "title": "Maximum Depth of Binary Tree",
-                "role": "Software Developer",
-                "topic": "Trees",
-                "difficulty": "Beginner",
-                "description": "Given the root of a binary tree, return its maximum depth (the number of nodes along the longest path from the root node down to the farthest leaf node).",
-                "examples": [
-                        {
-                                "input": "root = [3,9,20,null,null,15,7]",
-                                "output": "3",
-                                "explanation": "Longest branch is 3 -> 20 -> 15 (depth 3)."
-                        }
-                ],
-                "constraints": [
-                        "The number of nodes in the tree is in the range [0, 10^4]."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Maximum Depth of Binary Tree\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int maxDepth(struct TreeNode* root) {\n    if (root == NULL) return 0;\n    int left = maxDepth(root->left);\n    int right = maxDepth(root->right);\n    return (left > right ? left : right) + 1;\n}",
-                        "cpp": "#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int maxDepth(TreeNode* root) {\n        if (!root) return 0;\n        return 1 + max(maxDepth(root->left), maxDepth(root->right));\n    }\n};",
-                        "python": "class Solution:\n    def maxDepth(self, root: Optional[TreeNode]) -> int:\n        # Write your code here\n        return 0"
+                        "test_cases": [
+                                {
+                                        "input": "nums = [0,1,0,3,12]",
+                                        "expected_output": "[1,3,12,0,0]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [0]",
+                                        "expected_output": "[0]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Two Pointers & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Arrays algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Maximum Depth of Binary Tree\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Maximum Depth of Binary Tree\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Maximum Depth of Binary Tree\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def maxDepth(self, root: Optional[TreeNode]) -> int:\n        if not root:\n            return 0\n        return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))"
-                },
-                "test_cases": [
-                        {
-                                "input": "root = [3,9,20,null,null,15,7]",
-                                "expected_output": "3",
-                                "is_hidden": false
+                {
+                        "id": "code-17",
+                        "title": "Missing Number",
+                        "role": "Software Developer",
+                        "topic": "Math & Bit Manipulation",
+                        "difficulty": "Beginner",
+                        "description": "Given an array `nums` containing `n` distinct numbers in the range `[0, n]`, return the only number in the range that is missing from the array.",
+                        "examples": [
+                                {
+                                        "input": "nums = [3,0,1]",
+                                        "output": "2",
+                                        "explanation": "n = 3 since there are 3 numbers, missing number is 2."
+                                }
+                        ],
+                        "constraints": [
+                                "n == nums.length",
+                                "1 <= n <= 10^4",
+                                "All numbers in nums are unique."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "root = [1,null,2]",
-                                "expected_output": "2",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <numeric>\nusing namespace std;\n\nclass Solution {\npublic:\n    int missingNumber(vector<int>& nums) {\n        int n = nums.size();\n        int expected = n * (n + 1) / 2;\n        int actual = 0;\n        for (int x : nums) actual += x;\n        return expected - actual;\n    }\n};"
                         },
-                        {
-                                "input": "root = []",
-                                "expected_output": "0",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Trees pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Trees algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-14",
-                "title": "Single Number",
-                "role": "Software Developer",
-                "topic": "Bit Manipulation & Arrays",
-                "difficulty": "Beginner",
-                "description": "Given a non-empty array of integers `nums`, every element appears twice except for one. Find that single one. Implement a solution with linear runtime complexity and constant extra space using XOR.",
-                "examples": [
-                        {
-                                "input": "nums = [2,2,1]",
-                                "output": "1",
-                                "explanation": "1 occurs once."
+                        "test_cases": [
+                                {
+                                        "input": "nums = [3,0,1]",
+                                        "expected_output": "2",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [0,1]",
+                                        "expected_output": "2",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [9,6,4,2,3,5,7,0,1]",
+                                        "expected_output": "8",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Math & Bit Manipulation pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Math & Bit Manipulation algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-18",
+                        "title": "Symmetric Tree",
+                        "role": "Software Developer",
+                        "topic": "Trees",
+                        "difficulty": "Beginner",
+                        "description": "Given the root of a binary tree, check whether it is a mirror of itself (i.e., symmetric around its center).",
+                        "examples": [
+                                {
+                                        "input": "root = [1,2,2,3,4,4,3]",
+                                        "output": "true",
+                                        "explanation": "Left and right subtrees mirror."
+                                }
+                        ],
+                        "constraints": [
+                                "The number of nodes in the tree is in the range [1, 1000]."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [4,1,2,1,2]",
-                                "output": "4",
-                                "explanation": "4 occurs once."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 3 * 10^4",
-                        "-3 * 10^4 <= nums[i] <= 3 * 10^4"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Single Number\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int singleNumber(int* nums, int numsSize) {\n    int res = 0;\n    for (int i = 0; i < numsSize; i++) res ^= nums[i];\n    return res;\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int singleNumber(vector<int>& nums) {\n        int res = 0;\n        for (int x : nums) res ^= x;\n        return res;\n    }\n};",
-                        "python": "class Solution:\n    def singleNumber(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Single Number\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Single Number\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Single Number\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def singleNumber(self, nums: list[int]) -> int:\n        res = 0\n        for num in nums:\n            res ^= num\n        return res"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [2,2,1]",
-                                "expected_output": "1",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "class Solution {\n    bool isMirror(TreeNode* t1, TreeNode* t2) {\n        if (!t1 && !t2) return true;\n        if (!t1 || !t2) return false;\n        return (t1->val == t2->val) && isMirror(t1->left, t2->right) && isMirror(t1->right, t2->left);\n    }\npublic:\n    bool isSymmetric(TreeNode* root) {\n        return !root || isMirror(root->left, root->right);\n    }\n};"
                         },
-                        {
-                                "input": "nums = [4,1,2,1,2]",
-                                "expected_output": "4",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "root = [1,2,2,3,4,4,3]",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "root = [1,2,2,null,3,null,3]",
+                                        "expected_output": "false",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Trees pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Trees algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-19",
+                        "title": "Reverse String",
+                        "role": "Software Developer",
+                        "topic": "Two Pointers & Strings",
+                        "difficulty": "Beginner",
+                        "description": "Write a function that reverses a string given as an array of characters `s`. You must do this by modifying the input array in-place with O(1) extra memory.",
+                        "examples": [
+                                {
+                                        "input": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]",
+                                        "output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]",
+                                        "explanation": "Reversed in place."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= s.length <= 10^5"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [1]",
-                                "expected_output": "1",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Bit Manipulation & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Bit Manipulation & Arrays algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-15",
-                "title": "Intersection of Two Arrays",
-                "role": "Software Developer",
-                "topic": "Hash Maps & Sets",
-                "difficulty": "Beginner",
-                "description": "Given two integer arrays `nums1` and `nums2`, return an array of their intersection. Each element in the result must be unique.",
-                "examples": [
-                        {
-                                "input": "nums1 = [1,2,2,1], nums2 = [2,2]",
-                                "output": "[2]",
-                                "explanation": "Common unique value is 2."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums1.length, nums2.length <= 1000"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Intersection of Two Arrays\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <stdlib.h>\n#include <stdbool.h>\n\nint* intersection(int* nums1, int nums1Size, int* nums2, int nums2Size, int* returnSize) {\n    int* res = (int*)malloc(sizeof(int) * (nums1Size < nums2Size ? nums1Size : nums2Size));\n    int count = 0;\n    for (int i = 0; i < nums1Size; i++) {\n        bool foundIn2 = false;\n        for (int j = 0; j < nums2Size; j++) {\n            if (nums1[i] == nums2[j]) { foundIn2 = true; break; }\n        }\n        if (foundIn2) {\n            bool alreadyAdded = false;\n            for (int k = 0; k < count; k++) {\n                if (res[k] == nums1[i]) { alreadyAdded = true; break; }\n            }\n            if (!alreadyAdded) res[count++] = nums1[i];\n        }\n    }\n    *returnSize = count;\n    return res;\n}",
-                        "cpp": "#include <vector>\n#include <unordered_set>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {\n        unordered_set<int> set1(nums1.begin(), nums1.end());\n        unordered_set<int> resSet;\n        for (int x : nums2) {\n            if (set1.count(x)) resSet.insert(x);\n        }\n        return vector<int>(resSet.begin(), resSet.end());\n    }\n};",
-                        "python": "class Solution:\n    def intersection(self, nums1: list[int], nums2: list[int]) -> list[int]:\n        # Write your code here\n        return []"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Intersection of Two Arrays\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Intersection of Two Arrays\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Intersection of Two Arrays\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def intersection(self, nums1: list[int], nums2: list[int]) -> list[int]:\n        return list(set(nums1) & set(nums2))"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums1 = [1,2,2,1], nums2 = [2,2]",
-                                "expected_output": "[2]",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    void reverseString(vector<char>& s) {\n        int l = 0, r = (int)s.size() - 1;\n        while (l < r) {\n            swap(s[l++], s[r--]);\n        }\n    }\n};"
                         },
-                        {
-                                "input": "nums1 = [4,9,5], nums2 = [9,4,9,8,4]",
-                                "expected_output": "[4,9]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Hash Maps & Sets pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Hash Maps & Sets algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-16",
-                "title": "Move Zeroes",
-                "role": "Software Developer",
-                "topic": "Two Pointers & Arrays",
-                "difficulty": "Beginner",
-                "description": "Given an integer array `nums`, move all `0`'s to the end of it while maintaining the relative order of the non-zero elements in-place.",
-                "examples": [
-                        {
-                                "input": "nums = [0,1,0,3,12]",
-                                "output": "[1,3,12,0,0]",
-                                "explanation": "All zeros shifted to end."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 10^4",
-                        "-2^31 <= nums[i] <= 2^31 - 1"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Move Zeroes\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "void moveZeroes(int* nums, int numsSize) {\n    int insertPos = 0;\n    for (int i = 0; i < numsSize; i++) {\n        if (nums[i] != 0) nums[insertPos++] = nums[i];\n    }\n    while (insertPos < numsSize) nums[insertPos++] = 0;\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void moveZeroes(vector<int>& nums) {\n        int insertPos = 0;\n        for (int x : nums) {\n            if (x != 0) nums[insertPos++] = x;\n        }\n        while (insertPos < (int)nums.size()) nums[insertPos++] = 0;\n    }\n};",
-                        "python": "class Solution:\n    def moveZeroes(self, nums: list[int]) -> None:\n        # Modify nums in-place\n        pass"
+                        "test_cases": [
+                                {
+                                        "input": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]",
+                                        "expected_output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]",
+                                        "expected_output": "[\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Two Pointers & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Strings algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Move Zeroes\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Move Zeroes\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Move Zeroes\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def moveZeroes(self, nums: list[int]) -> None:\n        last_non_zero = 0\n        for i in range(len(nums)):\n            if nums[i] != 0:\n                nums[last_non_zero], nums[i] = nums[i], nums[last_non_zero]\n                last_non_zero += 1"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [0,1,0,3,12]",
-                                "expected_output": "[1,3,12,0,0]",
-                                "is_hidden": false
+                {
+                        "id": "code-20",
+                        "title": "Longest Common Prefix",
+                        "role": "Software Developer",
+                        "topic": "Strings",
+                        "difficulty": "Beginner",
+                        "description": "Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string `\"\"`.",
+                        "examples": [
+                                {
+                                        "input": "strs = [\"flower\",\"flow\",\"flight\"]",
+                                        "output": "\"fl\"",
+                                        "explanation": "Common prefix is 'fl'."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= strs.length <= 200",
+                                "0 <= strs[i].length <= 200"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [0]",
-                                "expected_output": "[0]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Two Pointers & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Arrays algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-17",
-                "title": "Missing Number",
-                "role": "Software Developer",
-                "topic": "Math & Bit Manipulation",
-                "difficulty": "Beginner",
-                "description": "Given an array `nums` containing `n` distinct numbers in the range `[0, n]`, return the only number in the range that is missing from the array.",
-                "examples": [
-                        {
-                                "input": "nums = [3,0,1]",
-                                "output": "2",
-                                "explanation": "n = 3 since there are 3 numbers, missing number is 2."
-                        }
-                ],
-                "constraints": [
-                        "n == nums.length",
-                        "1 <= n <= 10^4",
-                        "All numbers in nums are unique."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Missing Number\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int missingNumber(int* nums, int numsSize) {\n    int expected = numsSize * (numsSize + 1) / 2;\n    int actual = 0;\n    for (int i = 0; i < numsSize; i++) actual += nums[i];\n    return expected - actual;\n}",
-                        "cpp": "#include <vector>\n#include <numeric>\nusing namespace std;\n\nclass Solution {\npublic:\n    int missingNumber(vector<int>& nums) {\n        int n = nums.size();\n        int expected = n * (n + 1) / 2;\n        int actual = 0;\n        for (int x : nums) actual += x;\n        return expected - actual;\n    }\n};",
-                        "python": "class Solution:\n    def missingNumber(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Missing Number\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Missing Number\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Missing Number\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def missingNumber(self, nums: list[int]) -> int:\n        n = len(nums)\n        expected_sum = n * (n + 1) // 2\n        return expected_sum - sum(nums)"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [3,0,1]",
-                                "expected_output": "2",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <string>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    string longestCommonPrefix(vector<string>& strs) {\n        if (strs.empty()) return \"\";\n        string prefix = strs[0];\n        for (size_t i = 1; i < strs.size(); i++) {\n            while (strs[i].find(prefix) != 0) {\n                prefix = prefix.substr(0, prefix.length() - 1);\n                if (prefix.empty()) return \"\";\n            }\n        }\n        return prefix;\n    }\n};"
                         },
-                        {
-                                "input": "nums = [0,1]",
-                                "expected_output": "2",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "strs = [\"flower\",\"flow\",\"flight\"]",
+                                        "expected_output": "\"fl\"",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "strs = [\"dog\",\"racecar\",\"car\"]",
+                                        "expected_output": "\"\"",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Strings pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Strings algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-21",
+                        "title": "Min Stack",
+                        "role": "Software Developer",
+                        "topic": "Stack",
+                        "difficulty": "Intermediate",
+                        "description": "Design a stack that supports push, pop, top, and retrieving the minimum element in constant time O(1).",
+                        "examples": [
+                                {
+                                        "input": "push(-2), push(0), push(-3), getMin(), pop(), top(), getMin()",
+                                        "output": "[-3, 0, -2]",
+                                        "explanation": "Min values retrieved in O(1)."
+                                }
+                        ],
+                        "constraints": [
+                                "Methods pop, top and getMin operations will always be called on non-empty stacks."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [9,6,4,2,3,5,7,0,1]",
-                                "expected_output": "8",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Math & Bit Manipulation pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Math & Bit Manipulation algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-18",
-                "title": "Symmetric Tree",
-                "role": "Software Developer",
-                "topic": "Trees",
-                "difficulty": "Beginner",
-                "description": "Given the root of a binary tree, check whether it is a mirror of itself (i.e., symmetric around its center).",
-                "examples": [
-                        {
-                                "input": "root = [1,2,2,3,4,4,3]",
-                                "output": "true",
-                                "explanation": "Left and right subtrees mirror."
-                        }
-                ],
-                "constraints": [
-                        "The number of nodes in the tree is in the range [1, 1000]."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Symmetric Tree\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "static bool isMirror(struct TreeNode* t1, struct TreeNode* t2) {\n    if (t1 == NULL && t2 == NULL) return true;\n    if (t1 == NULL || t2 == NULL) return false;\n    return (t1->val == t2->val) && isMirror(t1->left, t2->right) && isMirror(t1->right, t2->left);\n}\n\nbool isSymmetric(struct TreeNode* root) {\n    if (root == NULL) return true;\n    return isMirror(root->left, root->right);\n}",
-                        "cpp": "class Solution {\n    bool isMirror(TreeNode* t1, TreeNode* t2) {\n        if (!t1 && !t2) return true;\n        if (!t1 || !t2) return false;\n        return (t1->val == t2->val) && isMirror(t1->left, t2->right) && isMirror(t1->right, t2->left);\n    }\npublic:\n    bool isSymmetric(TreeNode* root) {\n        if (!root) return true;\n        return isMirror(root->left, root->right);\n    }\n};",
-                        "python": "class Solution:\n    def isSymmetric(self, root: Optional[TreeNode]) -> bool:\n        # Write your code here\n        return False"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Symmetric Tree\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Symmetric Tree\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Symmetric Tree\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def isSymmetric(self, root: Optional[TreeNode]) -> bool:\n        def isMirror(t1, t2):\n            if not t1 and not t2:\n                return True\n            if not t1 or not t2:\n                return False\n            return (t1.val == t2.val) and isMirror(t1.left, t2.right) and isMirror(t1.right, t2.left)\n        return isMirror(root, root) if root else True"
-                },
-                "test_cases": [
-                        {
-                                "input": "root = [1,2,2,3,4,4,3]",
-                                "expected_output": "true",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <stack>\nusing namespace std;\n\nclass MinStack {\n    stack<int> s;\n    stack<int> minS;\npublic:\n    MinStack() {}\n    void push(int val) {\n        s.push(val);\n        if (minS.empty() || val <= minS.top()) minS.push(val);\n    }\n    void pop() {\n        if (s.top() == minS.top()) minS.pop();\n        s.pop();\n    }\n    int top() { return s.top(); }\n    int getMin() { return minS.top(); }\n};"
                         },
-                        {
-                                "input": "root = [1,2,2,null,3,null,3]",
-                                "expected_output": "false",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Trees pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Trees algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-19",
-                "title": "Reverse String",
-                "role": "Software Developer",
-                "topic": "Two Pointers & Strings",
-                "difficulty": "Beginner",
-                "description": "Write a function that reverses a string given as an array of characters `s`. You must do this by modifying the input array in-place with O(1) extra memory.",
-                "examples": [
-                        {
-                                "input": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]",
-                                "output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]",
-                                "explanation": "Reversed in place."
-                        }
-                ],
-                "constraints": [
-                        "1 <= s.length <= 10^5"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Reverse String\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "void reverseString(char* s, int sSize) {\n    int l = 0, r = sSize - 1;\n    while (l < r) {\n        char temp = s[l];\n        s[l] = s[r];\n        s[r] = temp;\n        l++;\n        r--;\n    }\n}",
-                        "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    void reverseString(vector<char>& s) {\n        int l = 0, r = (int)s.size() - 1;\n        while (l < r) {\n            swap(s[l++], s[r--]);\n        }\n    }\n};",
-                        "python": "class Solution:\n    def reverseString(self, s: list[str]) -> None:\n        # Modify s in-place\n        pass"
+                        "test_cases": [
+                                {
+                                        "input": "MinStack operations",
+                                        "expected_output": "All O(1) operations valid",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Stack pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Stack algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Reverse String\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Reverse String\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Reverse String\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def reverseString(self, s: list[str]) -> None:\n        left, right = 0, len(s) - 1\n        while left < right:\n            s[left], s[right] = s[right], s[left]\n            left += 1\n            right -= 1"
-                },
-                "test_cases": [
-                        {
-                                "input": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]",
-                                "expected_output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]",
-                                "is_hidden": false
+                {
+                        "id": "code-22",
+                        "title": "Merge Sorted Array",
+                        "role": "Software Developer",
+                        "topic": "Two Pointers & Arrays",
+                        "difficulty": "Beginner",
+                        "description": "You are given two integer arrays `nums1` and `nums2`, sorted in non-decreasing order, and two integers `m` and `n`. Merge `nums2` into `nums1` as one sorted array in-place.",
+                        "examples": [
+                                {
+                                        "input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
+                                        "output": "[1,2,2,3,5,6]",
+                                        "explanation": "Merged elements."
+                                }
+                        ],
+                        "constraints": [
+                                "nums1.length == m + n",
+                                "nums2.length == n"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]",
-                                "expected_output": "[\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Two Pointers & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Strings algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-20",
-                "title": "Longest Common Prefix",
-                "role": "Software Developer",
-                "topic": "Strings",
-                "difficulty": "Beginner",
-                "description": "Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string `\"\"`.",
-                "examples": [
-                        {
-                                "input": "strs = [\"flower\",\"flow\",\"flight\"]",
-                                "output": "\"fl\"",
-                                "explanation": "Common prefix is 'fl'."
-                        }
-                ],
-                "constraints": [
-                        "1 <= strs.length <= 200",
-                        "0 <= strs[i].length <= 200"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Longest Common Prefix\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <string.h>\n#include <stdlib.h>\n\nchar* longestCommonPrefix(char** strs, int strsSize) {\n    if (strsSize == 0) return \"\";\n    char* prefix = strdup(strs[0]);\n    for (int i = 1; i < strsSize; i++) {\n        int j = 0;\n        while (prefix[j] && strs[i][j] && prefix[j] == strs[i][j]) j++;\n        prefix[j] = '\\0';\n        if (j == 0) break;\n    }\n    return prefix;\n}",
-                        "cpp": "#include <string>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    string longestCommonPrefix(vector<string>& strs) {\n        if (strs.empty()) return \"\";\n        string prefix = strs[0];\n        for (size_t i = 1; i < strs.size(); i++) {\n            while (strs[i].find(prefix) != 0) {\n                prefix = prefix.substr(0, prefix.length() - 1);\n                if (prefix.empty()) return \"\";\n            }\n        }\n        return prefix;\n    }\n};",
-                        "python": "class Solution:\n    def longestCommonPrefix(self, strs: list[str]) -> str:\n        # Write your code here\n        return \"\""
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Longest Common Prefix\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Longest Common Prefix\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Longest Common Prefix\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def longestCommonPrefix(self, strs: list[str]) -> str:\n        if not strs:\n            return \"\"\n        prefix = strs[0]\n        for s in strs[1:]:\n            while not s.startswith(prefix):\n                prefix = prefix[:-1]\n                if not prefix:\n                    return \"\"\n        return prefix"
-                },
-                "test_cases": [
-                        {
-                                "input": "strs = [\"flower\",\"flow\",\"flight\"]",
-                                "expected_output": "\"fl\"",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {\n        int p1 = m - 1, p2 = n - 1, p = m + n - 1;\n        while (p2 >= 0) {\n            if (p1 >= 0 && nums1[p1] > nums2[p2]) nums1[p--] = nums1[p1--];\n            else nums1[p--] = nums2[p2--];\n        }\n    }\n};"
                         },
-                        {
-                                "input": "strs = [\"dog\",\"racecar\",\"car\"]",
-                                "expected_output": "\"\"",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Strings pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Strings algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-21",
-                "title": "Min Stack",
-                "role": "Software Developer",
-                "topic": "Stack",
-                "difficulty": "Intermediate",
-                "description": "Design a stack that supports push, pop, top, and retrieving the minimum element in constant time O(1).",
-                "examples": [
-                        {
-                                "input": "push(-2), push(0), push(-3), getMin(), pop(), top(), getMin()",
-                                "output": "[-3, 0, -2]",
-                                "explanation": "Min values retrieved in O(1)."
-                        }
-                ],
-                "constraints": [
-                        "Methods pop, top and getMin operations will always be called on non-empty stacks."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Min Stack\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "// Optimal MinStack Implementation\nint solve() { return 0; }",
-                        "cpp": "#include <stack>\nusing namespace std;\n\nclass MinStack {\n    stack<int> s;\n    stack<int> minS;\npublic:\n    MinStack() {}\n    void push(int val) {\n        s.push(val);\n        if (minS.empty() || val <= minS.top()) minS.push(val);\n    }\n    void pop() {\n        if (s.top() == minS.top()) minS.pop();\n        s.pop();\n    }\n    int top() { return s.top(); }\n    int getMin() { return minS.top(); }\n};",
-                        "python": "class MinStack:\n    def __init__(self):\n        pass\n    def push(self, val: int) -> None:\n        pass\n    def pop(self) -> None:\n        pass\n    def top(self) -> int:\n        return 0\n    def getMin(self) -> int:\n        return 0"
+                        "test_cases": [
+                                {
+                                        "input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
+                                        "expected_output": "[1,2,2,3,5,6]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Two Pointers & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Arrays algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Min Stack\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Min Stack\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Min Stack\n        return 0;\n    }\n};",
-                        "python": "class MinStack:\n    def __init__(self):\n        self.stack = []\n        self.min_stack = []\n    def push(self, val: int) -> None:\n        self.stack.append(val)\n        if not self.min_stack or val <= self.min_stack[-1]:\n            self.min_stack.append(val)\n    def pop(self) -> None:\n        val = self.stack.pop()\n        if val == self.min_stack[-1]:\n            self.min_stack.pop()\n    def top(self) -> int:\n        return self.stack[-1]\n    def getMin(self) -> int:\n        return self.min_stack[-1]"
-                },
-                "test_cases": [
-                        {
-                                "input": "MinStack operations",
-                                "expected_output": "All O(1) operations valid",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Stack pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Stack algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-22",
-                "title": "Merge Sorted Array",
-                "role": "Software Developer",
-                "topic": "Two Pointers & Arrays",
-                "difficulty": "Beginner",
-                "description": "You are given two integer arrays `nums1` and `nums2`, sorted in non-decreasing order, and two integers `m` and `n`. Merge `nums2` into `nums1` as one sorted array in-place.",
-                "examples": [
-                        {
-                                "input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
-                                "output": "[1,2,2,3,5,6]",
-                                "explanation": "Merged elements."
-                        }
-                ],
-                "constraints": [
-                        "nums1.length == m + n",
-                        "nums2.length == n"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Merge Sorted Array\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "void merge(int* nums1, int nums1Size, int m, int* nums2, int nums2Size, int n) {\n    int p1 = m - 1, p2 = n - 1, p = m + n - 1;\n    while (p2 >= 0) {\n        if (p1 >= 0 && nums1[p1] > nums2[p2]) nums1[p--] = nums1[p1--];\n        else nums1[p--] = nums2[p2--];\n    }\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    void merge(vector<int>& nums1, int m, vector<int>& nums2, int n) {\n        int p1 = m - 1, p2 = n - 1, p = m + n - 1;\n        while (p2 >= 0) {\n            if (p1 >= 0 && nums1[p1] > nums2[p2]) nums1[p--] = nums1[p1--];\n            else nums1[p--] = nums2[p2--];\n        }\n    }\n};",
-                        "python": "class Solution:\n    def merge(self, nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n        # Modify nums1 in-place\n        pass"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Merge Sorted Array\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Merge Sorted Array\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Merge Sorted Array\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def merge(self, nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n        p1, p2, p = m - 1, n - 1, m + n - 1\n        while p1 >= 0 and p2 >= 0:\n            if nums1[p1] > nums2[p2]:\n                nums1[p] = nums1[p1]\n                p1 -= 1\n            else:\n                nums1[p] = nums2[p2]\n                p2 -= 1\n            p -= 1\n        while p2 >= 0:\n            nums1[p] = nums2[p2]\n            p2 -= 1\n            p -= 1"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums1 = [1,2,3,0,0,0], m = 3, nums2 = [2,5,6], n = 3",
-                                "expected_output": "[1,2,2,3,5,6]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Two Pointers & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Arrays algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-23",
-                "title": "First Unique Character in a String",
-                "role": "Software Developer",
-                "topic": "Hash Maps & Strings",
-                "difficulty": "Beginner",
-                "description": "Given a string `s`, find the first non-repeating character in it and return its index. If it does not exist, return `-1`.",
-                "examples": [
-                        {
-                                "input": "s = \"leetcode\"",
-                                "output": "0",
-                                "explanation": "'l' is the first unique character."
+                {
+                        "id": "code-23",
+                        "title": "First Unique Character in a String",
+                        "role": "Software Developer",
+                        "topic": "Hash Maps & Strings",
+                        "difficulty": "Beginner",
+                        "description": "Given a string `s`, find the first non-repeating character in it and return its index. If it does not exist, return `-1`.",
+                        "examples": [
+                                {
+                                        "input": "s = \"leetcode\"",
+                                        "output": "0",
+                                        "explanation": "'l' is the first unique character."
+                                },
+                                {
+                                        "input": "s = \"loveleetcode\"",
+                                        "output": "2",
+                                        "explanation": "'v' is the first unique character."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= s.length <= 10^5",
+                                "s consists of only lowercase English letters."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = \"loveleetcode\"",
-                                "output": "2",
-                                "explanation": "'v' is the first unique character."
-                        }
-                ],
-                "constraints": [
-                        "1 <= s.length <= 10^5",
-                        "s consists of only lowercase English letters."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for First Unique Character in a String\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <string.h>\n\nint firstUniqChar(char* s) {\n    int count[26] = {0};\n    int len = strlen(s);\n    for (int i = 0; i < len; i++) count[s[i] - 'a']++;\n    for (int i = 0; i < len; i++) {\n        if (count[s[i] - 'a'] == 1) return i;\n    }\n    return -1;\n}",
-                        "cpp": "#include <string>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int firstUniqChar(string s) {\n        vector<int> count(26, 0);\n        for (char c : s) count[c - 'a']++;\n        for (int i = 0; i < s.length(); i++) {\n            if (count[s[i] - 'a'] == 1) return i;\n        }\n        return -1;\n    }\n};",
-                        "python": "class Solution:\n    def firstUniqChar(self, s: str) -> int:\n        # Write your code here\n        return -1"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for First Unique Character in a String\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for First Unique Character in a String\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for First Unique Character in a String\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def firstUniqChar(self, s: str) -> int:\n        from collections import Counter\n        count = Counter(s)\n        for i, c in enumerate(s):\n            if count[c] == 1:\n                return i\n        return -1"
-                },
-                "test_cases": [
-                        {
-                                "input": "s = \"leetcode\"",
-                                "expected_output": "0",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <string>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int firstUniqChar(string s) {\n        vector<int> count(26, 0);\n        for (char c : s) count[c - 'a']++;\n        for (int i = 0; i < (int)s.length(); i++) {\n            if (count[s[i] - 'a'] == 1) return i;\n        }\n        return -1;\n    }\n};"
                         },
-                        {
-                                "input": "s = \"loveleetcode\"",
-                                "expected_output": "2",
-                                "is_hidden": false
+                        "test_cases": [
+                                {
+                                        "input": "s = \"leetcode\"",
+                                        "expected_output": "0",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"loveleetcode\"",
+                                        "expected_output": "2",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"aabb\"",
+                                        "expected_output": "-1",
+                                        "is_hidden": true
+                                }
+                        ],
+                        "approach": "Apply optimal Hash Maps & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Hash Maps & Strings algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-24",
+                        "title": "Palindrome Linked List",
+                        "role": "Software Developer",
+                        "topic": "Linked Lists",
+                        "difficulty": "Intermediate",
+                        "description": "Given the head of a singly linked list, return `true` if it is a palindrome or `false` otherwise.",
+                        "examples": [
+                                {
+                                        "input": "head = [1,2,2,1]",
+                                        "output": "true",
+                                        "explanation": "Reads same forward and backwards."
+                                }
+                        ],
+                        "constraints": [
+                                "The number of nodes in the list is in the range [1, 10^5]."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "s = \"aabb\"",
-                                "expected_output": "-1",
-                                "is_hidden": true
-                        }
-                ],
-                "approach": "Apply optimal Hash Maps & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Hash Maps & Strings algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-24",
-                "title": "Palindrome Linked List",
-                "role": "Software Developer",
-                "topic": "Linked Lists",
-                "difficulty": "Intermediate",
-                "description": "Given the head of a singly linked list, return `true` if it is a palindrome or `false` otherwise.",
-                "examples": [
-                        {
-                                "input": "head = [1,2,2,1]",
-                                "output": "true",
-                                "explanation": "Reads same forward and backwards."
-                        }
-                ],
-                "constraints": [
-                        "The number of nodes in the list is in the range [1, 10^5]."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Palindrome Linked List\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "bool isPalindrome(struct ListNode* head) {\n    int arr[100000];\n    int len = 0;\n    while (head != NULL) {\n        arr[len++] = head->val;\n        head = head->next;\n    }\n    int l = 0, r = len - 1;\n    while (l < r) {\n        if (arr[l++] != arr[r--]) return false;\n    }\n    return true;\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isPalindrome(ListNode* head) {\n        vector<int> vals;\n        while (head) {\n            vals.push_back(head->val);\n            head = head->next;\n        }\n        int l = 0, r = (int)vals.size() - 1;\n        while (l < r) {\n            if (vals[l++] != vals[r--]) return false;\n        }\n        return true;\n    }\n};",
-                        "python": "class Solution:\n    def isPalindrome(self, head: Optional[ListNode]) -> bool:\n        # Write your code here\n        return False"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Palindrome Linked List\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Palindrome Linked List\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Palindrome Linked List\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def isPalindrome(self, head: Optional[ListNode]) -> bool:\n        vals = []\n        curr = head\n        while curr:\n            vals.append(curr.val)\n            curr = curr.next\n        return vals == vals[::-1]"
-                },
-                "test_cases": [
-                        {
-                                "input": "head = [1,2,2,1]",
-                                "expected_output": "true",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    bool isPalindrome(ListNode* head) {\n        vector<int> vals;\n        while (head) {\n            vals.push_back(head->val);\n            head = head->next;\n        }\n        int l = 0, r = (int)vals.size() - 1;\n        while (l < r) {\n            if (vals[l++] != vals[r--]) return false;\n        }\n        return true;\n    }\n};"
                         },
-                        {
-                                "input": "head = [1,2]",
-                                "expected_output": "false",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Linked Lists pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Linked Lists algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-25",
-                "title": "Majority Element",
-                "role": "Software Developer",
-                "topic": "Arrays & Voting Algorithm",
-                "difficulty": "Beginner",
-                "description": "Given an array `nums` of size `n`, return the majority element that appears more than `⌊n / 2⌋` times. You may assume the majority element always exists.",
-                "examples": [
-                        {
-                                "input": "nums = [3,2,3]",
-                                "output": "3",
-                                "explanation": "3 appears 2 out of 3 times."
+                        "test_cases": [
+                                {
+                                        "input": "head = [1,2,2,1]",
+                                        "expected_output": "true",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "head = [1,2]",
+                                        "expected_output": "false",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Linked Lists pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Linked Lists algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-25",
+                        "title": "Majority Element",
+                        "role": "Software Developer",
+                        "topic": "Arrays & Voting Algorithm",
+                        "difficulty": "Beginner",
+                        "description": "Given an array `nums` of size `n`, return the majority element that appears more than `⌊n / 2⌋` times. You may assume the majority element always exists.",
+                        "examples": [
+                                {
+                                        "input": "nums = [3,2,3]",
+                                        "output": "3",
+                                        "explanation": "3 appears 2 out of 3 times."
+                                },
+                                {
+                                        "input": "nums = [2,2,1,1,1,2,2]",
+                                        "output": "2",
+                                        "explanation": "2 appears 4 out of 7 times."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 5 * 10^4",
+                                "-10^9 <= nums[i] <= 10^9"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [2,2,1,1,1,2,2]",
-                                "output": "2",
-                                "explanation": "2 appears 4 out of 7 times."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 5 * 10^4",
-                        "-10^9 <= nums[i] <= 10^9"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Majority Element\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int majorityElement(int* nums, int numsSize) {\n    int candidate = nums[0], count = 0;\n    for (int i = 0; i < numsSize; i++) {\n        if (count == 0) candidate = nums[i];\n        count += (nums[i] == candidate) ? 1 : -1;\n    }\n    return candidate;\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int majorityElement(vector<int>& nums) {\n        int candidate = nums[0], count = 0;\n        for (int x : nums) {\n            if (count == 0) candidate = x;\n            count += (x == candidate) ? 1 : -1;\n        }\n        return candidate;\n    }\n};",
-                        "python": "class Solution:\n    def majorityElement(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Majority Element\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Majority Element\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Majority Element\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def majorityElement(self, nums: list[int]) -> int:\n        candidate, count = None, 0\n        for num in nums:\n            if count == 0:\n                candidate = num\n            count += (1 if num == candidate else -1)\n        return candidate"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [3,2,3]",
-                                "expected_output": "3",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int majorityElement(vector<int>& nums) {\n        int candidate = nums[0], count = 0;\n        for (int x : nums) {\n            if (count == 0) candidate = x;\n            count += (x == candidate) ? 1 : -1;\n        }\n        return candidate;\n    }\n};"
                         },
-                        {
-                                "input": "nums = [2,2,1,1,1,2,2]",
-                                "expected_output": "2",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Arrays & Voting Algorithm pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Arrays & Voting Algorithm algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-26",
-                "title": "Middle of the Linked List",
-                "role": "Software Developer",
-                "topic": "Linked Lists & Fast-Slow Pointers",
-                "difficulty": "Beginner",
-                "description": "Given the head of a singly linked list, return the middle node of the linked list. If there are two middle nodes, return the second middle node.",
-                "examples": [
-                        {
-                                "input": "head = [1,2,3,4,5]",
-                                "output": "[3,4,5]",
-                                "explanation": "Middle node is 3."
-                        }
-                ],
-                "constraints": [
-                        "The number of nodes in the list is in the range [1, 100]."
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Middle of the Linked List\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "struct ListNode* middleNode(struct ListNode* head) {\n    struct ListNode* slow = head;\n    struct ListNode* fast = head;\n    while (fast != NULL && fast->next != NULL) {\n        slow = slow->next;\n        fast = fast->next->next;\n    }\n    return slow;\n}",
-                        "cpp": "class Solution {\npublic:\n    ListNode* middleNode(ListNode* head) {\n        ListNode* slow = head;\n        ListNode* fast = head;\n        while (fast && fast->next) {\n            slow = slow->next;\n            fast = fast->next->next;\n        }\n        return slow;\n    }\n};",
-                        "python": "class Solution:\n    def middleNode(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        # Write your code here\n        return None"
+                        "test_cases": [
+                                {
+                                        "input": "nums = [3,2,3]",
+                                        "expected_output": "3",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [2,2,1,1,1,2,2]",
+                                        "expected_output": "2",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Arrays & Voting Algorithm pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Arrays & Voting Algorithm algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Middle of the Linked List\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Middle of the Linked List\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Middle of the Linked List\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def middleNode(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        slow = fast = head\n        while fast and fast.next:\n            slow = slow.next\n            fast = fast.next.next\n        return slow"
-                },
-                "test_cases": [
-                        {
-                                "input": "head = [1,2,3,4,5]",
-                                "expected_output": "[3,4,5]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Linked Lists & Fast-Slow Pointers pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Linked Lists & Fast-Slow Pointers algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-27",
-                "title": "House Robber",
-                "role": "Software Developer",
-                "topic": "Dynamic Programming",
-                "difficulty": "Intermediate",
-                "description": "You are a professional robber planning to rob houses along a street. Each house has a certain amount of money stashed. Adjacent houses have security systems connected and will alert police if two adjacent houses are broken into on the same night. Return the maximum money you can rob.",
-                "examples": [
-                        {
-                                "input": "nums = [1,2,3,1]",
-                                "output": "4",
-                                "explanation": "Rob house 1 (1) and house 3 (3), total = 4."
+                {
+                        "id": "code-26",
+                        "title": "Middle of the Linked List",
+                        "role": "Software Developer",
+                        "topic": "Linked Lists & Fast-Slow Pointers",
+                        "difficulty": "Beginner",
+                        "description": "Given the head of a singly linked list, return the middle node of the linked list. If there are two middle nodes, return the second middle node.",
+                        "examples": [
+                                {
+                                        "input": "head = [1,2,3,4,5]",
+                                        "output": "[3,4,5]",
+                                        "explanation": "Middle node is 3."
+                                }
+                        ],
+                        "constraints": [
+                                "The number of nodes in the list is in the range [1, 100]."
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "nums = [2,7,9,3,1]",
-                                "output": "12",
-                                "explanation": "Rob house 1 (2), house 3 (9), and house 5 (1), total = 12."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 100",
-                        "0 <= nums[i] <= 400"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for House Robber\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int rob(int* nums, int numsSize) {\n    int prev1 = 0, prev2 = 0;\n    for (int i = 0; i < numsSize; i++) {\n        int temp = prev1;\n        int take = prev2 + nums[i];\n        prev1 = (take > prev1) ? take : prev1;\n        prev2 = temp;\n    }\n    return prev1;\n}",
-                        "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int rob(vector<int>& nums) {\n        int prev1 = 0, prev2 = 0;\n        for (int x : nums) {\n            int temp = prev1;\n            prev1 = max(prev1, prev2 + x);\n            prev2 = temp;\n        }\n        return prev1;\n    }\n};",
-                        "python": "class Solution:\n    def rob(self, nums: list[int]) -> int:\n        # Write your code here\n        return 0"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for House Robber\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for House Robber\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for House Robber\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def rob(self, nums: list[int]) -> int:\n        prev1, prev2 = 0, 0\n        for num in nums:\n            prev1, prev2 = max(prev2 + num, prev1), prev1\n        return prev1"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [1,2,3,1]",
-                                "expected_output": "4",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "class Solution {\npublic:\n    ListNode* middleNode(ListNode* head) {\n        ListNode* slow = head;\n        ListNode* fast = head;\n        while (fast && fast->next) {\n            slow = slow->next;\n            fast = fast->next->next;\n        }\n        return slow;\n    }\n};"
                         },
-                        {
-                                "input": "nums = [2,7,9,3,1]",
-                                "expected_output": "12",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Dynamic Programming pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-28",
-                "title": "Coin Change",
-                "role": "Software Developer",
-                "topic": "Dynamic Programming",
-                "difficulty": "Intermediate",
-                "description": "You are given an integer array `coins` representing coins of different denominations and an integer `amount`. Return the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up, return `-1`.",
-                "examples": [
-                        {
-                                "input": "coins = [1,2,5], amount = 11",
-                                "output": "3",
-                                "explanation": "11 = 5 + 5 + 1 (3 coins)."
-                        }
-                ],
-                "constraints": [
-                        "1 <= coins.length <= 12",
-                        "0 <= amount <= 10^4"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Coin Change\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <stdlib.h>\n\nint coinChange(int* coins, int coinsSize, int amount) {\n    int* dp = (int*)malloc((amount + 1) * sizeof(int));\n    for (int i = 0; i <= amount; i++) dp[i] = amount + 1;\n    dp[0] = 0;\n    for (int i = 1; i <= amount; i++) {\n        for (int j = 0; j < coinsSize; j++) {\n            if (coins[j] <= i) {\n                int sub = dp[i - coins[j]] + 1;\n                if (sub < dp[i]) dp[i] = sub;\n            }\n        }\n    }\n    int res = dp[amount] > amount ? -1 : dp[amount];\n    free(dp);\n    return res;\n}",
-                        "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int coinChange(vector<int>& coins, int amount) {\n        vector<int> dp(amount + 1, amount + 1);\n        dp[0] = 0;\n        for (int i = 1; i <= amount; i++) {\n            for (int c : coins) {\n                if (c <= i) dp[i] = min(dp[i], dp[i - c] + 1);\n            }\n        }\n        return dp[amount] > amount ? -1 : dp[amount];\n    }\n};",
-                        "python": "class Solution:\n    def coinChange(self, coins: list[int], amount: int) -> int:\n        # Write your code here\n        return -1"
+                        "test_cases": [
+                                {
+                                        "input": "head = [1,2,3,4,5]",
+                                        "expected_output": "[3,4,5]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Linked Lists & Fast-Slow Pointers pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Linked Lists & Fast-Slow Pointers algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Coin Change\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Coin Change\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Coin Change\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def coinChange(self, coins: list[int], amount: int) -> int:\n        dp = [float('inf')] * (amount + 1)\n        dp[0] = 0\n        for coin in coins:\n            for i in range(coin, amount + 1):\n                dp[i] = min(dp[i], dp[i - coin] + 1)\n        return dp[amount] if dp[amount] != float('inf') else -1"
-                },
-                "test_cases": [
-                        {
-                                "input": "coins = [1,2,5], amount = 11",
-                                "expected_output": "3",
-                                "is_hidden": false
+                {
+                        "id": "code-27",
+                        "title": "House Robber",
+                        "role": "Software Developer",
+                        "topic": "Dynamic Programming",
+                        "difficulty": "Intermediate",
+                        "description": "You are a professional robber planning to rob houses along a street. Each house has a certain amount of money stashed. Adjacent houses have security systems connected and will alert police if two adjacent houses are broken into on the same night. Return the maximum money you can rob.",
+                        "examples": [
+                                {
+                                        "input": "nums = [1,2,3,1]",
+                                        "output": "4",
+                                        "explanation": "Rob house 1 (1) and house 3 (3), total = 4."
+                                },
+                                {
+                                        "input": "nums = [2,7,9,3,1]",
+                                        "output": "12",
+                                        "explanation": "Rob house 1 (2), house 3 (9), and house 5 (1), total = 12."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 100",
+                                "0 <= nums[i] <= 400"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
                         },
-                        {
-                                "input": "coins = [2], amount = 3",
-                                "expected_output": "-1",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Dynamic Programming pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-29",
-                "title": "Search in Rotated Sorted Array",
-                "role": "Software Developer",
-                "topic": "Binary Search",
-                "difficulty": "Intermediate",
-                "description": "Given the array `nums` after possible rotation and an integer `target`, return the index of `target` if it is in `nums`, or `-1` if it is not in `nums` in O(log n) time.",
-                "examples": [
-                        {
-                                "input": "nums = [4,5,6,7,0,1,2], target = 0",
-                                "output": "4",
-                                "explanation": "0 is located at index 4."
-                        }
-                ],
-                "constraints": [
-                        "1 <= nums.length <= 5000",
-                        "-10^4 <= nums[i] <= 10^4"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Search in Rotated Sorted Array\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int search(int* nums, int numsSize, int target) {\n    int l = 0, r = numsSize - 1;\n    while (l <= r) {\n        int mid = l + (r - l) / 2;\n        if (nums[mid] == target) return mid;\n        if (nums[l] <= nums[mid]) {\n            if (nums[l] <= target && target < nums[mid]) r = mid - 1;\n            else l = mid + 1;\n        } else {\n            if (nums[mid] < target && target <= nums[r]) l = mid + 1;\n            else r = mid - 1;\n        }\n    }\n    return -1;\n}",
-                        "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[l] <= nums[mid]) {\n                if (nums[l] <= target && target < nums[mid]) r = mid - 1;\n                else l = mid + 1;\n            } else {\n                if (nums[mid] < target && target <= nums[r]) l = mid + 1;\n                else r = mid - 1;\n            }\n        }\n        return -1;\n    }\n};",
-                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        # Write your code here\n        return -1"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Search in Rotated Sorted Array\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Search in Rotated Sorted Array\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Search in Rotated Sorted Array\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def search(self, nums: list[int], target: int) -> int:\n        left, right = 0, len(nums) - 1\n        while left <= right:\n            mid = (left + right) // 2\n            if nums[mid] == target:\n                return mid\n            if nums[left] <= nums[mid]:\n                if nums[left] <= target < nums[mid]:\n                    right = mid - 1\n                else:\n                    left = mid + 1\n            else:\n                if nums[mid] < target <= nums[right]:\n                    left = mid + 1\n                else:\n                    right = mid - 1\n        return -1"
-                },
-                "test_cases": [
-                        {
-                                "input": "nums = [4,5,6,7,0,1,2], target = 0",
-                                "expected_output": "4",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Binary Search pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Binary Search algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-30",
-                "title": "Longest Substring Without Repeating Characters",
-                "role": "Software Developer",
-                "topic": "Sliding Window & Hash Sets",
-                "difficulty": "Intermediate",
-                "description": "Given a string `s`, find the length of the longest substring without repeating characters.",
-                "examples": [
-                        {
-                                "input": "s = \"abcabcbb\"",
-                                "output": "3",
-                                "explanation": "The answer is \"abc\", with the length of 3."
-                        }
-                ],
-                "constraints": [
-                        "0 <= s.length <= 5 * 10^4"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Longest Substring Without Repeating Characters\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "#include <string.h>\n\nint lengthOfLongestSubstring(char* s) {\n    int lastPos[256];\n    for (int i = 0; i < 256; i++) lastPos[i] = -1;\n    int maxLen = 0, start = 0, len = strlen(s);\n    for (int i = 0; i < len; i++) {\n        unsigned char c = (unsigned char)s[i];\n        if (lastPos[c] >= start) start = lastPos[c] + 1;\n        lastPos[c] = i;\n        int currLen = i - start + 1;\n        if (currLen > maxLen) maxLen = currLen;\n    }\n    return maxLen;\n}",
-                        "cpp": "#include <string>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int lengthOfLongestSubstring(string s) {\n        vector<int> lastPos(256, -1);\n        int maxLen = 0, start = 0;\n        for (int i = 0; i < s.length(); i++) {\n            unsigned char c = (unsigned char)s[i];\n            if (lastPos[c] >= start) start = lastPos[c] + 1;\n            lastPos[c] = i;\n            maxLen = max(maxLen, i - start + 1);\n        }\n        return maxLen;\n    }\n};",
-                        "python": "class Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        # Write your code here\n        return 0"
-                },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Longest Substring Without Repeating Characters\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Longest Substring Without Repeating Characters\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Longest Substring Without Repeating Characters\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        seen = {}\n        left = max_len = 0\n        for right, c in enumerate(s):\n            if c in seen and seen[c] >= left:\n                left = seen[c] + 1\n            seen[c] = right\n            max_len = max(max_len, right - left + 1)\n        return max_len"
-                },
-                "test_cases": [
-                        {
-                                "input": "s = \"abcabcbb\"",
-                                "expected_output": "3",
-                                "is_hidden": false
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int rob(vector<int>& nums) {\n        int prev1 = 0, prev2 = 0;\n        for (int x : nums) {\n            int temp = prev1;\n            prev1 = max(prev1, prev2 + x);\n            prev2 = temp;\n        }\n        return prev1;\n    }\n};"
                         },
-                        {
-                                "input": "s = \"bbbbb\"",
-                                "expected_output": "1",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Sliding Window & Hash Sets pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Sliding Window & Hash Sets algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-31",
-                "title": "Group Anagrams",
-                "role": "Software Developer",
-                "topic": "Hash Maps & Strings",
-                "difficulty": "Intermediate",
-                "description": "Given an array of strings `strs`, group the anagrams together in any order.",
-                "examples": [
-                        {
-                                "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
-                                "output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
-                                "explanation": "Anagrams grouped."
-                        }
-                ],
-                "constraints": [
-                        "1 <= strs.length <= 10^4",
-                        "0 <= strs[i].length <= 100"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for Group Anagrams\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int solve() { return 0; }",
-                        "cpp": "#include <vector>\n#include <string>\n#include <unordered_map>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<vector<string>> groupAnagrams(vector<string>& strs) {\n        unordered_map<string, vector<string>> map;\n        for (const string& s : strs) {\n            string key = s;\n            sort(key.begin(), key.end());\n            map[key].push_back(s);\n        }\n        vector<vector<string>> res;\n        for (auto& pair : map) res.push_back(pair.second);\n        return res;\n    }\n};",
-                        "python": "class Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        # Write your code here\n        return []"
+                        "test_cases": [
+                                {
+                                        "input": "nums = [1,2,3,1]",
+                                        "expected_output": "4",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "nums = [2,7,9,3,1]",
+                                        "expected_output": "12",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Dynamic Programming pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for Group Anagrams\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for Group Anagrams\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for Group Anagrams\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        from collections import defaultdict\n        groups = defaultdict(list)\n        for s in strs:\n            key = ''.join(sorted(s))\n            groups[key].append(s)\n        return list(groups.values())"
+                {
+                        "id": "code-28",
+                        "title": "Coin Change",
+                        "role": "Software Developer",
+                        "topic": "Dynamic Programming",
+                        "difficulty": "Intermediate",
+                        "description": "You are given an integer array `coins` representing coins of different denominations and an integer `amount`. Return the fewest number of coins that you need to make up that amount. If that amount of money cannot be made up, return `-1`.",
+                        "examples": [
+                                {
+                                        "input": "coins = [1,2,5], amount = 11",
+                                        "output": "3",
+                                        "explanation": "11 = 5 + 5 + 1 (3 coins)."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= coins.length <= 12",
+                                "0 <= amount <= 10^4"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
+                        },
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int coinChange(vector<int>& coins, int amount) {\n        vector<int> dp(amount + 1, amount + 1);\n        dp[0] = 0;\n        for (int i = 1; i <= amount; i++) {\n            for (int c : coins) {\n                if (c <= i) dp[i] = min(dp[i], dp[i - c] + 1);\n            }\n        }\n        return dp[amount] > amount ? -1 : dp[amount];\n    }\n};"
+                        },
+                        "test_cases": [
+                                {
+                                        "input": "coins = [1,2,5], amount = 11",
+                                        "expected_output": "3",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "coins = [2], amount = 3",
+                                        "expected_output": "-1",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Dynamic Programming pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Dynamic Programming algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "test_cases": [
-                        {
-                                "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
-                                "expected_output": "Grouped anagram lists",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Hash Maps & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Hash Maps & Strings algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        },
-        {
-                "id": "code-32",
-                "title": "3Sum",
-                "role": "Software Developer",
-                "topic": "Two Pointers & Arrays",
-                "difficulty": "Intermediate",
-                "description": "Given an integer array `nums`, return all the triplets `[nums[i], nums[j], nums[k]]` such that `i != j`, `i != k`, and `j != k`, and `nums[i] + nums[j] + nums[k] == 0` without duplicates.",
-                "examples": [
-                        {
-                                "input": "nums = [-1,0,1,2,-1,-4]",
-                                "output": "[[-1,-1,2],[-1,0,1]]",
-                                "explanation": "Unique zero-sum triplets."
-                        }
-                ],
-                "constraints": [
-                        "3 <= nums.length <= 3000",
-                        "-10^5 <= nums[i] <= 10^5"
-                ],
-                "starter_code": {
-                        "java": "class Solution {\n    // Method for 3Sum\n    public Object solve() {\n        // Write your code here\n        return null;\n    }\n}",
-                        "c": "int solve() { return 0; }",
-                        "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        vector<vector<int>> res;\n        sort(nums.begin(), nums.end());\n        int n = nums.size();\n        for (int i = 0; i < n - 2; i++) {\n            if (i > 0 && nums[i] == nums[i - 1]) continue;\n            int l = i + 1, r = n - 1;\n            while (l < r) {\n                int sum = nums[i] + nums[l] + nums[r];\n                if (sum == 0) {\n                    res.push_back({nums[i], nums[l], nums[r]});\n                    while (l < r && nums[l] == nums[l + 1]) l++;\n                    while (l < r && nums[r] == nums[r - 1]) r--;\n                    l++; r--;\n                } else if (sum < 0) l++;\n                else r--;\n            }\n        }\n        return res;\n    }\n};",
-                        "python": "class Solution:\n    def threeSum(self, nums: list[int]) -> list[list[int]]:\n        # Write your code here\n        return []"
+                {
+                        "id": "code-29",
+                        "title": "Search in Rotated Sorted Array",
+                        "role": "Software Developer",
+                        "topic": "Binary Search",
+                        "difficulty": "Intermediate",
+                        "description": "Given the array `nums` after possible rotation and an integer `target`, return the index of `target` if it is in `nums`, or `-1` if it is not in `nums` in O(log n) time.",
+                        "examples": [
+                                {
+                                        "input": "nums = [4,5,6,7,0,1,2], target = 0",
+                                        "output": "4",
+                                        "explanation": "0 is located at index 4."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= nums.length <= 5000",
+                                "-10^4 <= nums[i] <= 10^4"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
+                        },
+                        "solution_code": {
+                                "cpp": "#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        int l = 0, r = (int)nums.size() - 1;\n        while (l <= r) {\n            int mid = l + (r - l) / 2;\n            if (nums[mid] == target) return mid;\n            if (nums[l] <= nums[mid]) {\n                if (nums[l] <= target && target < nums[mid]) r = mid - 1;\n                else l = mid + 1;\n            } else {\n                if (nums[mid] < target && target <= nums[r]) l = mid + 1;\n                else r = mid - 1;\n            }\n        }\n        return -1;\n    }\n};"
+                        },
+                        "test_cases": [
+                                {
+                                        "input": "nums = [4,5,6,7,0,1,2], target = 0",
+                                        "expected_output": "4",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Binary Search pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Binary Search algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "solution_code": {
-                        "java": "class Solution {\n    // Optimal solution for 3Sum\n    public int solve() {\n        int ans = 0;\n        return ans;\n    }\n}",
-                        "c": "int solve() {\n    // Optimal C implementation for 3Sum\n    return 0;\n}",
-                        "cpp": "class Solution {\npublic:\n    int solve() {\n        // Optimal C++ solution for 3Sum\n        return 0;\n    }\n};",
-                        "python": "class Solution:\n    def threeSum(self, nums: list[int]) -> list[list[int]]:\n        nums.sort()\n        res = []\n        for i in range(len(nums) - 2):\n            if i > 0 and nums[i] == nums[i - 1]:\n                continue\n            left, right = i + 1, len(nums) - 1\n            while left < right:\n                s = nums[i] + nums[left] + nums[right]\n                if s < 0:\n                    left += 1\n                elif s > 0:\n                    right -= 1\n                else:\n                    res.append([nums[i], nums[left], nums[right]])\n                    while left < right and nums[left] == nums[left + 1]:\n                        left += 1\n                    while left < right and nums[right] == nums[right - 1]:\n                        right -= 1\n                    left += 1\n                    right -= 1\n        return res"
+                {
+                        "id": "code-30",
+                        "title": "Longest Substring Without Repeating Characters",
+                        "role": "Software Developer",
+                        "topic": "Sliding Window & Hash Sets",
+                        "difficulty": "Intermediate",
+                        "description": "Given a string `s`, find the length of the longest substring without repeating characters.",
+                        "examples": [
+                                {
+                                        "input": "s = \"abcabcbb\"",
+                                        "output": "3",
+                                        "explanation": "The answer is \"abc\", with the length of 3."
+                                }
+                        ],
+                        "constraints": [
+                                "0 <= s.length <= 5 * 10^4"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
+                        },
+                        "solution_code": {
+                                "cpp": "#include <string>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    int lengthOfLongestSubstring(string s) {\n        vector<int> lastPos(256, -1);\n        int maxLen = 0, start = 0;\n        for (int i = 0; i < (int)s.length(); i++) {\n            unsigned char c = (unsigned char)s[i];\n            if (lastPos[c] >= start) start = lastPos[c] + 1;\n            lastPos[c] = i;\n            maxLen = max(maxLen, i - start + 1);\n        }\n        return maxLen;\n    }\n};"
+                        },
+                        "test_cases": [
+                                {
+                                        "input": "s = \"abcabcbb\"",
+                                        "expected_output": "3",
+                                        "is_hidden": false
+                                },
+                                {
+                                        "input": "s = \"bbbbb\"",
+                                        "expected_output": "1",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Sliding Window & Hash Sets pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Sliding Window & Hash Sets algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
                 },
-                "test_cases": [
-                        {
-                                "input": "nums = [-1,0,1,2,-1,-4]",
-                                "expected_output": "[[-1,-1,2],[-1,0,1]]",
-                                "is_hidden": false
-                        }
-                ],
-                "approach": "Apply optimal Two Pointers & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
-                "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Arrays algorithm.\n4. Return computed result.",
-                "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
-                "time_complexity": "O(N)",
-                "space_complexity": "O(1)"
-        }
-],
+                {
+                        "id": "code-31",
+                        "title": "Group Anagrams",
+                        "role": "Software Developer",
+                        "topic": "Hash Maps & Strings",
+                        "difficulty": "Intermediate",
+                        "description": "Given an array of strings `strs`, group the anagrams together in any order.",
+                        "examples": [
+                                {
+                                        "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+                                        "output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+                                        "explanation": "Anagrams grouped."
+                                }
+                        ],
+                        "constraints": [
+                                "1 <= strs.length <= 10^4",
+                                "0 <= strs[i].length <= 100"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
+                        },
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <string>\n#include <unordered_map>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<vector<string>> groupAnagrams(vector<string>& strs) {\n        unordered_map<string, vector<string>> map;\n        for (const string& s : strs) {\n            string key = s;\n            sort(key.begin(), key.end());\n            map[key].push_back(s);\n        }\n        vector<vector<string>> res;\n        for (auto& pair : map) res.push_back(pair.second);\n        return res;\n    }\n};"
+                        },
+                        "test_cases": [
+                                {
+                                        "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+                                        "expected_output": "Grouped anagram lists",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Hash Maps & Strings pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Hash Maps & Strings algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                },
+                {
+                        "id": "code-32",
+                        "title": "3Sum",
+                        "role": "Software Developer",
+                        "topic": "Two Pointers & Arrays",
+                        "difficulty": "Intermediate",
+                        "description": "Given an integer array `nums`, return all the triplets `[nums[i], nums[j], nums[k]]` such that `i != j`, `i != k`, and `j != k`, and `nums[i] + nums[j] + nums[k] == 0` without duplicates.",
+                        "examples": [
+                                {
+                                        "input": "nums = [-1,0,1,2,-1,-4]",
+                                        "output": "[[-1,-1,2],[-1,0,1]]",
+                                        "explanation": "Unique zero-sum triplets."
+                                }
+                        ],
+                        "constraints": [
+                                "3 <= nums.length <= 3000",
+                                "-10^5 <= nums[i] <= 10^5"
+                        ],
+                        "starter_code": {
+                                "cpp": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your code here\n\n    return 0;\n}",
+                                "java": "class Solution {\n    // Write your code here\n}",
+                                "c": "#include <stdio.h>\n\nint main() {\n    // Write your code here\n    return 0;\n}",
+                                "python": "# Write your code here\n"
+                        },
+                        "solution_code": {
+                                "cpp": "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        vector<vector<int>> res;\n        sort(nums.begin(), nums.end());\n        int n = nums.size();\n        for (int i = 0; i < n - 2; i++) {\n            if (i > 0 && nums[i] == nums[i - 1]) continue;\n            int l = i + 1, r = n - 1;\n            while (l < r) {\n                int sum = nums[i] + nums[l] + nums[r];\n                if (sum == 0) {\n                    res.push_back({nums[i], nums[l], nums[r]});\n                    while (l < r && nums[l] == nums[l + 1]) l++;\n                    while (l < r && nums[r] == nums[r - 1]) r--;\n                    l++; r--;\n                } else if (sum < 0) l++;\n                else r--;\n            }\n        }\n        return res;\n    }\n};"
+                        },
+                        "test_cases": [
+                                {
+                                        "input": "nums = [-1,0,1,2,-1,-4]",
+                                        "expected_output": "[[-1,-1,2],[-1,0,1]]",
+                                        "is_hidden": false
+                                }
+                        ],
+                        "approach": "Apply optimal Two Pointers & Arrays pattern to achieve minimal time complexity and avoid redundant computations.",
+                        "algorithm_explanation": "1. Inspect problem constraints and edge cases.\n2. Initialize required data structures.\n3. Traverse and transform data using Two Pointers & Arrays algorithm.\n4. Return computed result.",
+                        "example_walkthrough": "Step-by-step trace demonstrates correct execution matching expected output for sample test cases.",
+                        "time_complexity": "O(N)",
+                        "space_complexity": "O(1)"
+                }
+        ],
 
     // =========================================================================
     // 4. HR QUESTIONS POOL (32 Questions)

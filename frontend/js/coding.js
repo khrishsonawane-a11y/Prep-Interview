@@ -40,7 +40,14 @@ window.addEventListener('beforeunload', () => {
 });
 
 function getDefaultCppStarter() {
-    return '#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    int solve() {\n        // Write your C++ solution here\n        return 0;\n    }\n};';
+    return `#include <iostream>
+using namespace std;
+
+int main() {
+    // Write your code here
+
+    return 0;
+}`;
 }
 
 function getProblemKey(index) {
@@ -51,10 +58,11 @@ function getProblemKey(index) {
 function initProblemState(p, index) {
     const key = p.id || `problem_${index}`;
     if (!questionsState[key]) {
+        const cleanStarter = (p.starter_code && p.starter_code.cpp) ? p.starter_code.cpp : getDefaultCppStarter();
         questionsState[key] = {
             id: key,
             title: p.title || `Problem ${index + 1}`,
-            candidateCode: p.starter_code?.cpp || getDefaultCppStarter(),
+            candidateCode: cleanStarter,
             explanation: '',
             evaluationResult: null,
             evaluationStatus: index === 0 ? 'visited' : 'unvisited',
@@ -311,7 +319,7 @@ function updateSolutionModalContent() {
 
     const codeView = document.getElementById('solution-code-view');
     if (codeView) {
-        const sol = currentProblem.solution_code?.cpp || getDefaultCppStarter();
+        const sol = currentProblem.solution_code?.cpp || 'class Solution {\npublic:\n    // Optimal C++ reference implementation\n};';
         codeView.textContent = sol;
     }
 }
