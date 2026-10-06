@@ -3,6 +3,8 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
+const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 function shuffleArray(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -41,8 +43,11 @@ export const getAptitudeQuestions = async (req, res, next) => {
                     const shuffled = shuffleArray(data);
                     return res.json({ success: true, questions: shuffled.slice(0, limit) });
                 }
+                if (error) {
+                    console.warn('[Supabase Notice] aptitude_questions query:', error.message);
+                }
             } catch (supErr) {
-                console.warn('Supabase questions fallback:', supErr.message);
+                console.warn('[Supabase Exception] aptitude_questions:', supErr.message);
             }
         }
 
@@ -63,7 +68,8 @@ export const getAptitudeQuestions = async (req, res, next) => {
 
 export const submitAptitudeAnswer = async (req, res, next) => {
     try {
-        const userId = req.user?.id || 'candidate-' + Date.now();
+        const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const {
             interviewId,
             questionId,
@@ -78,56 +84,64 @@ export const submitAptitudeAnswer = async (req, res, next) => {
             timeTakenSeconds = 0
         } = req.body || {};
 
+        if (!interviewId || !questionText) {
+            return res.status(400).json({ success: false, error: 'interviewId and questionText are required.' });
+        }
+
         const isSkipped = is_skipped === true || selectedOptionIndex === -1 || selectedOptionIndex === undefined;
         const isCorrect = !isSkipped && selectedOptionIndex === correctOptionIndex;
         const score = isSkipped ? 0 : (isCorrect ? 100 : 0);
-
         const errorType = isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : 'Calculation / Logic Mistake');
 
-        const answerRecord = {
+        const dbAnswer = {
             id: randomUUID(),
             interview_id: interviewId,
             user_id: userId,
             round_type: 'aptitude',
             question_id: questionId || 'apt-' + Date.now(),
             question_text: questionText,
-            topic: topic || 'Quantitative',
             user_answer: isSkipped ? '[SKIPPED]' : `Option ${selectedOptionIndex + 1}`,
-            reference_answer: reference_answer || `Option ${correctOptionIndex + 1}: ${explanation || ''}`,
+            code_language: null,
             is_correct: isCorrect,
-            is_skipped: isSkipped,
-            viewed_answer: Boolean(viewed_answer),
             score: score,
-            error_type: errorType,
             ai_evaluation: {
+                topic: topic || 'Quantitative',
+                selectedOptionIndex,
+                correctOptionIndex,
+                is_skipped: isSkipped,
+                viewed_answer: Boolean(viewed_answer),
+                reference_answer: reference_answer || `Option ${correctOptionIndex + 1}: ${explanation || ''}`,
                 correctness: isSkipped ? 'Skipped' : (isCorrect ? 'Correct' : 'Incorrect'),
                 error_type: errorType,
                 explanation: explanation || 'Standard deductive calculation',
                 score: score
             },
-            time_taken_seconds: timeTakenSeconds,
+            time_taken_seconds: Number(timeTakenSeconds) || 0,
             created_at: new Date().toISOString()
         };
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-                if (isUuid) {
-                    const { data, error } = await supabaseAdmin
-                        .from('interview_answers')
-                        .insert([answerRecord])
-                        .select()
-                        .single();
+                const { data, error } = await supabaseAdmin
+                    .from('interview_answers')
+                    .insert([dbAnswer])
+                    .select()
+                    .single();
 
-                    if (!error && data) return res.json({ success: true, isCorrect, score, answer: data });
+                if (error) {
+                    console.error('[Supabase Error] submitAptitudeAnswer insert:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to save answer to database: ' + error.message });
                 }
+
+                return res.json({ success: true, isCorrect, score, answer: data });
             } catch (supErr) {
-                console.warn('Supabase answer insert fallback:', supErr.message);
+                console.error('[Supabase Exception] submitAptitudeAnswer:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database exception while saving answer.' });
             }
         }
 
-        mockStore.answers.set(answerRecord.id, answerRecord);
-        return res.json({ success: true, isCorrect, score, answer: answerRecord });
+        mockStore.answers.set(dbAnswer.id, dbAnswer);
+        return res.json({ success: true, isCorrect, score, answer: dbAnswer });
     } catch (err) {
         next(err);
     }

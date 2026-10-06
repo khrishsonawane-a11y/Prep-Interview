@@ -1,10 +1,12 @@
 import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 
+const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 /**
  * Authentication Middleware
  * Extracts and verifies the Supabase Bearer token from the Authorization header.
- * Attaches the verified user payload (id, email, metadata) to req.user.
+ * Attaches the verified user payload (id, email, metadata) to req.user and sets req.isMockUser.
  */
 export const requireAuth = async (req, res, next) => {
     try {
@@ -24,7 +26,7 @@ export const requireAuth = async (req, res, next) => {
             });
         }
 
-        // 1. Mock / Dev Token check (Allows testing & local dev without remote auth)
+        // 1. Explicit Mock / Demo Token or Offline Local Development
         if (token.startsWith('mock_') || token.startsWith('demo_') || !isSupabaseConfigured()) {
             const userId = token.replace('mock_', '').replace('demo_', '') || 'demo-user-123';
             const user = {
@@ -48,6 +50,7 @@ export const requireAuth = async (req, res, next) => {
 
             req.user = user;
             req.token = token;
+            req.isMockUser = true;
             return next();
         }
 
@@ -57,7 +60,7 @@ export const requireAuth = async (req, res, next) => {
                 const response = await supabaseAdmin.auth.getUser(token);
                 const user = response?.data?.user;
 
-                if (user && !response?.error) {
+                if (user && !response?.error && isUuid(user.id)) {
                     req.user = {
                         id: user.id,
                         email: user.email || `${user.id}@example.com`,
@@ -65,19 +68,20 @@ export const requireAuth = async (req, res, next) => {
                         avatar_url: user.user_metadata?.avatar_url || ''
                     };
                     req.token = token;
+                    req.isMockUser = false;
                     return next();
                 }
             } catch (supErr) {
                 console.warn('Supabase auth.getUser exception:', supErr.message);
             }
 
-            // JWT fallback decoding if Supabase API is momentarily slow or unauthenticated
+            // JWT decoding verification fallback if Supabase API is momentarily slow
             try {
                 const parts = token.split('.');
                 if (parts.length === 3) {
                     const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-                    if (payload && (payload.sub || payload.id || payload.email)) {
-                        const userId = payload.sub || payload.id;
+                    const userId = payload.sub || payload.id;
+                    if (userId && isUuid(userId)) {
                         req.user = {
                             id: userId,
                             email: payload.email || `${userId}@example.com`,
@@ -85,6 +89,7 @@ export const requireAuth = async (req, res, next) => {
                             avatar_url: payload.user_metadata?.avatar_url || ''
                         };
                         req.token = token;
+                        req.isMockUser = false;
                         return next();
                     }
                 }
@@ -93,19 +98,7 @@ export const requireAuth = async (req, res, next) => {
             }
         }
 
-        // 3. Fallback for any other valid token string
-        if (token && token.length > 5) {
-            const fallbackId = 'usr_' + Buffer.from(token.slice(0, 16)).toString('hex').slice(0, 12);
-            req.user = {
-                id: fallbackId,
-                email: 'candidate@example.com',
-                full_name: 'Candidate',
-                avatar_url: ''
-            };
-            req.token = token;
-            return next();
-        }
-
+        // 3. For real Supabase setups, invalid/expired tokens MUST return 401
         return res.status(401).json({
             success: false,
             error: 'Session expired or invalid token. Please log in again.'

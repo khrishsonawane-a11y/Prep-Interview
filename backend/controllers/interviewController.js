@@ -3,13 +3,88 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateFinalReport } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
+const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+/**
+ * Format raw database answers into structured frontend review objects
+ */
+const formatAnswersForFrontend = (answers = []) => {
+    return answers.map(a => {
+        const aiEval = (typeof a.ai_evaluation === 'object' && a.ai_evaluation !== null) ? a.ai_evaluation : {};
+        return {
+            ...a,
+            topic: aiEval.topic || 'Core Concept',
+            reference_answer: aiEval.reference_answer || a.user_answer,
+            is_skipped: Boolean(aiEval.is_skipped || a.user_answer === '[SKIPPED]'),
+            viewed_answer: Boolean(aiEval.viewed_answer),
+            error_type: aiEval.error_type || (a.is_correct ? 'None (Correct)' : 'Review Needed'),
+            user_explanation: aiEval.user_explanation || '',
+            evaluation: aiEval
+        };
+    });
+};
+
+/**
+ * Format raw database results row into full frontend report structure
+ */
+const formatResultsForFrontend = (resultRow) => {
+    if (!resultRow) return null;
+
+    const rawRecommended = resultRow.recommended_topics;
+    let recTopicsList = [];
+    let extraMeta = {};
+
+    if (Array.isArray(rawRecommended)) {
+        recTopicsList = rawRecommended;
+    } else if (typeof rawRecommended === 'object' && rawRecommended !== null) {
+        recTopicsList = Array.isArray(rawRecommended.topics) ? rawRecommended.topics : [];
+        extraMeta = rawRecommended;
+    }
+
+    const overallScore = Number(resultRow.overall_score) || 0;
+    const defaultPerfLevel = overallScore >= 85 ? 'Exceptional Readiness'
+        : overallScore >= 75 ? 'Strong Candidate'
+        : overallScore >= 60 ? 'Proficient'
+        : overallScore >= 50 ? 'Developing'
+        : 'Needs Preparation';
+
+    return {
+        ...resultRow,
+        overall_score: overallScore,
+        performance_level: extraMeta.performance_level || defaultPerfLevel,
+        overall_performance: extraMeta.overall_performance || {
+            total_questions: 30,
+            attempted: 30,
+            correct: Math.round((overallScore / 100) * 30),
+            wrong: Math.max(0, 30 - Math.round((overallScore / 100) * 30)),
+            skipped: 0,
+            accuracy: overallScore,
+            completion_percentage: 100,
+            percentage: overallScore,
+            score: overallScore,
+            performance_level: defaultPerfLevel,
+            improvement: extraMeta.improvement || '+0%'
+        },
+        previous_attempt_comparison: extraMeta.previous_attempt_comparison || { has_previous: false },
+        weak_topics: extraMeta.weak_topics || [],
+        strong_topics: extraMeta.strong_topics || [],
+        top_priorities: extraMeta.top_priorities || [
+            'Master edge case handling in coding assessments.',
+            'Deepen system design architecture and database indexing.',
+            'Structure behavioral responses using quantifiable STAR metrics.'
+        ],
+        recommended_topics: recTopicsList
+    };
+};
+
 /**
  * POST /api/interviews
  * Start a new interview session
  */
 export const createInterview = async (req, res, next) => {
     try {
-        const userId = req.user?.id || 'candidate-' + Date.now();
+        const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const {
             role = 'Software Developer',
             difficulty = 'Intermediate',
@@ -29,44 +104,30 @@ export const createInterview = async (req, res, next) => {
             created_at: new Date().toISOString()
         };
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-                if (isUuid) {
-                    const { data, error } = await supabaseAdmin
-                        .from('interviews')
-                        .insert([newInterview])
-                        .select()
-                        .single();
+                const { data, error } = await supabaseAdmin
+                    .from('interviews')
+                    .insert([newInterview])
+                    .select()
+                    .single();
 
-                    if (!error && data) {
-                        return res.status(201).json({ success: true, interview: data });
-                    }
-                    console.warn('Supabase insert fallback:', error?.message);
+                if (error) {
+                    console.error('[Supabase Error] createInterview insert failed:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to create interview in database: ' + error.message });
                 }
+
+                return res.status(201).json({ success: true, interview: data });
             } catch (supErr) {
-                console.warn('Supabase DB error, using fallback:', supErr.message);
+                console.error('[Supabase Exception] createInterview:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database connection failed during interview creation.' });
             }
         }
 
         mockStore.interviews.set(newInterview.id, newInterview);
         return res.status(201).json({ success: true, interview: newInterview });
     } catch (err) {
-        console.error('Error in createInterview:', err);
-        const fallbackInterview = {
-            id: randomUUID(),
-            user_id: req.user?.id || 'demo-user',
-            role: req.body?.role || 'Software Developer',
-            difficulty: req.body?.difficulty || 'Intermediate',
-            status: 'in_progress',
-            total_rounds: 4,
-            current_round_index: 0,
-            rounds_config: ['aptitude', 'technical', 'coding', 'hr'],
-            overall_score: 0,
-            created_at: new Date().toISOString()
-        };
-        mockStore.interviews.set(fallbackInterview.id, fallbackInterview);
-        return res.status(201).json({ success: true, interview: fallbackInterview });
+        next(err);
     }
 };
 
@@ -77,9 +138,10 @@ export const createInterview = async (req, res, next) => {
 export const getInterviews = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const { role, status, search } = req.query;
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
                 let query = supabaseAdmin
                     .from('interviews')
@@ -103,23 +165,27 @@ export const getInterviews = async (req, res, next) => {
                 if (status) query = query.eq('status', status);
 
                 const { data, error } = await query;
-                if (!error && data) {
-                    let filtered = data;
-                    if (search) {
-                        const s = search.toLowerCase();
-                        filtered = filtered.filter(item =>
-                            item.role.toLowerCase().includes(s) ||
-                            (item.difficulty && item.difficulty.toLowerCase().includes(s))
-                        );
-                    }
-                    return res.json({ success: true, count: filtered.length, interviews: filtered });
+                if (error) {
+                    console.error('[Supabase Error] getInterviews query failed:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to fetch interview history: ' + error.message });
                 }
+
+                let filtered = data || [];
+                if (search) {
+                    const s = search.toLowerCase();
+                    filtered = filtered.filter(item =>
+                        (item.role && item.role.toLowerCase().includes(s)) ||
+                        (item.difficulty && item.difficulty.toLowerCase().includes(s))
+                    );
+                }
+                return res.json({ success: true, count: filtered.length, interviews: filtered });
             } catch (supErr) {
-                console.warn('Supabase query fallback:', supErr.message);
+                console.error('[Supabase Exception] getInterviews:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database query failed.' });
             }
         }
 
-        // Mock store fallback
+        // Mock store fallback for intentional demo/mock users
         let userInterviews = Array.from(mockStore.interviews.values())
             .filter(i => i.user_id === userId)
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -156,58 +222,63 @@ export const getInterviewById = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
                 const { data: interview, error: intErr } = await supabaseAdmin
                     .from('interviews')
                     .select('*')
                     .eq('id', id)
-                    .single();
+                    .eq('user_id', userId)
+                    .maybeSingle();
 
-                if (!intErr && interview) {
-                    const { data: answers } = await supabaseAdmin
-                        .from('interview_answers')
-                        .select('*')
-                        .eq('interview_id', id)
-                        .order('created_at', { ascending: true });
-
-                    const { data: results } = await supabaseAdmin
-                        .from('interview_results')
-                        .select('*')
-                        .eq('interview_id', id)
-                        .single();
-
-                    return res.json({
-                        success: true,
-                        interview,
-                        answers: answers || [],
-                        results: results || null
-                    });
+                if (intErr) {
+                    console.error('[Supabase Error] getInterviewById interview query:', intErr.message);
+                    return res.status(500).json({ success: false, error: 'Database query error: ' + intErr.message });
                 }
+
+                if (!interview) {
+                    return res.status(404).json({ success: false, error: 'Interview not found or unauthorized.' });
+                }
+
+                const { data: answers, error: ansErr } = await supabaseAdmin
+                    .from('interview_answers')
+                    .select('*')
+                    .eq('interview_id', id)
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: true });
+
+                if (ansErr) {
+                    console.error('[Supabase Error] getInterviewById answers query:', ansErr.message);
+                }
+
+                const { data: results, error: resErr } = await supabaseAdmin
+                    .from('interview_results')
+                    .select('*')
+                    .eq('interview_id', id)
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (resErr) {
+                    console.error('[Supabase Error] getInterviewById results query:', resErr.message);
+                }
+
+                return res.json({
+                    success: true,
+                    interview,
+                    answers: formatAnswersForFrontend(answers || []),
+                    results: formatResultsForFrontend(results)
+                });
             } catch (supErr) {
-                console.warn('Supabase getById fallback:', supErr.message);
+                console.error('[Supabase Exception] getInterviewById:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database retrieval exception.' });
             }
         }
 
         const interview = mockStore.interviews.get(id);
         if (!interview) {
-            // Return placeholder interview session if not found in memory
-            return res.json({
-                success: true,
-                interview: {
-                    id,
-                    user_id: userId,
-                    role: 'Software Developer',
-                    difficulty: 'Intermediate',
-                    status: 'completed',
-                    overall_score: 82,
-                    rounds_config: ['aptitude', 'technical', 'coding', 'hr'],
-                    created_at: new Date().toISOString()
-                },
-                answers: [],
-                results: mockStore.results.get(id) || null
-            });
+            return res.status(404).json({ success: false, error: 'Interview session not found in memory store.' });
         }
 
         const answers = Array.from(mockStore.answers.values()).filter(a => a.interview_id === id);
@@ -231,23 +302,33 @@ export const updateInterviewProgress = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const { roundIndex, status } = req.body;
 
         const updates = {};
         if (typeof roundIndex === 'number') updates.current_round_index = roundIndex;
         if (status) updates.status = status;
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
                 const { data, error } = await supabaseAdmin
                     .from('interviews')
                     .update(updates)
                     .eq('id', id)
+                    .eq('user_id', userId)
                     .select()
                     .single();
 
-                if (!error && data) return res.json({ success: true, interview: data });
-            } catch (supErr) {}
+                if (error) {
+                    console.error('[Supabase Error] updateInterviewProgress:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to update interview progress: ' + error.message });
+                }
+
+                return res.json({ success: true, interview: data });
+            } catch (supErr) {
+                console.error('[Supabase Exception] updateInterviewProgress:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database exception during progress update.' });
+            }
         }
 
         const interview = mockStore.interviews.get(id) || { id, user_id: userId, current_round_index: 0 };
@@ -266,36 +347,51 @@ export const finalizeInterview = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { id } = req.params;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
 
-        let interview = mockStore.interviews.get(id) || {
-            id,
-            user_id: userId,
-            role: 'Software Developer',
-            difficulty: 'Intermediate'
-        };
-        let answers = Array.from(mockStore.answers.values()).filter(a => a.interview_id === id);
+        let interview = null;
+        let answers = [];
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
-            try {
-                const { data: intData } = await supabaseAdmin
-                    .from('interviews')
-                    .select('*')
-                    .eq('id', id)
-                    .single();
-                if (intData) interview = intData;
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
+            const { data: intData, error: intErr } = await supabaseAdmin
+                .from('interviews')
+                .select('*')
+                .eq('id', id)
+                .eq('user_id', userId)
+                .maybeSingle();
 
-                const { data: ansData } = await supabaseAdmin
-                    .from('interview_answers')
-                    .select('*')
-                    .eq('interview_id', id);
-                if (ansData) answers = ansData;
-            } catch (supErr) {}
+            if (intErr || !intData) {
+                console.error('[Supabase Error] finalizeInterview interview lookup:', intErr?.message);
+                return res.status(404).json({ success: false, error: 'Interview not found or unauthorized for finalization.' });
+            }
+            interview = intData;
+
+            const { data: ansData, error: ansErr } = await supabaseAdmin
+                .from('interview_answers')
+                .select('*')
+                .eq('interview_id', id)
+                .eq('user_id', userId)
+                .order('created_at', { ascending: true });
+
+            if (ansErr) {
+                console.error('[Supabase Error] finalizeInterview answers lookup:', ansErr.message);
+                return res.status(500).json({ success: false, error: 'Failed to retrieve submitted answers from database: ' + ansErr.message });
+            }
+            answers = formatAnswersForFrontend(ansData || []);
+        } else {
+            interview = mockStore.interviews.get(id) || {
+                id,
+                user_id: userId,
+                role: 'Software Developer',
+                difficulty: 'Intermediate'
+            };
+            answers = Array.from(mockStore.answers.values()).filter(a => a.interview_id === id);
         }
 
         // Look up previous completed interview for this user to compute improvement
         let prevInterview = null;
         let prevResult = null;
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
                 const { data: prevList } = await supabaseAdmin
                     .from('interviews')
@@ -309,10 +405,10 @@ export const finalizeInterview = async (req, res, next) => {
                     prevInterview = prevList[0];
                     prevResult = prevList[0].interview_results?.[0] || prevList[0].interview_results;
                 }
-            } catch (supErr) {}
-        }
-
-        if (!prevInterview) {
+            } catch (supErr) {
+                console.warn('Supabase previous interview check notice:', supErr.message);
+            }
+        } else {
             const allUserInterviews = Array.from(mockStore.interviews.values())
                 .filter(i => i.user_id === userId && i.status === 'completed' && i.id !== id)
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -384,38 +480,6 @@ export const finalizeInterview = async (req, res, next) => {
 
         const aiReport = await generateFinalReport({ interview, answers });
 
-        // Map question-by-question review items
-        const questionReviews = answers.map((a, idx) => {
-            const isSkipped = a.is_skipped === true || a.user_answer === '[SKIPPED]';
-            const isPartiallyCorrect = a.round_type === 'coding' && (a.is_partially_correct === true || a.ai_evaluation?.status === 'Partially Correct');
-            const isCorrect = a.round_type === 'coding'
-                ? (a.is_correct === true && Number(a.score) >= 75)
-                : (!isSkipped && (a.is_correct === true || (a.score !== undefined && Number(a.score) >= 60)));
-            
-            const resultLabel = isSkipped 
-                ? 'Skipped' 
-                : (isCorrect ? 'Correct' : (isPartiallyCorrect ? 'Partially Correct' : 'Incorrect'));
-
-            return {
-                id: a.id || `q-${idx + 1}`,
-                round_type: (a.round_type || 'technical').toUpperCase(),
-                question: a.question_text || `Question #${idx + 1}`,
-                topic: a.topic || 'Core Engineering',
-                user_answer: isSkipped ? '[SKIPPED]' : (a.user_answer || 'No answer submitted'),
-                user_explanation: a.user_explanation || '',
-                reference_answer: a.reference_answer || (a.ai_evaluation?.sample_answer || a.ai_evaluation?.reference_solution || 'Standard engineering reference answer'),
-                result: resultLabel,
-                score: Number(a.score) || 0,
-                error_type: a.error_type || (isSkipped ? 'Did Not Answer' : (isCorrect ? 'None (Correct)' : (isPartiallyCorrect ? 'Edge Case Flaw' : 'Wrong Logic'))),
-                missing_concepts: a.ai_evaluation?.missing_points || a.ai_evaluation?.mistakes || [],
-                explanation: a.round_type === 'coding'
-                    ? (a.ai_evaluation?.why_it_is_correct || a.ai_evaluation?.why_it_is_wrong || a.ai_evaluation?.feedback || (isCorrect ? 'Optimal C++ algorithmic solution verified.' : 'Algorithmic or logic issue detected.'))
-                    : (a.ai_evaluation?.feedback || a.ai_evaluation?.explanation || 'Evaluated based on standard criteria.'),
-                suggested_improvement: a.ai_evaluation?.hint || a.ai_evaluation?.correct_approach || a.ai_evaluation?.improvement || 'Review problem constraints and practice edge cases.',
-                viewed_answer: Boolean(a.viewed_answer)
-            };
-        });
-
         const performanceLevel = aiReport.performance_level || (
             overallScore >= 90 ? 'Exceptional Readiness'
             : overallScore >= 80 ? 'Strong Candidate'
@@ -424,38 +488,13 @@ export const finalizeInterview = async (req, res, next) => {
             : 'Needs Intensive Preparation'
         );
 
-        const resultRecord = {
+        // Clean database-compatible record matching PostgreSQL schema
+        const dbResultRecord = {
             id: randomUUID(),
             interview_id: id,
             user_id: userId,
             overall_score: overallScore,
-            performance_level: performanceLevel,
-            readiness_rating: aiReport.readiness_rating || (overallScore >= 80 ? 'Interview Ready' : overallScore >= 65 ? 'Nearly Ready' : 'Developing'),
-            overall_performance: {
-                total_questions: totalQuestions,
-                attempted: totalAttempted,
-                correct: totalCorrect,
-                wrong: totalWrong,
-                skipped: totalSkipped,
-                accuracy: overallAccuracy,
-                completion_percentage: completionPercentage,
-                percentage: overallScore,
-                score: overallScore,
-                performance_level: performanceLevel,
-                improvement: overallImprovement
-            },
-            previous_attempt_comparison: prevInterview ? {
-                has_previous: true,
-                previous_interview_id: prevInterview.id,
-                previous_date: prevInterview.completed_at || prevInterview.created_at,
-                previous_score: prevInterview.overall_score || 0,
-                current_score: overallScore,
-                score_difference: formatDiff(overallScore, prevInterview.overall_score),
-                accuracy_difference: prevResult?.overall_performance?.accuracy !== undefined
-                    ? formatDiff(overallAccuracy, prevResult.overall_performance.accuracy)
-                    : '+0%'
-            } : { has_previous: false },
-            overall_summary: aiReport.overall_summary,
+            overall_summary: aiReport.overall_summary || 'The candidate has successfully completed the assessment.',
             aptitude_summary: {
                 ...(aiReport.aptitude_summary || {}),
                 round_name: 'Aptitude & Logic',
@@ -484,7 +523,7 @@ export const finalizeInterview = async (req, res, next) => {
             },
             coding_summary: {
                 ...(aiReport.coding_summary || {}),
-                round_name: 'Coding & DSA (Java/C/C++)',
+                round_name: 'Coding & DSA (C++)',
                 total_questions: codeMetrics.total_questions,
                 attempted: codeMetrics.attempted,
                 correct: codeMetrics.correct,
@@ -508,47 +547,88 @@ export const finalizeInterview = async (req, res, next) => {
                 percentage: hrMetrics.score,
                 improvement: hrImprovement
             },
-            weak_topics: aiReport.weak_topics || [],
-            strong_topics: aiReport.strong_topics || [],
-            top_priorities: aiReport.top_priorities || [
-                'Master edge case handling in coding assessments.',
-                'Deepen system design architecture and database indexing.',
-                'Structure behavioral responses using quantifiable STAR metrics.'
-            ],
-            recommended_topics: aiReport.recommended_topics || [],
-            question_reviews: questionReviews,
+            recommended_topics: {
+                topics: aiReport.recommended_topics || [],
+                performance_level: performanceLevel,
+                overall_performance: {
+                    total_questions: totalQuestions,
+                    attempted: totalAttempted,
+                    correct: totalCorrect,
+                    wrong: totalWrong,
+                    skipped: totalSkipped,
+                    accuracy: overallAccuracy,
+                    completion_percentage: completionPercentage,
+                    percentage: overallScore,
+                    score: overallScore,
+                    performance_level: performanceLevel,
+                    improvement: overallImprovement
+                },
+                previous_attempt_comparison: prevInterview ? {
+                    has_previous: true,
+                    previous_interview_id: prevInterview.id,
+                    previous_date: prevInterview.completed_at || prevInterview.created_at,
+                    previous_score: prevInterview.overall_score || 0,
+                    current_score: overallScore,
+                    score_difference: formatDiff(overallScore, prevInterview.overall_score),
+                    accuracy_difference: prevResult?.overall_performance?.accuracy !== undefined
+                        ? formatDiff(overallAccuracy, prevResult.overall_performance.accuracy)
+                        : '+0%'
+                } : { has_previous: false },
+                weak_topics: aiReport.weak_topics || [],
+                strong_topics: aiReport.strong_topics || [],
+                top_priorities: aiReport.top_priorities || [
+                    'Master edge case handling in coding assessments.',
+                    'Deepen system design architecture and database indexing.',
+                    'Structure behavioral responses using quantifiable STAR metrics.'
+                ]
+            },
+            readiness_rating: aiReport.readiness_rating || (overallScore >= 80 ? 'Interview Ready' : overallScore >= 65 ? 'Nearly Ready' : 'Developing'),
             created_at: new Date().toISOString()
         };
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
-                await supabaseAdmin
+                const { error: updErr } = await supabaseAdmin
                     .from('interviews')
                     .update({
                         status: 'completed',
-                        overall_score: resultRecord.overall_score,
+                        overall_score: overallScore,
                         completed_at: new Date().toISOString()
                     })
-                    .eq('id', id);
+                    .eq('id', id)
+                    .eq('user_id', userId);
 
-                await supabaseAdmin
+                if (updErr) {
+                    console.error('[Supabase Error] finalizeInterview status update:', updErr.message);
+                    return res.status(500).json({ success: false, error: 'Failed to update interview status in database: ' + updErr.message });
+                }
+
+                const { error: resErr } = await supabaseAdmin
                     .from('interview_results')
-                    .upsert([resultRecord], { onConflict: 'interview_id' });
+                    .upsert([dbResultRecord], { onConflict: 'interview_id' });
+
+                if (resErr) {
+                    console.error('[Supabase Error] finalizeInterview results upsert:', resErr.message);
+                    return res.status(500).json({ success: false, error: 'Failed to persist final results to database: ' + resErr.message });
+                }
             } catch (supErr) {
-                console.warn('Supabase finalize error:', supErr.message);
+                console.error('[Supabase Exception] finalizeInterview:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database exception during finalization.' });
             }
         }
 
         interview.status = 'completed';
-        interview.overall_score = resultRecord.overall_score;
+        interview.overall_score = overallScore;
         interview.completed_at = new Date().toISOString();
         mockStore.interviews.set(id, interview);
-        mockStore.results.set(id, resultRecord);
+        mockStore.results.set(id, dbResultRecord);
+
+        const fullFrontendResults = formatResultsForFrontend(dbResultRecord);
 
         return res.json({
             success: true,
             message: 'Interview finalized successfully',
-            results: resultRecord
+            results: fullFrontendResults
         });
     } catch (err) {
         next(err);

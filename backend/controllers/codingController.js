@@ -1,14 +1,15 @@
 import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion, evaluateCodingSubmission as aiEvalCode } from '../services/aiService.js';
-import { executeCode as runCodeService, submitCode as submitCodeService } from '../services/codeExecutionService.js';
 import { randomUUID } from 'crypto';
+
+const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 function shuffleArray(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [arr[j], arr[i]] = [arr[i], arr[j]];
     }
     return arr;
 }
@@ -22,7 +23,7 @@ export const getCodingQuestions = async (req, res, next) => {
             try {
                 let query = supabaseAdmin
                     .from('coding_questions')
-                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, solution_code, approach, algorithm_explanation, time_complexity, space_complexity, test_cases')
+                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, test_cases, created_at')
                     .limit(100);
 
                 const { data, error } = await query;
@@ -38,8 +39,11 @@ export const getCodingQuestions = async (req, res, next) => {
                     const shuffled = shuffleArray(candidates);
                     return res.json({ success: true, problems: shuffled.slice(0, limit) });
                 }
+                if (error) {
+                    console.warn('[Supabase Notice] coding_questions query:', error.message);
+                }
             } catch (supErr) {
-                console.warn('Supabase coding questions batch fallback:', supErr.message);
+                console.warn('[Supabase Exception] coding_questions:', supErr.message);
             }
         }
 
@@ -88,7 +92,7 @@ export const getCodingQuestion = async (req, res, next) => {
             try {
                 let query = supabaseAdmin
                     .from('coding_questions')
-                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, solution_code, approach, algorithm_explanation, time_complexity, space_complexity, test_cases')
+                    .select('id, title, role, topic, difficulty, description, examples, constraints, starter_code, test_cases, created_at')
                     .limit(100);
 
                 const { data, error } = await query;
@@ -113,8 +117,11 @@ export const getCodingQuestion = async (req, res, next) => {
                         }
                     });
                 }
+                if (error) {
+                    console.warn('[Supabase Notice] single coding_question query:', error.message);
+                }
             } catch (supErr) {
-                console.warn('Supabase coding questions fallback:', supErr.message);
+                console.warn('[Supabase Exception] single coding_question:', supErr.message);
             }
         }
 
@@ -142,19 +149,19 @@ export const getCodingQuestion = async (req, res, next) => {
 };
 
 export const runCode = async (req, res, next) => {
-    // Deprecated Run Code endpoint retained only for API interface compatibility
-    return res.json({ success: true, message: "Run/Test execution disabled. Submit code directly for comprehensive evaluation." });
+    // Retained for API route compatibility
+    return res.json({ success: true, message: "Run/Test execution disabled. Submit code directly for evaluation." });
 };
 
 export const submitCode = async (req, res, next) => {
     try {
-        const userId = req.user?.id || 'candidate-' + Date.now();
+        const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const {
             interviewId,
             problem,
             code,
             explanation = '',
-            language = 'cpp',
             is_skipped = false,
             viewed_answer = false,
             timeTakenSeconds = 0
@@ -181,59 +188,58 @@ export const submitCode = async (req, res, next) => {
         const score = isSkipped ? 0 : Number(aiReview.score || (isCorrect ? 95 : (isPartiallyCorrect ? 55 : 20)));
         const errorType = isSkipped ? 'Did Not Answer' : (aiReview.error_type || (isCorrect ? 'None (Correct)' : 'Wrong Logic'));
 
-        const answerRecord = {
+        const dbAnswer = {
             id: randomUUID(),
             interview_id: interviewId,
             user_id: userId,
             round_type: 'coding',
             question_id: problem.id || 'code-1',
             question_text: `${problem.title}: ${(problem.description || '').slice(0, 120)}...`,
-            topic: problem.topic || 'DSA Algorithms',
             user_answer: code,
-            user_explanation: explanation || '',
             code_language: 'cpp',
-            reference_answer: (matching?.solution_code?.cpp) || matching?.approach || 'Optimal C++ reference implementation',
             is_correct: isCorrect,
-            is_partially_correct: isPartiallyCorrect,
-            is_skipped: isSkipped,
-            viewed_answer: Boolean(viewed_answer),
             score: score,
-            error_type: errorType,
             ai_evaluation: {
                 ...aiReview,
+                topic: problem.topic || 'DSA Algorithms',
+                user_explanation: explanation || '',
+                reference_answer: (matching?.solution_code?.cpp) || matching?.approach || 'Optimal C++ reference implementation',
+                is_partially_correct: isPartiallyCorrect,
+                is_skipped: isSkipped,
+                viewed_answer: Boolean(viewed_answer),
                 is_correct: isCorrect,
-                score,
+                score: score,
                 status: isSkipped ? 'Did Not Answer' : aiReview.status,
                 error_type: errorType,
                 hint: aiReview.hint || matching?.approach || 'Check problem constraints and step-by-step logic.',
-                correct_approach: aiReview.correct_approach || matching?.algorithm_explanation || matching?.approach || 'Optimal algorithmic approach.',
-                reference_solution: aiReview.reference_solution || matching?.solution_code?.cpp || 'Reference implementation'
+                correct_approach: aiReview.correct_approach || matching?.algorithm_explanation || matching?.approach || 'Optimal algorithmic approach.'
             },
-            time_taken_seconds: timeTakenSeconds,
+            time_taken_seconds: Number(timeTakenSeconds) || 0,
             created_at: new Date().toISOString()
         };
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-                if (isUuid) {
-                    const { data, error } = await supabaseAdmin
-                        .from('interview_answers')
-                        .insert([answerRecord])
-                        .select()
-                        .single();
+                const { data, error } = await supabaseAdmin
+                    .from('interview_answers')
+                    .insert([dbAnswer])
+                    .select()
+                    .single();
 
-                    if (!error && data) {
-                        return res.json({ success: true, evaluation: aiReview, answer: data });
-                    }
+                if (error) {
+                    console.error('[Supabase Error] submitCode insert failed:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to record coding evaluation in database: ' + error.message });
                 }
+
+                return res.json({ success: true, evaluation: aiReview, answer: data });
             } catch (supErr) {
-                console.warn('Supabase code submit fallback:', supErr.message);
+                console.error('[Supabase Exception] submitCode:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database exception during coding submission.' });
             }
         }
 
-        mockStore.answers.set(answerRecord.id, answerRecord);
-        return res.json({ success: true, evaluation: aiReview, answer: answerRecord });
+        mockStore.answers.set(dbAnswer.id, dbAnswer);
+        return res.json({ success: true, evaluation: aiReview, answer: dbAnswer });
     } catch (err) {
         next(err);
     }

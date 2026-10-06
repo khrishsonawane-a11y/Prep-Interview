@@ -3,6 +3,8 @@ import { mockStore } from '../utils/memoryStore.js';
 import { generateQuestion, evaluateHRAnswer as aiEvalHR } from '../services/aiService.js';
 import { randomUUID } from 'crypto';
 
+const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 function shuffleArray(array) {
     const arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -34,8 +36,11 @@ export const getHRQuestions = async (req, res, next) => {
                     const shuffled = shuffleArray(candidates);
                     return res.json({ success: true, questions: shuffled.slice(0, limit) });
                 }
+                if (error) {
+                    console.warn('[Supabase Notice] hr_questions query:', error.message);
+                }
             } catch (supErr) {
-                console.warn('Supabase HR questions batch fallback:', supErr.message);
+                console.warn('[Supabase Exception] hr_questions:', supErr.message);
             }
         }
 
@@ -90,8 +95,11 @@ export const getHRQuestion = async (req, res, next) => {
                     const shuffled = shuffleArray(pool);
                     return res.json({ success: true, question: shuffled[0] });
                 }
+                if (error) {
+                    console.warn('[Supabase Notice] single hr_question query:', error.message);
+                }
             } catch (supErr) {
-                console.warn('Supabase HR questions fallback:', supErr.message);
+                console.warn('[Supabase Exception] single hr_question:', supErr.message);
             }
         }
 
@@ -116,7 +124,8 @@ export const getHRQuestion = async (req, res, next) => {
 
 export const evaluateHRAnswer = async (req, res, next) => {
     try {
-        const userId = req.user?.id || 'candidate-' + Date.now();
+        const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const {
             interviewId,
             questionText,
@@ -147,50 +156,53 @@ export const evaluateHRAnswer = async (req, res, next) => {
         const isCorrect = !isSkipped && score >= 60;
         const errorType = isSkipped ? 'Did Not Answer' : (evaluation.error_type || (score >= 80 ? 'None (Strong Communication)' : 'Incomplete Answer'));
 
-        const answerRecord = {
+        const dbAnswer = {
             id: randomUUID(),
             interview_id: interviewId,
             user_id: userId,
             round_type: 'hr',
             question_id: 'hr-' + Date.now(),
             question_text: questionText,
-            topic: topic || 'Behavioral',
             user_answer: answerText,
-            reference_answer: reference_answer || 'STAR structured response emphasizing Situation, Task, Action, and Result.',
+            code_language: null,
             is_correct: isCorrect,
-            is_skipped: isSkipped,
-            viewed_answer: Boolean(viewed_answer),
             score: score,
-            error_type: errorType,
             ai_evaluation: {
                 ...evaluation,
-                score,
+                topic: topic || 'Behavioral',
+                reference_answer: reference_answer || 'STAR structured response emphasizing Situation, Task, Action, and Result.',
+                is_skipped: isSkipped,
+                viewed_answer: Boolean(viewed_answer),
+                score: score,
                 error_type: errorType,
                 voiceMetrics: voiceMetrics || null
             },
-            time_taken_seconds: timeTakenSeconds,
+            time_taken_seconds: Number(timeTakenSeconds) || 0,
             created_at: new Date().toISOString()
         };
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-                if (isUuid) {
-                    const { data, error } = await supabaseAdmin
-                        .from('interview_answers')
-                        .insert([answerRecord])
-                        .select()
-                        .single();
+                const { data, error } = await supabaseAdmin
+                    .from('interview_answers')
+                    .insert([dbAnswer])
+                    .select()
+                    .single();
 
-                    if (!error && data) return res.json({ success: true, evaluation, answer: data });
+                if (error) {
+                    console.error('[Supabase Error] evaluateHRAnswer insert:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to record HR evaluation in database: ' + error.message });
                 }
+
+                return res.json({ success: true, evaluation, answer: data });
             } catch (supErr) {
-                console.warn('Supabase HR evaluate fallback:', supErr.message);
+                console.error('[Supabase Exception] evaluateHRAnswer:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Database exception during HR evaluation.' });
             }
         }
 
-        mockStore.answers.set(answerRecord.id, answerRecord);
-        return res.json({ success: true, evaluation, answer: answerRecord });
+        mockStore.answers.set(dbAnswer.id, dbAnswer);
+        return res.json({ success: true, evaluation, answer: dbAnswer });
     } catch (err) {
         next(err);
     }
@@ -198,5 +210,6 @@ export const evaluateHRAnswer = async (req, res, next) => {
 
 export default {
     getHRQuestion,
+    getHRQuestions,
     evaluateHRAnswer
 };

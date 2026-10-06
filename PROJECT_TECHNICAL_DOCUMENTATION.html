@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Interview Preparation System — Technical Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --bg-body: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --accent-emerald: #059669;
+      --accent-amber: #d97706;
+      --accent-rose: #dc2626;
+      --accent-purple: #7c3aed;
+      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-body);
+      color: var(--text-main);
+      line-height: 1.6;
+      font-size: 14px;
+      padding: 2rem;
+    }
+
+    .doc-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      padding: 3rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .header-banner {
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.4rem;
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .print-btn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+
+    .print-btn:hover { background: var(--primary-dark); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-primary { background: #dbeafe; color: #1e40af; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-top: 1.25rem;
+      margin-bottom: 0.6rem;
+    }
+
+    p { margin-bottom: 0.85rem; color: var(--text-muted); }
+
+    ul, ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--text-muted);
+    }
+
+    li { margin-bottom: 0.35rem; }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 1.25rem;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .metric-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-dim); font-weight: 600; }
+    .metric-val { font-size: 1.3rem; font-weight: 700; color: var(--text-main); margin-top: 0.2rem; }
+
+    @media print {
+      body { background: #ffffff; padding: 0; font-size: 11pt; }
+      .doc-container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+      .print-btn { display: none; }
+      h2 { page-break-before: auto; page-break-after: avoid; }
+      pre, table { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="doc-container">
+    <div class="header-banner">
+      <div class="header-title">
+        <h1>AI Interview Preparation System</h1>
+        <p>Complete Technical Architecture, Implementation Audit & System Specification</p>
+        <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center;">
+          <span class="badge badge-primary">Version 1.0.0</span>
+          <span class="badge badge-success">Production Verified</span>
+          <span class="badge badge-purple">Branch: main</span>
+          <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.5rem;">Date: October 6, 2026</span>
+        </div>
+      </div>
+      <div>
+        <button class="print-btn" onclick="window.print()">📥 Print / Save as PDF</button>
+      </div>
+    </div>
+
+    <h2>1. Executive Summary & Project Overview</h2>
+    <p>
+      The <strong>AI Interview Preparation System</strong> (<code>Prep-Interview</code>) is a multi-round, full-stack autonomous AI interview simulation platform designed for rigorous screening and technical hiring preparation across <strong>37 technology job roles</strong>.
+    </p>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-title">Interview Rounds</div>
+        <div class="metric-val">4 Stages</div>
+        <p style="font-size: 0.78rem; margin: 0; color: var(--text-dim);">Aptitude, Tech, Coding, HR</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Job Roles Supported</div>
+        <div class="metric-val">37 Roles</div>
+        <p style="font-size: 0.78rem; margin: 0; color: var(--text-dim);">Across 6 Tech Domains</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Questions Pool</div>
+        <div class="metric-val">122+ Verified</div>
+        <p style="font-size: 0.78rem; margin: 0; color: var(--text-dim);">Pre-seeded + LLM dynamic</p>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">AI Engine</div>
+        <div class="metric-val">Gemini + Rules</div>
+        <p style="font-size: 0.78rem; margin: 0; color: var(--text-dim);">Zero-downtime heuristic</p>
+      </div>
+    </div>
+
+    <h3>Core Interview Workflow</h3>
+    <pre><code>User Authentication (Supabase Auth / Local Fallback)
+         ↓
+Dashboard (Historical tracking, average scores, resume active interviews)
+         ↓
+Interview Setup Wizard (interview.html)
+  ├── Step 1: Target Job Role Selection (37 roles across 6 categories with real-time search)
+  ├── Step 2: Difficulty Level (Beginner / Intermediate / Advanced)
+  └── Step 3: Interview Rounds Selection (Aptitude, Technical, Coding, HR)
+         ↓
+Interview Session Creation (POST /api/interviews → Supabase DB / Memory Store)
+         ↓
+Round 1: Aptitude & Logic (aptitude.html) — 30 MCQs, timed (30 mins), immediate factual scorecard
+         ↓
+Round 2: Technical Architecture (technical.html) — 30 questions, voice/text, concept coverage AI eval
+         ↓
+Round 3: Coding / DSA (coding.html) — 30 C++ algorithmic challenges, approach explanation, 3-state evaluation
+         ↓
+Round 4: HR / Behavioral (hr.html) — 30 questions, STAR framework analysis, voice transcription
+         ↓
+Finalization (POST /api/interviews/:id/finalize)
+         ↓
+Cumulative Performance Appraisal & PDF Report (report.html)</code></pre>
+
+    <h2>2. Technology Stack</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Specification & Usage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend Core</strong></td>
+          <td>Vanilla ES6+ JavaScript, HTML5</td>
+          <td>Multi-page application architecture with 11 specialized HTML pages. Zero client-side bundlers required.</td>
+        </tr>
+        <tr>
+          <td><strong>Styling & Design</strong></td>
+          <td>CSS3 Design System</td>
+          <td>Clean white & deep slate dark theme design tokens, CSS custom properties, responsive Flexbox and Grid.</td>
+        </tr>
+        <tr>
+          <td><strong>Backend API</strong></td>
+          <td>Node.js (v18+) + Express.js</td>
+          <td>ES Modules (<code>"type": "module"</code>), RESTful endpoints, Helmet security headers, CORS protection, Morgan logging.</td>
+        </tr>
+        <tr>
+          <td><strong>Database</strong></td>
+          <td>Supabase PostgreSQL 15+</td>
+          <td>Row Level Security (RLS) active on all user data. Fallback in-memory store in <code>memoryStore.js</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>AI Engine</strong></td>
+          <td>Google Gemini API + Heuristic Engine</td>
+          <td><code>gemini-1.5-flash</code> / <code>gemini-2.5-flash</code> via <code>@google/genai</code>. Local AST & rule heuristics for zero downtime.</td>
+        </tr>
+        <tr>
+          <td><strong>PDF Generation</strong></td>
+          <td>html2pdf.js + Headless Engine</td>
+          <td>Client-side vector HTML-to-PDF export and browser print media stylesheets.</td>
+        </tr>
+        <tr>
+          <td><strong>Voice / Audio</strong></td>
+          <td>W3C Web Speech API</td>
+          <td>SpeechRecognition (voice-to-text dictation) and SpeechSynthesis (Text-to-Speech question reading).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Complete Project Directory Structure</h2>
+    <pre><code>AI-Interview-Preparation-System/
+├── package.json                        # Root NPM package manifest
+├── README.md                           # Project overview
+├── PROJECT_TECHNICAL_DOCUMENTATION.md  # Comprehensive technical markdown specification
+├── PROJECT_TECHNICAL_DOCUMENTATION.html# Standalone printable documentation
+├── database/
+│   ├── schema.sql                      # PostgreSQL schema, RLS policies, triggers
+│   └── seed_data.sql                   # SQL seed scripts for question banks
+├── backend/
+│   ├── server.js                       # Express bootstrap & static file server
+│   ├── config/supabase.js              # Supabase client config & fallback validator
+│   ├── controllers/                    # Express route controllers (7 domain controllers)
+│   ├── middleware/                     # Auth verification & centralized error handler
+│   ├── routes/                         # Express REST API routes
+│   ├── services/                       # AI LLM service & Code execution validator
+│   ├── utils/memoryStore.js            # In-memory storage & 122+ pre-seeded questions
+│   └── [16 Automated Test Suites]     # Unit & integration test suites
+└── frontend/
+    ├── index.html                      # Marketing landing page
+    ├── login.html / signup.html        # Authentication pages
+    ├── dashboard.html                  # Candidate dashboard & stats
+    ├── interview.html                  # 3-step setup wizard
+    ├── aptitude.html                   # Round 1: Aptitude & Logic + Scorecard
+    ├── technical.html                  # Round 2: Technical Architecture
+    ├── coding.html                     # Round 3: Coding / DSA (C++ Only)
+    ├── hr.html                         # Round 4: HR & Behavioral
+    ├── report.html                     # Cumulative report & PDF export
+    ├── history.html / profile.html     # Past interviews & profile settings
+    ├── preparation.html                # 37-role roadmaps & curricula
+    ├── css/ (12 stylesheets)           # Global tokens & page-specific stylesheets
+    └── js/ (15 modules)                # API client, auth, and round controllers</code></pre>
+
+    <h2>4. Detailed Round Implementations</h2>
+
+    <h3>Round 1: Aptitude & Logic (<code>aptitude.html</code>)</h3>
+    <ul>
+      <li><strong>Format</strong>: 30 Multiple Choice Questions (MCQs) with options A, B, C, D.</li>
+      <li><strong>Timer</strong>: 30-minute global countdown timer with auto-submission upon expiry.</li>
+      <li><strong>Scoring</strong>: Exact deterministic numerical calculation (1 mark per correct answer, 0 for wrong/skipped).</li>
+      <li><strong>Dedicated Result Scorecard</strong>: Instant post-round screen displaying Total Questions, Attempted, Correct, Incorrect, Skipped, Accuracy %, Time Analysis, Topic-wise breakdowns, and step-by-step derivations.</li>
+    </ul>
+
+    <h3>Round 2: Technical Architecture (<code>technical.html</code>)</h3>
+    <ul>
+      <li><strong>Format</strong>: 30 structured conceptual & system design questions.</li>
+      <li><strong>AI Evaluation</strong>: Evaluates candidate answer against expected concepts, categorizing concept coverage, scores out of 10, correct points, missing concepts, technical mistakes, and improvement plans.</li>
+      <li><strong>Voice Support</strong>: Full Web Speech Recognition dictation and SpeechSynthesis reading.</li>
+    </ul>
+
+    <h3>Round 3: Coding / DSA — C++ Only (<code>coding.html</code>)</h3>
+    <ul>
+      <li><strong>Language</strong>: Fixed permanently to <strong>C++ ONLY</strong>.</li>
+      <li><strong>Starter Template</strong>: Strictly clean starter code without exposing reference solutions:
+        <pre><code>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    // Write your code here
+
+    return 0;
+}</code></pre>
+      </li>
+      <li><strong>Approach Explanation</strong>: Dedicated candidate approach box to articulate complexity tradeoffs ($O(N)$ time/space).</li>
+      <li><strong>3-State Verdicts</strong>: <strong>✅ Correct</strong> (88-98 pts), <strong>🟡 Partially Correct</strong> (50-65 pts), and <strong>❌ Incorrect</strong> (15-30 pts).</li>
+      <li><strong>State Isolation</strong>: Independent state tracking across all 30 problems preserving typed code when switching questions.</li>
+    </ul>
+
+    <h3>Round 4: HR / Behavioral (<code>hr.html</code>)</h3>
+    <ul>
+      <li><strong>Format</strong>: 30 behavioral/leadership scenario questions.</li>
+      <li><strong>STAR Analysis</strong>: AI evaluation structured against Situation, Task, Action, and Result components with KPI metrics.</li>
+    </ul>
+
+    <h2>5. Database Schema & Data Isolation</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Table Name</th>
+          <th>Primary Key</th>
+          <th>Foreign Keys</th>
+          <th>RLS Policy & Access</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>profiles</code></td>
+          <td><code>id (UUID)</code></td>
+          <td><code>auth.users(id)</code></td>
+          <td>Users can only view and edit their own profile.</td>
+        </tr>
+        <tr>
+          <td><code>interviews</code></td>
+          <td><code>id (UUID)</code></td>
+          <td><code>user_id → auth.users(id)</code></td>
+          <td>Full CRUD restricted to <code>auth.uid() = user_id</code>.</td>
+        </tr>
+        <tr>
+          <td><code>interview_answers</code></td>
+          <td><code>id (UUID)</code></td>
+          <td><code>interview_id → interviews(id)</code><br><code>user_id → auth.users(id)</code></td>
+          <td>Insert & select restricted to <code>auth.uid() = user_id</code>.</td>
+        </tr>
+        <tr>
+          <td><code>interview_results</code></td>
+          <td><code>id (UUID)</code></td>
+          <td><code>interview_id → interviews(id)</code><br><code>user_id → auth.users(id)</code></td>
+          <td>Unique per interview; restricted to owner.</td>
+        </tr>
+        <tr>
+          <td><code>aptitude_questions</code></td>
+          <td><code>id (UUID)</code></td>
+          <td>None</td>
+          <td>Read-only for authenticated users; service role write.</td>
+        </tr>
+        <tr>
+          <td><code>technical_questions</code></td>
+          <td><code>id (UUID)</code></td>
+          <td>None</td>
+          <td>Read-only for authenticated users; service role write.</td>
+        </tr>
+        <tr>
+          <td><code>coding_questions</code></td>
+          <td><code>id (UUID)</code></td>
+          <td>None</td>
+          <td>Read-only for authenticated users; service role write.</td>
+        </tr>
+        <tr>
+          <td><code>hr_questions</code></td>
+          <td><code>id (UUID)</code></td>
+          <td>None</td>
+          <td>Read-only for authenticated users; service role write.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>6. API Endpoints Reference</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Description</th>
+          <th>Auth Required</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>GET</td><td><code>/api/health</code></td><td>System diagnostics & provider status</td><td>No</td></tr>
+        <tr><td>POST</td><td><code>/api/interviews</code></td><td>Create new interview session</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/interviews</code></td><td>List authenticated user interviews</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/interviews/:id</code></td><td>Get interview session, answers, results</td><td>Yes</td></tr>
+        <tr><td>PATCH</td><td><code>/api/interviews/:id/progress</code></td><td>Update round index / status</td><td>Yes</td></tr>
+        <tr><td>POST</td><td><code>/api/interviews/:id/finalize</code></td><td>Finalize appraisal & calculate scores</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/aptitude/questions</code></td><td>Retrieve aptitude question pool</td><td>Yes</td></tr>
+        <tr><td>POST</td><td><code>/api/aptitude/answers</code></td><td>Submit & record aptitude answer</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/technical/questions</code></td><td>Retrieve technical question pool</td><td>Yes</td></tr>
+        <tr><td>POST</td><td><code>/api/technical/evaluate</code></td><td>Evaluate technical conceptual answer</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/coding/questions</code></td><td>Retrieve coding challenge pool</td><td>Yes</td></tr>
+        <tr><td>POST</td><td><code>/api/coding/submit</code></td><td>Submit C++ code for 3-state evaluation</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/hr/questions</code></td><td>Retrieve behavioral questions</td><td>Yes</td></tr>
+        <tr><td>POST</td><td><code>/api/hr/evaluate</code></td><td>Evaluate STAR behavioral answer</td><td>Yes</td></tr>
+        <tr><td>GET</td><td><code>/api/profile</code></td><td>Get profile info & career statistics</td><td>Yes</td></tr>
+        <tr><td>PUT</td><td><code>/api/profile</code></td><td>Update user career profile</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+
+    <h2>7. Summary & Safety Matrix</h2>
+    <p>
+      This documentation represents the exact, fully verified state of the AI Interview Preparation System codebase.
+      Future modifications should consult the Future Change Safety Map in <code>PROJECT_TECHNICAL_DOCUMENTATION.md</code> before altering coding state isolation, round aggregation, or authentication middleware.
+    </p>
+
+    <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); font-size: 0.82rem; color: var(--text-dim); display: flex; justify-content: space-between;">
+      <span>AI Interview Preparation System — Technical Documentation</span>
+      <span>Generated by DeepMind Antigravity Agent</span>
+    </div>
+  </div>
+
+</body>
+</html>

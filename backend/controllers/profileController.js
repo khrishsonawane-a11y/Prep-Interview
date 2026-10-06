@@ -1,32 +1,66 @@
 import { supabaseAdmin, isSupabaseConfigured } from '../config/supabase.js';
 import { mockStore } from '../utils/memoryStore.js';
 
+const isUuid = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 export const getProfile = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
 
         let profile = null;
         let interviews = [];
+        let allAnswers = [];
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
-                const { data: profData } = await supabaseAdmin
+                const { data: profData, error: profErr } = await supabaseAdmin
                     .from('profiles')
                     .select('*')
                     .eq('id', userId)
-                    .single();
+                    .maybeSingle();
 
-                if (profData) profile = profData;
+                if (profErr) {
+                    console.error('[Supabase Error] getProfile profiles fetch:', profErr.message);
+                }
 
-                const { data: intData } = await supabaseAdmin
+                if (profData) {
+                    profile = profData;
+                } else {
+                    // Initialize profile row if trigger hasn't fired yet
+                    const initialProfile = {
+                        id: userId,
+                        email: req.user.email,
+                        full_name: req.user.full_name || req.user.email.split('@')[0] || 'Candidate',
+                        avatar_url: req.user.avatar_url || '',
+                        target_role: 'Software Developer',
+                        experience_level: 'Intermediate',
+                        bio: 'Passionate developer preparing for high-impact tech roles.'
+                    };
+                    const { data: createdProf } = await supabaseAdmin
+                        .from('profiles')
+                        .upsert([initialProfile])
+                        .select()
+                        .single();
+                    profile = createdProf || initialProfile;
+                }
+
+                const { data: intData, error: intErr } = await supabaseAdmin
                     .from('interviews')
                     .select('id, status, overall_score, role, created_at')
                     .eq('user_id', userId);
-                if (intData) interviews = intData;
-            } catch (supErr) {}
-        }
+                if (!intErr && intData) interviews = intData;
 
-        if (!profile) {
+                const { data: ansData, error: ansErr } = await supabaseAdmin
+                    .from('interview_answers')
+                    .select('is_correct, score')
+                    .eq('user_id', userId);
+                if (!ansErr && ansData) allAnswers = ansData;
+            } catch (supErr) {
+                console.error('[Supabase Exception] getProfile:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Failed to retrieve profile data from database.' });
+            }
+        } else {
             profile = mockStore.profiles.get(userId) || {
                 id: userId,
                 email: req.user.email,
@@ -36,24 +70,7 @@ export const getProfile = async (req, res, next) => {
                 bio: 'Passionate developer preparing for high-impact tech roles.',
                 created_at: new Date().toISOString()
             };
-        }
-
-        if (interviews.length === 0) {
             interviews = Array.from(mockStore.interviews.values()).filter(i => i.user_id === userId);
-        }
-
-        // Fetch user answers to calculate question-level aggregates
-        let allAnswers = [];
-        if (isSupabaseConfigured() && supabaseAdmin) {
-            try {
-                const { data: ansData } = await supabaseAdmin
-                    .from('interview_answers')
-                    .select('is_correct, score')
-                    .eq('user_id', userId);
-                if (ansData) allAnswers = ansData;
-            } catch (supErr) {}
-        }
-        if (allAnswers.length === 0) {
             allAnswers = Array.from(mockStore.answers.values()).filter(a => a.user_id === userId);
         }
 
@@ -98,6 +115,7 @@ export const getProfile = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const isMock = req.isMockUser || !isSupabaseConfigured() || !isUuid(userId);
         const { full_name, target_role, experience_level, bio } = req.body;
 
         const updates = {
@@ -108,7 +126,7 @@ export const updateProfile = async (req, res, next) => {
             updated_at: new Date().toISOString()
         };
 
-        if (isSupabaseConfigured() && supabaseAdmin) {
+        if (!isMock && isSupabaseConfigured() && supabaseAdmin) {
             try {
                 const { data, error } = await supabaseAdmin
                     .from('profiles')
@@ -117,10 +135,16 @@ export const updateProfile = async (req, res, next) => {
                     .select()
                     .single();
 
-                if (!error && data) {
-                    return res.json({ success: true, message: 'Profile updated successfully', profile: data });
+                if (error) {
+                    console.error('[Supabase Error] updateProfile:', error.message);
+                    return res.status(500).json({ success: false, error: 'Failed to update profile in database: ' + error.message });
                 }
-            } catch (supErr) {}
+
+                return res.json({ success: true, message: 'Profile updated successfully', profile: data });
+            } catch (supErr) {
+                console.error('[Supabase Exception] updateProfile:', supErr.message);
+                return res.status(500).json({ success: false, error: 'Failed to update profile: ' + supErr.message });
+            }
         }
 
         const existing = mockStore.profiles.get(userId) || { id: userId, email: req.user.email };
