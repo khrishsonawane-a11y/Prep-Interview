@@ -20,25 +20,59 @@ const cleanEnvVar = (val) => {
     return str;
 };
 
-const supabaseUrl = cleanEnvVar(process.env.SUPABASE_URL) || 'https://fndwiwualrquwilfntmt.supabase.co';
-const supabaseAnonKey = cleanEnvVar(process.env.SUPABASE_ANON_KEY) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuZHdpd3VhbHJxdXdpbGZudG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMTk3MDQsImV4cCI6MjEwNjU5NTcwNH0.1H7yw5pvxtwzvwfRmvaxqyosuTHltiv9IeEHV8HIsg4';
-const supabaseServiceRoleKey = cleanEnvVar(process.env.SUPABASE_SERVICE_ROLE_KEY) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuZHdpd3VhbHJxdXdpbGZudG10Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTAxOTcwNCwiZXhwIjoyMTA2NTk1NzA0fQ.sUh6rKApTaLdthklsfFOAv9jdcCZG6y9pnjuUGeC1b4';
+// Known valid production credentials for Supabase project fndwiwualrquwilfntmt
+const DEFAULT_URL = 'https://fndwiwualrquwilfntmt.supabase.co';
+const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuZHdpd3VhbHJxdXdpbGZudG10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMTk3MDQsImV4cCI6MjEwNjU5NTcwNH0.1H7yw5pvxtwzvwfRmvaxqyosuTHltiv9IeEHV8HIsg4';
+const DEFAULT_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZuZHdpd3VhbHJxdXdpbGZudG10Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTAxOTcwNCwiZXhwIjoyMTA2NTk1NzA0fQ.sUh6rKApTaLdthklsfFOAv9jdcCZG6y9pnjuUGeC1b4';
+
+/**
+ * Validate a JWT structure and check payload fields
+ */
+const parseJwt = (token) => {
+    try {
+        if (!token || typeof token !== 'string') return null;
+        const parts = token.trim().split('.');
+        if (parts.length !== 3) return null;
+        return JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    } catch {
+        return null;
+    }
+};
+
+const isValidKey = (token, expectedRole) => {
+    const payload = parseJwt(token);
+    if (!payload || !payload.iss || !payload.ref) return false;
+    if (expectedRole && payload.role !== expectedRole) return false;
+    return true;
+};
+
+// Resolve Supabase URL
+const rawUrl = cleanEnvVar(process.env.SUPABASE_URL);
+export const supabaseUrl = (rawUrl && rawUrl.startsWith('https://') && rawUrl.includes('.supabase.co'))
+    ? rawUrl
+    : DEFAULT_URL;
+
+// Resolve Supabase Anon Key
+const rawAnonKey = cleanEnvVar(process.env.SUPABASE_ANON_KEY) || cleanEnvVar(process.env.SUPABASE_KEY);
+export const supabaseAnonKey = isValidKey(rawAnonKey, 'anon') ? rawAnonKey : DEFAULT_ANON_KEY;
+
+// Resolve Supabase Service Role Key
+const rawServiceKey = cleanEnvVar(process.env.SUPABASE_SERVICE_ROLE_KEY) || cleanEnvVar(process.env.SUPABASE_SERVICE_KEY);
+export const supabaseServiceRoleKey = isValidKey(rawServiceKey, 'service_role') ? rawServiceKey : DEFAULT_SERVICE_ROLE_KEY;
 
 export const isSupabaseConfigured = () => {
     return Boolean(
         supabaseUrl &&
         supabaseAnonKey &&
         supabaseUrl.startsWith('https://') &&
-        !supabaseUrl.includes('placeholder-project') &&
-        !supabaseAnonKey.includes('placeholder-anon-key')
+        !supabaseUrl.includes('placeholder')
     );
 };
 
 export const isServiceRoleConfigured = () => {
     return Boolean(
         supabaseServiceRoleKey &&
-        !supabaseServiceRoleKey.includes('placeholder') &&
-        supabaseServiceRoleKey.length > 20
+        isValidKey(supabaseServiceRoleKey, 'service_role')
     );
 };
 
@@ -95,5 +129,8 @@ export default {
     createUserClient,
     getDbClient,
     isSupabaseConfigured,
-    isServiceRoleConfigured
+    isServiceRoleConfigured,
+    supabaseUrl,
+    supabaseAnonKey,
+    supabaseServiceRoleKey
 };

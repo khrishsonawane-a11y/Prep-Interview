@@ -10,12 +10,13 @@ const router = express.Router();
  */
 router.post('/signup', async (req, res) => {
     try {
-        const { email, password, fullName } = req.body;
+        const { email, password, fullName, full_name, name } = req.body || {};
+        const rawName = fullName || full_name || name || (email ? email.split('@')[0] : 'User');
 
-        if (!email || !password || !fullName) {
+        if (!email || !password) {
             return res.status(400).json({
                 success: false,
-                error: 'Full name, email, and password are required.'
+                error: 'Email and password are required.'
             });
         }
 
@@ -27,7 +28,7 @@ router.post('/signup', async (req, res) => {
         }
 
         const trimmedEmail = email.trim().toLowerCase();
-        const trimmedName = fullName.trim();
+        const trimmedName = String(rawName).trim();
 
         if (isSupabaseConfigured() && supabaseAdmin) {
             let userId = null;
