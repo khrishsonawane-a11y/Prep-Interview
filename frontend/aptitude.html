@@ -34,13 +34,13 @@
 
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <button id="speak-apt-btn" class="btn btn-secondary btn-sm" type="button">
-            🔊 Read Question Aloud
+            <i data-lucide="volume-2"></i> Read Question Aloud
           </button>
           <button id="view-apt-answer-btn" class="btn btn-secondary btn-sm" type="button">
-            💡 View Answer
+            <i data-lucide="help-circle"></i> View Answer
           </button>
           <div class="timer-box">
-            <span>⏱️</span>
+            <i data-lucide="clock" class="icon-xs"></i>
             <span id="aptitude-timer">30:00</span>
           </div>
         </div>
@@ -64,10 +64,10 @@
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
-            <button id="prev-q-btn" class="btn btn-secondary">← Previous</button>
+            <button id="prev-q-btn" class="btn btn-secondary"><i data-lucide="arrow-left"></i> Previous</button>
             <div style="display: flex; gap: 0.5rem;">
-              <button id="skip-apt-btn" class="btn btn-secondary">Skip Question ↷</button>
-              <button id="next-q-btn" class="btn btn-primary">Next Question →</button>
+              <button id="skip-apt-btn" class="btn btn-secondary">Skip Question <i data-lucide="corner-up-right"></i></button>
+              <button id="next-q-btn" class="btn btn-primary">Next Question <i data-lucide="arrow-right"></i></button>
             </div>
           </div>
         </div>
@@ -76,7 +76,7 @@
         <div>
           <div class="question-palette-card">
             <div class="palette-header">
-              <span class="palette-title">🧭 Question Palette</span>
+              <span class="palette-title"><i data-lucide="layout-grid" class="icon-sm"></i> Question Palette</span>
               <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
             </div>
 
@@ -107,7 +107,7 @@
                 <span>Unvisited</span>
               </div>
               <div class="legend-item" title="Reference answer was viewed">
-                <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+                <i data-lucide="eye" style="width: 14px; height: 14px; color: var(--accent-blue);"></i>
                 <span>Viewed</span>
               </div>
             </div>
@@ -128,9 +128,9 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
         <div>
           <span class="badge badge-success" style="margin-bottom: 0.25rem;">Reference Solution</span>
-          <h3 style="font-size: 1.15rem; margin: 0;">💡 Correct Option & Explanation</h3>
+          <h3 style="font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.4rem;"><i data-lucide="check-circle-2" class="icon-sm"></i> Correct Option & Explanation</h3>
         </div>
-        <button id="close-apt-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+        <button id="close-apt-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;"><i data-lucide="x" class="icon-xs"></i> Close</button>
       </div>
 
       <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -147,6 +147,7 @@
     </div>
   </div>
 
+  <script src="js/libs/lucide.min.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>
@@ -155,5 +156,6 @@
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/aptitude.js"></script>
+  <script src="js/icons.js"></script>
 </body>
 </html>

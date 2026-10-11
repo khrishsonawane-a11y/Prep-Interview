@@ -221,10 +221,10 @@ function renderRoundsBreakdown(results, interview) {
     if (!container) return;
 
     const roundDataConfigs = [
-        { key: 'aptitude', name: 'Aptitude Round', icon: '🧮', summary: results?.aptitude_summary },
-        { key: 'technical', name: 'Technical Round', icon: '💻', summary: results?.technical_summary },
-        { key: 'coding', name: 'Coding & DSA Round', icon: '⚡', summary: results?.coding_summary },
-        { key: 'hr', name: 'HR & Behavioral Round', icon: '🤝', summary: results?.hr_summary }
+        { key: 'aptitude', name: 'Aptitude Round', icon: '<i data-lucide="calculator" class="icon-sm"></i>', summary: results?.aptitude_summary },
+        { key: 'technical', name: 'Technical Round', icon: '<i data-lucide="code-2" class="icon-sm"></i>', summary: results?.technical_summary },
+        { key: 'coding', name: 'Coding & DSA Round', icon: '<i data-lucide="terminal" class="icon-sm"></i>', summary: results?.coding_summary },
+        { key: 'hr', name: 'HR & Behavioral Round', icon: '<i data-lucide="users" class="icon-sm"></i>', summary: results?.hr_summary }
     ];
 
     const selectedRounds = Array.isArray(interview?.rounds) ? interview.rounds.map(r => r.toLowerCase()) : ['aptitude', 'technical', 'coding', 'hr'];
@@ -252,7 +252,7 @@ function renderRoundsBreakdown(results, interview) {
         html += `
             <div style="background: var(--bg-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                    <div style="font-weight: 700; color: var(--text-main); font-size: 1rem;">
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                         ${r.icon} ${r.name}
                     </div>
                     <span class="badge ${score >= 75 ? 'badge-success' : score >= 50 ? 'badge-primary' : 'badge-warning'}">
@@ -285,13 +285,17 @@ function renderRoundsBreakdown(results, interview) {
                 </div>
 
                 <div style="font-size: 0.8rem; border-top: 1px solid var(--border-subtle); padding-top: 0.6rem; margin-top: 0.6rem;">
-                    <div style="color: #34d399; font-weight: 600; margin-bottom: 0.25rem;">Key Strengths:</div>
+                    <div style="color: #34d399; font-weight: 600; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <i data-lucide="check" class="icon-xs"></i> Key Strengths:
+                    </div>
                     <ul style="list-style: none; padding-left: 0; margin-bottom: 0.5rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.2rem;">
-                        ${(summary.strengths || ['Good foundational knowledge']).map(s => `<li>✓ ${escapeHtml(s)}</li>`).join('')}
+                        ${(summary.strengths || ['Good foundational knowledge']).map(s => `<li style="display: flex; align-items: flex-start; gap: 0.35rem;"><i data-lucide="check" class="icon-xs" style="color:#34d399; margin-top:0.2rem; flex-shrink:0;"></i> <span>${escapeHtml(s)}</span></li>`).join('')}
                     </ul>
-                    <div style="color: #f87171; font-weight: 600; margin-bottom: 0.25rem;">Areas for Growth:</div>
+                    <div style="color: #f87171; font-weight: 600; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <i data-lucide="alert-circle" class="icon-xs"></i> Areas for Growth:
+                    </div>
                     <ul style="list-style: none; padding-left: 0; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.2rem;">
-                        ${(summary.improvements || ['Review edge cases']).map(i => `<li>• ${escapeHtml(i)}</li>`).join('')}
+                        ${(summary.improvements || ['Review edge cases']).map(i => `<li style="display: flex; align-items: flex-start; gap: 0.35rem;"><i data-lucide="arrow-right" class="icon-xs" style="color:#f87171; margin-top:0.2rem; flex-shrink:0;"></i> <span>${escapeHtml(i)}</span></li>`).join('')}
                     </ul>
                 </div>
             </div>
@@ -380,7 +384,9 @@ function renderFilteredQuestions() {
     container.innerHTML = list.map((q, idx) => {
         const statusLabel = q.is_skipped ? 'Skipped' : (q.is_correct ? 'Correct' : 'Incorrect');
         const statusBadgeClass = q.is_skipped ? 'badge-secondary' : (q.is_correct ? 'badge-success' : 'badge-danger');
-        const statusIcon = q.is_skipped ? '↷' : (q.is_correct ? '✓' : '✕');
+        const statusIcon = q.is_skipped
+            ? '<i data-lucide="corner-up-right" class="icon-xs"></i>'
+            : (q.is_correct ? '<i data-lucide="check" class="icon-xs"></i>' : '<i data-lucide="x" class="icon-xs"></i>');
         const errorType = q.error_type || (q.is_skipped ? 'Did Not Answer' : (q.is_correct ? 'None (Correct)' : 'Concept Missing'));
 
         const missingHtml = Array.isArray(q.missing_concepts) && q.missing_concepts.length > 0
@@ -395,10 +401,10 @@ function renderFilteredQuestions() {
                     <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
                         <span class="badge badge-primary" style="text-transform: capitalize;">${escapeHtml(q.round || 'Round')}</span>
                         <span style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">Q${q.question_index || (idx + 1)}. ${escapeHtml(q.topic || 'General')}</span>
-                        ${q.viewed_answer ? '<span class="badge badge-warning" style="font-size: 0.7rem;">💡 Viewed Answer</span>' : ''}
+                        ${q.viewed_answer ? '<span class="badge badge-warning" style="font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.25rem;"><i data-lucide="lightbulb" class="icon-xs"></i> Viewed Answer</span>' : ''}
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.4rem;">
-                        <span class="badge ${statusBadgeClass}">${statusIcon} ${statusLabel}</span>
+                        <span class="badge ${statusBadgeClass}" style="display: inline-flex; align-items: center; gap: 0.3rem;">${statusIcon} ${statusLabel}</span>
                         ${errorType !== 'None (Correct)' ? `<span class="badge badge-danger" style="font-size: 0.75rem;">${escapeHtml(errorType)}</span>` : ''}
                         <span class="badge ${q.score >= 70 ? 'badge-success' : 'badge-secondary'}" style="font-size: 0.75rem;">${Math.round(q.score || 0)} pts</span>
                     </div>
@@ -452,7 +458,7 @@ function renderAnalyticalInsights(results) {
                 return `<li><span style="color:#f87171; font-weight:600;">#${idx + 1}</span> ${escapeHtml(topicName)} ${avgScore} ${err}</li>`;
             }).join('');
         } else {
-            weakList.innerHTML = `<li style="color: #34d399;">✓ No severe weaknesses detected. Great job across all rounds!</li>`;
+            weakList.innerHTML = `<li style="color: #34d399; display: flex; align-items: center; gap: 0.3rem;"><i data-lucide="check" class="icon-xs"></i> No severe weaknesses detected. Great job across all rounds!</li>`;
         }
     }
 
@@ -464,7 +470,7 @@ function renderAnalyticalInsights(results) {
             strongList.innerHTML = strongTopics.map(item => {
                 const topicName = typeof item === 'string' ? item : (item.topic || 'Concept');
                 const score = item.score != null ? `(${item.score}%)` : '';
-                return `<li>✓ <strong>${escapeHtml(topicName)}</strong> ${score}</li>`;
+                return `<li style="display: flex; align-items: center; gap: 0.3rem;"><i data-lucide="check" class="icon-xs" style="color: #34d399;"></i> <strong>${escapeHtml(topicName)}</strong> ${score}</li>`;
             }).join('');
         } else {
             strongList.innerHTML = `<li>Foundational competencies demonstrated. Continue deep practice.</li>`;

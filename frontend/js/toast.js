@@ -17,18 +17,19 @@ const Toast = {
         toast.className = `toast toast-${type}`;
 
         const icons = {
-            success: '✓',
-            error: '✕',
-            warning: '⚠',
-            info: 'ℹ'
+            success: '<i data-lucide="check-circle" style="color:var(--accent-emerald); width:18px; height:18px;"></i>',
+            error: '<i data-lucide="alert-circle" style="color:var(--accent-rose); width:18px; height:18px;"></i>',
+            warning: '<i data-lucide="alert-triangle" style="color:var(--accent-amber); width:18px; height:18px;"></i>',
+            info: '<i data-lucide="info" style="color:var(--accent-blue); width:18px; height:18px;"></i>'
         };
 
         toast.innerHTML = `
-            <span style="font-weight:bold; font-size:1.1rem;">${icons[type] || 'ℹ'}</span>
-            <span style="font-size:0.92rem;">${message}</span>
+            <span class="toast-icon-wrap" style="display:inline-flex; align-items:center;">${icons[type] || icons.info}</span>
+            <span style="font-size:0.9rem; line-height:1.4;">${message}</span>
         `;
 
         container.appendChild(toast);
+        if (window.renderIcons) window.renderIcons();
 
         setTimeout(() => {
             toast.style.opacity = '0';

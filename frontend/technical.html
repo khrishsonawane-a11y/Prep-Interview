@@ -31,10 +31,10 @@
       </div>
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <button id="speak-tech-btn" class="btn btn-secondary btn-sm" type="button">
-          🔊 Read Question Aloud
+          <i data-lucide="volume-2"></i> Read Question Aloud
         </button>
         <button id="view-tech-answer-btn" class="btn btn-secondary btn-sm" type="button">
-          💡 View Answer & Points
+          <i data-lucide="help-circle"></i> View Answer & Points
         </button>
         <span class="badge badge-primary" id="tech-q-counter">Question 1 of 30</span>
       </div>
@@ -52,7 +52,7 @@
 
         <!-- AI Interviewer Dialogue Box -->
         <div class="ai-interviewer-card" id="ai-question-card" style="display: none;">
-          <div class="ai-avatar-pulse">🤖</div>
+          <div class="ai-avatar-pulse"><i data-lucide="cpu" class="icon-md"></i></div>
           <div class="ai-dialog-body">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
               <span class="badge badge-primary" id="tech-q-topic">System Architecture</span>
@@ -75,7 +75,7 @@
             <span class="form-label" style="font-size: 0.95rem;">Your Technical Explanation:</span>
             <div style="display: flex; align-items: center; gap: 1rem;">
               <button id="voice-dictate-btn" type="button" class="voice-input-btn">
-                🎙️ Dictate with Voice
+                <i data-lucide="mic"></i> Dictate with Voice
               </button>
               <span class="char-counter" id="char-count-display">0 words (0 chars)</span>
             </div>
@@ -85,14 +85,14 @@
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
             <button id="prev-tech-btn" type="button" class="btn btn-secondary">
-              ← Previous
+              <i data-lucide="arrow-left"></i> Previous
             </button>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button id="skip-question-btn" type="button" class="btn btn-secondary">
-                Skip Question ↷
+                Skip Question <i data-lucide="corner-up-right"></i>
               </button>
               <button id="submit-answer-btn" class="btn btn-primary btn-lg">
-                Submit Answer & Evaluate 🤖
+                Submit Answer & Evaluate <i data-lucide="send"></i>
               </button>
             </div>
           </div>
@@ -133,7 +133,7 @@
           <!-- Concept Level Evaluation List -->
           <div class="eval-section-box" id="eval-concept-coverage-section">
             <div class="eval-section-title">
-              <span>🎯 Concept-Level Verification</span>
+              <span style="display: flex; align-items: center; gap: 0.4rem;"><i data-lucide="check-circle" class="icon-xs" style="color:var(--accent-blue);"></i> Concept-Level Verification</span>
               <span id="eval-coverage-pill" class="badge badge-primary" style="font-size: 0.75rem;">Coverage: 75%</span>
             </div>
             <div id="eval-concepts-list" class="eval-concepts-grid">
@@ -143,32 +143,32 @@
 
           <!-- What You Got Right -->
           <div class="eval-feedback-card eval-card-correct" id="eval-strengths-box">
-            <div class="eval-feedback-header" style="color: #10b981;">
-              <span>✅ What You Got Right</span>
+            <div class="eval-feedback-header" style="color: #10b981; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="check-circle-2" class="icon-xs"></i> <span>What You Got Right</span>
             </div>
             <ul id="eval-strengths" class="eval-feedback-list"></ul>
           </div>
 
           <!-- What Is Missing -->
           <div class="eval-feedback-card eval-card-missing" id="eval-missing-box">
-            <div class="eval-feedback-header" style="color: #f59e0b;">
-              <span>⚠️ What Is Missing</span>
+            <div class="eval-feedback-header" style="color: #f59e0b; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="alert-triangle" class="icon-xs"></i> <span>What Is Missing</span>
             </div>
             <ul id="eval-missing-points" class="eval-feedback-list"></ul>
           </div>
 
           <!-- Technical Issues / Mistakes -->
           <div class="eval-feedback-card eval-card-mistakes" id="eval-mistakes-box" style="display: none;">
-            <div class="eval-feedback-header" style="color: #ef4444;">
-              <span>❌ Technical Issues / Mistakes</span>
+            <div class="eval-feedback-header" style="color: #ef4444; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="alert-circle" class="icon-xs"></i> <span>Technical Issues / Mistakes</span>
             </div>
             <ul id="eval-mistakes-list" class="eval-feedback-list"></ul>
           </div>
 
           <!-- Feedback Summary & Improvement -->
           <div class="eval-feedback-card eval-card-improvement" id="eval-improvement-box">
-            <div class="eval-feedback-header" style="color: #3b82f6;">
-              <span>💡 How to Improve This Answer</span>
+            <div class="eval-feedback-header" style="color: #3b82f6; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="lightbulb" class="icon-xs"></i> <span>How to Improve This Answer</span>
             </div>
             <p id="eval-improvement-text" style="font-size: 0.9rem; color: var(--text-main); line-height: 1.55; margin: 0;"></p>
           </div>
@@ -176,7 +176,7 @@
           <!-- Expected Technical Reference Answer -->
           <details class="eval-reference-details" id="eval-reference-details">
             <summary class="eval-reference-summary">
-              <span>📖 View Expected Technical Answer & Key Mechanics</span>
+              <span style="display: flex; align-items: center; gap: 0.4rem;"><i data-lucide="book-open" class="icon-xs"></i> View Expected Technical Answer & Key Mechanics</span>
             </summary>
             <div class="eval-reference-body" id="eval-reference-text">
               <!-- Reference Answer Text -->
@@ -186,7 +186,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
             <span style="font-size: 0.8rem; color: var(--text-dim);" id="eval-footer-note">Answer recorded and scored.</span>
             <button id="next-stage-btn" class="btn btn-primary btn-lg">
-              Next Technical Question →
+              Next Technical Question <i data-lucide="arrow-right"></i>
             </button>
           </div>
         </div>
@@ -196,7 +196,7 @@
       <div>
         <div class="question-palette-card">
           <div class="palette-header">
-            <span class="palette-title">🧭 Question Palette</span>
+            <span class="palette-title"><i data-lucide="layout-grid" class="icon-sm"></i> Question Palette</span>
             <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
           </div>
 
@@ -227,7 +227,7 @@
               <span>Unvisited</span>
             </div>
             <div class="legend-item" title="Reference answer was viewed">
-              <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+              <i data-lucide="eye" style="width: 14px; height: 14px; color: var(--accent-blue);"></i>
               <span>Viewed</span>
             </div>
           </div>
@@ -242,9 +242,9 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
         <div>
           <span class="badge badge-purple" style="margin-bottom: 0.25rem;">Reference Solution</span>
-          <h3 style="font-size: 1.15rem; margin: 0;">💡 Expected Technical Answer & Concepts</h3>
+          <h3 style="font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.4rem;"><i data-lucide="book-open" class="icon-sm"></i> Expected Technical Answer & Concepts</h3>
         </div>
-        <button id="close-tech-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+        <button id="close-tech-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;"><i data-lucide="x" class="icon-xs"></i> Close</button>
       </div>
 
       <div style="font-size: 0.9rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -261,6 +261,7 @@
     </div>
   </div>
 
+  <script src="js/libs/lucide.min.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>
@@ -269,5 +270,6 @@
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/technical.js"></script>
+  <script src="js/icons.js"></script>
 </body>
 </html>

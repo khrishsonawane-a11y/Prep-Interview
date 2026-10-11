@@ -102,9 +102,10 @@ function stopQuestionSpeech() {
     isSpeakingQuestion = false;
     const btn = document.getElementById('speak-question-btn');
     if (btn) {
-        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.innerHTML = '<i data-lucide="volume-2"></i> Read Question Aloud';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-secondary');
+        if (window.renderIcons) window.renderIcons();
     }
 }
 
@@ -128,7 +129,8 @@ function setupAnswerModal() {
 
             const pointsList = document.getElementById('hr-points-list');
             if (pointsList && q.key_evaluation_points) {
-                pointsList.innerHTML = q.key_evaluation_points.map(p => `<li>✓ <strong style="color:var(--text-main);">${p}</strong></li>`).join('');
+                pointsList.innerHTML = q.key_evaluation_points.map(p => `<li><i data-lucide="check" class="icon-xs" style="color:var(--accent-emerald);"></i> <strong style="color:var(--text-main);">${p}</strong></li>`).join('');
+                if (window.renderIcons) window.renderIcons();
             }
 
             modal.style.display = 'flex';
@@ -224,10 +226,11 @@ function renderQuestion(index) {
     if (prevBtn) prevBtn.disabled = currentIndex === 0;
     if (nextBtn) {
         if (currentIndex === questions.length - 1) {
-            nextBtn.textContent = 'Generate Final Appraisal Report 🏆';
+            nextBtn.innerHTML = 'Generate Final Appraisal Report <i data-lucide="file-check-2"></i>';
         } else {
-            nextBtn.textContent = 'Next Behavioral Question →';
+            nextBtn.innerHTML = 'Next Behavioral Question <i data-lucide="arrow-right"></i>';
         }
+        if (window.renderIcons) window.renderIcons();
     }
 }
 
@@ -365,7 +368,7 @@ function startRecording() {
         const mic = document.getElementById('mic-record-btn');
         const indicator = document.getElementById('voice-status-indicator');
         if (mic) mic.classList.add('recording');
-        if (indicator) indicator.textContent = '🔴 Listening... Speak clearly (Click to stop)';
+        if (indicator) indicator.innerHTML = '<span class="recording-dot"></span> Listening... Speak clearly (Click to stop)';
         window.Toast.info('Microphone recording active.');
     } catch (e) {
         console.warn('Microphone error:', e);
@@ -482,7 +485,8 @@ function setupButtons() {
                 window.Toast.error(err.message || 'Failed to evaluate answer.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit & Review Answer 🎯';
+                submitBtn.innerHTML = 'Submit & Review Answer <i data-lucide="send"></i>';
+                if (window.renderIcons) window.renderIcons();
             }
         });
     }
@@ -524,13 +528,16 @@ function displayEvaluation(evalData, scroll = true) {
 
     const strengthsWrap = document.getElementById('hr-eval-strengths');
     if (strengthsWrap && evalData.strengths) {
-        strengthsWrap.innerHTML = evalData.strengths.map(s => `<li>✓ ${s}</li>`).join('');
+        strengthsWrap.innerHTML = evalData.strengths.map(s => `<li><i data-lucide="check" class="icon-xs"></i> ${s}</li>`).join('');
     }
 
     const nextBtn = document.getElementById('next-hr-btn');
     if (nextBtn) {
-        nextBtn.textContent = currentIndex < questions.length - 1 ? 'Next Behavioral Question →' : 'Generate Final Appraisal Report 🏆';
+        nextBtn.innerHTML = currentIndex < questions.length - 1 
+            ? 'Next Behavioral Question <i data-lucide="arrow-right"></i>' 
+            : 'Generate Final Appraisal Report <i data-lucide="file-check-2"></i>';
     }
+    if (window.renderIcons) window.renderIcons();
 }
 
 async function finishHRRound() {

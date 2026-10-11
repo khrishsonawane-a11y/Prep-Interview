@@ -36,7 +36,7 @@
           <label class="form-label" for="login-password">Password</label>
           <div class="password-input-wrap">
             <input type="password" id="login-password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
-            <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">👁️</button>
+            <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility"><i data-lucide="eye"></i></button>
           </div>
         </div>
 
@@ -51,6 +51,7 @@
     </div>
   </main>
 
+  <script src="js/libs/lucide.min.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>
@@ -59,5 +60,6 @@
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/icons.js"></script>
 </body>
 </html>

@@ -30,12 +30,14 @@ function renderNavbar() {
     <nav class="navbar">
       <div class="container nav-container">
         <a href="index.html" class="nav-brand">
-          <div class="brand-icon">⚡</div>
-          <span>InterviewPrep<span style="color:var(--primary);">AI</span></span>
+          <div class="brand-icon"><i data-lucide="sparkles"></i></div>
+          <span>InterviewPrep<span style="color:var(--accent-blue);">AI</span></span>
           <span class="brand-badge">PRO</span>
         </a>
 
-        <button class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle Navigation">☰</button>
+        <button class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle Navigation">
+          <i data-lucide="menu"></i>
+        </button>
 
         <ul class="nav-links" id="nav-links-menu">
           <li class="nav-item ${currentPath.includes('index') || currentPath === '/' ? 'active' : ''}">
@@ -69,7 +71,7 @@ function renderNavbar() {
         <div class="nav-auth">
           <!-- Theme Toggle Button -->
           <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Light/Dark Theme" title="Toggle Light/Dark Theme">
-            ${currentTheme === 'dark' ? '☀️' : '🌙'}
+            ${currentTheme === 'dark' ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>'}
           </button>
 
           ${isAuth ? `
@@ -78,7 +80,9 @@ function renderNavbar() {
                 ${(user?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
               </div>
               <span class="user-name-display">${user?.full_name || 'Candidate'}</span>
-              <button class="btn btn-secondary btn-sm" id="nav-logout-btn">Logout</button>
+              <button class="btn btn-secondary btn-sm" id="nav-logout-btn">
+                <i data-lucide="log-out"></i> Logout
+              </button>
             </div>
           ` : `
             <a href="login.html" class="btn btn-secondary btn-sm">Log In</a>
@@ -90,6 +94,7 @@ function renderNavbar() {
     `;
 
     navPlaceholder.innerHTML = navHtml;
+    if (window.renderIcons) window.renderIcons();
 
     // Theme Toggle Handler
     const themeBtn = document.getElementById('theme-toggle-btn');
@@ -101,12 +106,13 @@ function renderNavbar() {
             document.documentElement.setAttribute('data-theme', nextTheme);
             if (nextTheme === 'dark') {
                 document.documentElement.classList.add('dark');
-                themeBtn.innerHTML = '☀️';
+                themeBtn.innerHTML = '<i data-lucide="sun"></i>';
             } else {
                 document.documentElement.classList.remove('dark');
-                themeBtn.innerHTML = '🌙';
+                themeBtn.innerHTML = '<i data-lucide="moon"></i>';
             }
             localStorage.setItem('app_theme', nextTheme);
+            if (window.renderIcons) window.renderIcons();
         });
     }
 
@@ -115,7 +121,9 @@ function renderNavbar() {
     const linksMenu = document.getElementById('nav-links-menu');
     if (toggleBtn && linksMenu) {
         toggleBtn.addEventListener('click', () => {
-            linksMenu.classList.toggle('show');
+            const isShown = linksMenu.classList.toggle('show');
+            toggleBtn.innerHTML = isShown ? '<i data-lucide="x"></i>' : '<i data-lucide="menu"></i>';
+            if (window.renderIcons) window.renderIcons();
         });
     }
 

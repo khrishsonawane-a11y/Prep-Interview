@@ -7,7 +7,7 @@
 function buildPreparationData(roleObj) {
     const title = roleObj.title;
     const skills = roleObj.skills || [];
-    const icon = roleObj.icon || '💼';
+    const icon = roleObj.icon || '<i data-lucide="briefcase" class="icon-sm"></i>';
     const category = roleObj.categoryName || 'Engineering';
 
     return {
@@ -240,7 +240,7 @@ function loadRolePreparation(roleKey) {
             <div class="curriculum-card">
                 <h3>${escapeHtml(curr.title)}</h3>
                 <ul class="curriculum-list">
-                    ${curr.items.map(item => `<li>✓ ${escapeHtml(item)}</li>`).join('')}
+                    ${curr.items.map(item => `<li style="display: flex; align-items: flex-start; gap: 0.45rem;"><i data-lucide="check" class="icon-xs" style="color: #34d399; margin-top: 0.2rem; flex-shrink: 0;"></i> <span>${escapeHtml(item)}</span></li>`).join('')}
                 </ul>
             </div>
         `).join('');

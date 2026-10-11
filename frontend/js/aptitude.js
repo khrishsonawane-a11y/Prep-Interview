@@ -103,9 +103,10 @@ function startQuestionSpeech() {
         isSpeakingQuestion = true;
         const btn = document.getElementById('speak-apt-btn');
         if (btn) {
-            btn.innerHTML = '⏹ Stop Reading';
+            btn.innerHTML = '<i data-lucide="square"></i> Stop Reading';
             btn.classList.add('btn-danger');
             btn.classList.remove('btn-secondary');
+            if (window.renderIcons) window.renderIcons();
         }
     };
 
@@ -127,9 +128,10 @@ function stopQuestionSpeech() {
     isSpeakingQuestion = false;
     const btn = document.getElementById('speak-apt-btn');
     if (btn) {
-        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.innerHTML = '<i data-lucide="volume-2"></i> Read Question Aloud';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-secondary');
+        if (window.renderIcons) window.renderIcons();
     }
 }
 
@@ -753,7 +755,7 @@ function renderAptitudeResultScreen(evalData) {
                 </div>
 
                 <div class="review-explanation-box">
-                  <strong>💡 Mathematical & Deductive Explanation:</strong>
+                  <strong style="display:flex; align-items:center; gap:0.4rem;"><i data-lucide="lightbulb" class="icon-xs"></i> Mathematical & Deductive Explanation:</strong>
                   <div style="white-space: pre-line;">${q.explanation}</div>
                 </div>
               </div>
@@ -765,18 +767,19 @@ function renderAptitudeResultScreen(evalData) {
       <!-- 8. Action Navigation Bar -->
       <div class="result-actions-bar">
         <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-          <button id="res-scroll-review-btn" class="btn btn-secondary">🔍 Review Answers</button>
-          <button id="res-retake-btn" class="btn btn-secondary">🔄 Retake Aptitude Round</button>
-          <button id="res-dashboard-btn" class="btn btn-secondary">📊 Back to Dashboard</button>
+          <button id="res-scroll-review-btn" class="btn btn-secondary"><i data-lucide="search"></i> Review Answers</button>
+          <button id="res-retake-btn" class="btn btn-secondary"><i data-lucide="rotate-ccw"></i> Retake Aptitude Round</button>
+          <button id="res-dashboard-btn" class="btn btn-secondary"><i data-lucide="layout-dashboard"></i> Back to Dashboard</button>
         </div>
 
-        <button id="res-next-round-btn" class="btn btn-primary btn-lg">Continue to Next Round →</button>
+        <button id="res-next-round-btn" class="btn btn-primary btn-lg">Continue to Next Round <i data-lucide="arrow-right"></i></button>
       </div>
     </div>
     `;
 
     resultContainer.innerHTML = resultHtml;
     resultContainer.style.display = 'block';
+    if (window.renderIcons) window.renderIcons();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Setup Review Filters

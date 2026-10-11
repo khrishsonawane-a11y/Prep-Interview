@@ -165,8 +165,10 @@
 
     <!-- Role Switcher & Search -->
     <div style="max-width: 480px; margin: 0 auto 1.25rem; position: relative;">
-      <input type="text" id="prep-role-search" class="form-control" placeholder="Search preparation guides (e.g. Data Scientist, DevOps, Security)..." style="padding-left: 2.25rem; border-radius: var(--radius-full); font-size: 0.9rem;" autocomplete="off">
-      <span style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none;">🔍</span>
+      <input type="text" id="prep-role-search" class="form-control" placeholder="Search preparation guides (e.g. Data Scientist, DevOps, Security)..." style="padding-left: 2.5rem; border-radius: var(--radius-full); font-size: 0.9rem;" autocomplete="off">
+      <span style="position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--text-dim); pointer-events: none; display: flex; align-items: center;">
+        <i data-lucide="search" class="icon-sm"></i>
+      </span>
     </div>
 
     <!-- Role Switcher Pills -->
@@ -201,11 +203,13 @@
       <h2>Ready to Test Your Skills?</h2>
       <p>Simulate the full 4-round interview loop (Aptitude, Technical, Coding, HR) with 30 questions per round tailored specifically to this role.</p>
       <a href="interview.html" class="btn btn-primary btn-lg" id="prep-start-interview-btn">
-        Start AI Mock Interview 🚀
+        <i data-lucide="play-circle"></i> Start AI Mock Interview
       </a>
     </div>
   </main>
 
+  <script src="js/libs/lucide.min.js"></script>
+  <script src="js/icons.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>

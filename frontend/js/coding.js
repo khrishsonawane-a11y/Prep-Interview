@@ -355,9 +355,10 @@ function startQuestionSpeech() {
         isSpeakingQuestion = true;
         const btn = document.getElementById('speak-code-btn');
         if (btn) {
-            btn.innerHTML = '⏹ Stop Reading';
+            btn.innerHTML = '<i data-lucide="square"></i> Stop Reading';
             btn.classList.add('btn-danger');
             btn.classList.remove('btn-secondary');
+            if (window.renderIcons) window.renderIcons();
         }
     };
 
@@ -379,9 +380,10 @@ function stopQuestionSpeech() {
     isSpeakingQuestion = false;
     const btn = document.getElementById('speak-code-btn');
     if (btn) {
-        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.innerHTML = '<i data-lucide="volume-2"></i> Read Question Aloud';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-secondary');
+        if (window.renderIcons) window.renderIcons();
     }
 }
 
@@ -503,15 +505,16 @@ function updateInlineEvaluationCard() {
 
     if (verdictBadge) {
         if (evalRes.status === 'Correct') {
-            verdictBadge.textContent = '✅ Correct';
+            verdictBadge.innerHTML = '<i data-lucide="check-circle-2" class="icon-xs"></i> Correct';
             verdictBadge.className = 'badge badge-success';
         } else if (evalRes.status === 'Partially Correct') {
-            verdictBadge.textContent = '🟡 Partially Correct';
+            verdictBadge.innerHTML = '<i data-lucide="alert-triangle" class="icon-xs"></i> Partially Correct';
             verdictBadge.className = 'badge badge-warning';
         } else {
-            verdictBadge.textContent = '❌ Incorrect';
+            verdictBadge.innerHTML = '<i data-lucide="x-circle" class="icon-xs"></i> Incorrect';
             verdictBadge.className = 'badge badge-danger';
         }
+        if (window.renderIcons) window.renderIcons();
     }
 
     if (scoreText) {
@@ -634,7 +637,7 @@ function displayAIReviewModal(evaluation, problem, problemIndex) {
     if (isCorrect) {
         // ✅ CORRECT FLOW
         if (titleEl) {
-            titleEl.textContent = '✅ Your code is correct.';
+            titleEl.innerHTML = '<i data-lucide="check-circle-2" class="icon-sm" style="color:#10b981;"></i> Your code is correct.';
             titleEl.style.color = '#10b981';
         }
         if (subtitleEl) subtitleEl.textContent = 'Optimal C++ logic and algorithmic invariants verified.';
@@ -655,7 +658,7 @@ function displayAIReviewModal(evaluation, problem, problemIndex) {
     } else if (isPartial) {
         // 🟡 PARTIALLY CORRECT FLOW
         if (titleEl) {
-            titleEl.textContent = '🟡 Your code is partially correct.';
+            titleEl.innerHTML = '<i data-lucide="alert-triangle" class="icon-sm" style="color:#f59e0b;"></i> Your code is partially correct.';
             titleEl.style.color = '#f59e0b';
         }
         if (subtitleEl) subtitleEl.textContent = 'Core algorithmic intent is sound, but edge case flaws or suboptimal complexity were detected.';
@@ -691,7 +694,7 @@ function displayAIReviewModal(evaluation, problem, problemIndex) {
     } else {
         // ❌ INCORRECT FLOW
         if (titleEl) {
-            titleEl.textContent = '❌ Your code is incorrect.';
+            titleEl.innerHTML = '<i data-lucide="x-circle" class="icon-sm" style="color:#ef4444;"></i> Your code is incorrect.';
             titleEl.style.color = '#ef4444';
         }
         if (subtitleEl) subtitleEl.textContent = 'Logical errors or missing problem invariants detected in C++ implementation.';

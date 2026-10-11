@@ -34,15 +34,20 @@
 }
 
 .brand-icon {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   background: var(--primary);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: 0.9rem;
+}
+
+.brand-icon .lucide {
+  width: 16px;
+  height: 16px;
+  color: #ffffff;
 }
 
 .brand-badge {
@@ -92,13 +97,21 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.05rem;
   transition: var(--transition);
+}
+
+.theme-toggle-btn .lucide {
+  width: 16px;
+  height: 16px;
 }
 
 .theme-toggle-btn:hover {
   border-color: var(--border-focus);
-  transform: scale(1.05);
+}
+
+.nav-toggle .lucide {
+  width: 20px;
+  height: 20px;
 }
 
 /* Auth Area in Navbar */

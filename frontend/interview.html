@@ -56,9 +56,9 @@
         <!-- Job Role Search & Category Filter Bar -->
         <div class="role-search-container">
           <div class="role-search-wrap">
-            <span class="role-search-icon">🔍</span>
+            <span class="role-search-icon"><i data-lucide="search" class="icon-sm"></i></span>
             <input type="text" id="role-search-input" class="role-search-input" placeholder="Search job role or skills (e.g. Full Stack, AI Engineer, DevOps, Java, Python)..." autocomplete="off" spellcheck="false">
-            <button type="button" id="role-search-clear-btn" class="role-search-clear-btn" title="Clear search" style="display: none;">✕</button>
+            <button type="button" id="role-search-clear-btn" class="role-search-clear-btn" title="Clear search" style="display: none;"><i data-lucide="x" class="icon-xs"></i></button>
           </div>
 
           <div class="role-filter-row">
@@ -76,7 +76,7 @@
 
         <!-- Empty State when no roles match search -->
         <div class="role-empty-state" id="role-empty-state" style="display: none;">
-          <div class="role-empty-icon">🔎</div>
+          <div class="role-empty-icon"><i data-lucide="search-x" class="icon-lg"></i></div>
           <div class="role-empty-title">No job roles found</div>
           <div class="role-empty-desc">
             We couldn't find any roles matching "<strong id="role-empty-query"></strong>". Try searching for a different keyword or skill.
@@ -89,17 +89,17 @@
         <!-- Role Preparation Banner -->
         <div class="prep-hint-banner" id="prep-hint-banner">
           <div class="prep-hint-info">
-            <div class="prep-hint-title">🎯 Prepare for Your Target Role</div>
+            <div class="prep-hint-title" style="display:flex; align-items:center; gap:0.4rem;"><i data-lucide="compass" class="icon-xs" style="color:var(--accent-blue);"></i> Prepare for Your Target Role</div>
             <div class="prep-hint-desc" id="prep-hint-role-desc">Explore the detailed curriculum, roadmap, and core topics recommended for <strong>Software Developer</strong>.</div>
           </div>
           <a href="#" class="btn btn-secondary btn-sm" id="view-role-prep-btn">
-            View Preparation Guide →
+            View Preparation Guide <i data-lucide="arrow-right"></i>
           </a>
         </div>
 
         <div class="step-actions right-align">
           <button class="btn btn-primary btn-lg" id="step1-next-btn">
-            Next: Select Difficulty →
+            Next: Select Difficulty <i data-lucide="arrow-right"></i>
           </button>
         </div>
       </section>
@@ -115,7 +115,7 @@
 
         <div class="difficulty-grid">
           <div class="diff-card" data-diff="Beginner">
-            <div class="diff-icon">🌱</div>
+            <div class="diff-icon" style="color: #10b981;"><i data-lucide="sprout"></i></div>
             <div class="diff-title">Beginner</div>
             <div class="diff-subtitle">Intern / Junior Engineer (0 - 1 years)</div>
             <div class="diff-desc">Focuses on programming fundamentals, clean syntax, core data structures, basic SQL queries, and foundational engineering communication.</div>
@@ -123,14 +123,14 @@
 
           <div class="diff-card selected" data-diff="Intermediate">
             <div class="diff-badge-rec">Recommended</div>
-            <div class="diff-icon">⚡</div>
+            <div class="diff-icon" style="color: #3b82f6;"><i data-lucide="zap"></i></div>
             <div class="diff-title">Intermediate</div>
             <div class="diff-subtitle">Mid-Level Software Engineer (1 - 4 years)</div>
             <div class="diff-desc">Tests algorithmic efficiency, system design patterns, database indexing, caching strategies, and STAR behavioral scenarios.</div>
           </div>
 
           <div class="diff-card" data-diff="Advanced">
-            <div class="diff-icon">🔥</div>
+            <div class="diff-icon" style="color: #ef4444;"><i data-lucide="flame"></i></div>
             <div class="diff-title">Advanced</div>
             <div class="diff-subtitle">Senior Engineer / Tech Lead (5+ years)</div>
             <div class="diff-desc">High-concurrency system architecture, distributed bottlenecks, complex dynamic programming, technical leadership, and trade-off defense.</div>
@@ -139,10 +139,10 @@
 
         <div class="step-actions split-align">
           <button class="btn btn-secondary btn-lg" id="step2-back-btn">
-            ← Back to Job Role
+            <i data-lucide="arrow-left"></i> Back to Job Role
           </button>
           <button class="btn btn-primary btn-lg" id="step2-next-btn">
-            Next: Choose Rounds →
+            Next: Choose Rounds <i data-lucide="arrow-right"></i>
           </button>
         </div>
       </section>
@@ -217,10 +217,10 @@
 
         <div class="step-actions split-align">
           <button class="btn btn-secondary btn-lg" id="step3-back-btn">
-            ← Back to Difficulty
+            <i data-lucide="arrow-left"></i> Back to Difficulty
           </button>
           <button class="btn btn-primary btn-lg" id="start-interview-btn">
-            Start Interview 🚀
+            <i data-lucide="play-circle"></i> Start Interview
           </button>
         </div>
       </section>
@@ -228,6 +228,7 @@
     </div>
   </main>
 
+  <script src="js/libs/lucide.min.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>
@@ -236,5 +237,6 @@
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/interview.js"></script>
+  <script src="js/icons.js"></script>
 </body>
 </html>

@@ -29,14 +29,14 @@
         <p>Review past interview recordings, round evaluations, and AI feedback reports</p>
       </div>
       <div>
-        <a href="interview.html" class="btn btn-primary">Start New Interview 🚀</a>
+        <a href="interview.html" class="btn btn-primary"><i data-lucide="play-circle"></i> Start New Interview</a>
       </div>
     </div>
 
     <!-- Search & Filters -->
     <div class="filter-bar">
       <div class="search-input-wrap">
-        <input type="text" id="history-search-input" class="form-control" placeholder="🔍 Search by role (e.g. Full Stack Developer)...">
+        <input type="text" id="history-search-input" class="form-control" placeholder="Search by role (e.g. Full Stack Developer)...">
       </div>
 
       <div>
@@ -80,14 +80,18 @@
       </div>
 
       <div id="history-empty-state" style="display: none; padding: 3.5rem; text-align: center;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📂</div>
+        <div style="font-size: 2.5rem; margin-bottom: 0.75rem; color: var(--text-dim); display: flex; justify-content: center;">
+          <i data-lucide="folder-open" class="icon-xl"></i>
+        </div>
         <h3>No Matching Interviews Found</h3>
         <p style="margin-bottom: 1.5rem;">Try adjusting your search filters or start a new interview session.</p>
-        <a href="interview.html" class="btn btn-primary">Start New Interview 🚀</a>
+        <a href="interview.html" class="btn btn-primary"><i data-lucide="play-circle"></i> Start New Interview</a>
       </div>
     </div>
   </main>
 
+  <script src="js/libs/lucide.min.js"></script>
+  <script src="js/icons.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>

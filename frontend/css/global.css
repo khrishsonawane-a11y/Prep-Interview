@@ -471,13 +471,14 @@ footer {
   color: #047857 !important;
 }
 .palette-btn.answered::after, .palette-item.answered::after {
-  content: '✓';
+  content: '';
   position: absolute;
-  top: 1px;
-  right: 2px;
-  font-size: 0.62rem;
-  font-weight: 800;
-  line-height: 1;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* State: Skipped */
@@ -492,13 +493,14 @@ footer {
   color: #b45309 !important;
 }
 .palette-btn.skipped::after, .palette-item.skipped::after {
-  content: '↷';
+  content: '';
   position: absolute;
-  top: 1px;
-  right: 2px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  line-height: 1;
+  top: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* State: Visited but Unanswered */
@@ -515,12 +517,42 @@ footer {
 
 /* State: Viewed Answer indicator */
 .palette-btn.viewed::before, .palette-item.viewed::before {
-  content: '💡';
+  content: '';
   position: absolute;
-  bottom: 1px;
-  right: 1px;
-  font-size: 0.55rem;
-  line-height: 1;
+  bottom: 3px;
+  right: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-amber);
+}
+
+/* =========================================================================
+   LUCIDE ICONS UTILITY CLASSES
+   ========================================================================= */
+
+.lucide {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2;
+  vertical-align: middle;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.icon-xs { width: 0.75rem; height: 0.75rem; stroke-width: 2.2; }
+.icon-sm { width: 0.875rem; height: 0.875rem; }
+.icon-md { width: 1.15rem; height: 1.15rem; }
+.icon-lg { width: 1.4rem; height: 1.4rem; }
+.icon-xl { width: 1.85rem; height: 1.85rem; }
+
+.btn .lucide {
+  margin-right: 0.2rem;
+  position: relative;
+  top: -1px;
+}
+.btn-sm .lucide {
+  width: 0.85rem;
+  height: 0.85rem;
 }
 
 /* Legend */

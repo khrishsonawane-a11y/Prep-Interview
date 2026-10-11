@@ -328,7 +328,8 @@ function setupStepNavigation() {
                 console.error('Failed to create interview:', err);
                 window.Toast.error(err.message || 'Failed to start interview.');
                 startBtn.disabled = false;
-                startBtn.innerHTML = 'Start Interview 🚀';
+                startBtn.innerHTML = '<i data-lucide="play-circle"></i> Start Interview';
+                if (window.renderIcons) window.renderIcons();
             }
         });
     }

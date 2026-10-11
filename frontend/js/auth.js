@@ -14,14 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Password visibility toggle
     document.querySelectorAll('.password-toggle-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const input = e.target.closest('.password-input-wrap').querySelector('input');
+            const wrap = e.target.closest('.password-input-wrap');
+            const input = wrap ? wrap.querySelector('input') : null;
+            if (!input) return;
+            const toggleButton = wrap.querySelector('.password-toggle-btn');
             if (input.type === 'password') {
                 input.type = 'text';
-                btn.textContent = '🙈';
+                toggleButton.innerHTML = '<i data-lucide="eye-off"></i>';
             } else {
                 input.type = 'password';
-                btn.textContent = '👁️';
+                toggleButton.innerHTML = '<i data-lucide="eye"></i>';
             }
+            if (window.renderIcons) window.renderIcons();
         });
     });
 

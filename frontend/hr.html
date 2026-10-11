@@ -29,7 +29,7 @@
       </div>
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <button id="view-hr-answer-btn" class="btn btn-secondary btn-sm" type="button">
-          💡 View Reference STAR Answer
+          <i data-lucide="help-circle"></i> View Reference STAR Answer
         </button>
         <span class="badge badge-purple" id="hr-q-counter">Question 1 of 30</span>
       </div>
@@ -57,7 +57,7 @@
 
           <div>
             <button id="speak-question-btn" type="button" class="btn btn-secondary btn-sm">
-              🔊 Read Question Aloud
+              <i data-lucide="volume-2"></i> Read Question Aloud
             </button>
           </div>
         </div>
@@ -66,7 +66,7 @@
         <div class="card" style="margin-bottom: 2rem; text-align: center;">
           <div class="voice-recorder-section">
             <button type="button" class="mic-circle-btn" id="mic-record-btn" aria-label="Toggle Microphone Recording">
-              🎙️
+              <i data-lucide="mic" class="icon-lg"></i>
             </button>
             <div class="voice-status-text" id="voice-status-indicator">
               Click microphone to record your voice answer
@@ -80,14 +80,14 @@
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
             <button id="prev-hr-btn" type="button" class="btn btn-secondary">
-              ← Previous
+              <i data-lucide="arrow-left"></i> Previous
             </button>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button id="skip-hr-btn" type="button" class="btn btn-secondary">
-                Skip Question ↷
+                Skip Question <i data-lucide="corner-up-right"></i>
               </button>
               <button id="submit-hr-btn" class="btn btn-primary btn-lg">
-                Submit & Review Answer 🎯
+                Submit & Review Answer <i data-lucide="send"></i>
               </button>
             </div>
           </div>
@@ -132,7 +132,7 @@
           </div>
 
           <div style="display: flex; justify-content: flex-end;">
-            <button id="next-hr-btn" class="btn btn-primary btn-lg">Next Behavioral Question →</button>
+            <button id="next-hr-btn" class="btn btn-primary btn-lg">Next Behavioral Question <i data-lucide="arrow-right"></i></button>
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@
       <div>
         <div class="question-palette-card">
           <div class="palette-header">
-            <span class="palette-title">🧭 Question Palette</span>
+            <span class="palette-title"><i data-lucide="layout-grid" class="icon-sm"></i> Question Palette</span>
             <span class="palette-progress-pill" id="palette-progress-badge">0/30 Answered</span>
           </div>
 
@@ -172,7 +172,7 @@
               <span>Unvisited</span>
             </div>
             <div class="legend-item" title="Reference answer was viewed">
-              <span style="font-size: 0.8rem; line-height: 1;">💡</span>
+              <i data-lucide="eye" style="width: 14px; height: 14px; color: var(--accent-blue);"></i>
               <span>Viewed</span>
             </div>
           </div>
@@ -187,14 +187,14 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
         <div>
           <span class="badge badge-primary" style="margin-bottom: 0.25rem;">Reference Example</span>
-          <h3 style="font-size: 1.15rem; margin: 0;">💡 STAR Behavioral Framework & Example</h3>
+          <h3 style="font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 0.4rem;"><i data-lucide="award" class="icon-sm"></i> STAR Behavioral Framework & Example</h3>
         </div>
-        <button id="close-hr-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;">✕ Close</button>
+        <button id="close-hr-modal-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.5rem;"><i data-lucide="x" class="icon-xs"></i> Close</button>
       </div>
 
       <div style="font-size: 0.88rem; display: flex; flex-direction: column; gap: 1rem;">
-        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.82rem; color: #38bdf8;">
-          ℹ️ <strong>Note:</strong> This is a reference example illustrating the STAR methodology. Authentic responses grounded in your personal engineering experience are encouraged.
+        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); font-size: 0.82rem; color: #38bdf8; display: flex; align-items: flex-start; gap: 0.5rem;">
+          <i data-lucide="info" class="icon-xs" style="margin-top: 2px;"></i> <span><strong>Note:</strong> This is a reference example illustrating the STAR methodology. Authentic responses grounded in your personal engineering experience are encouraged.</span>
         </div>
 
         <div>
@@ -210,6 +210,7 @@
     </div>
   </div>
 
+  <script src="js/libs/lucide.min.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>
@@ -218,5 +219,6 @@
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/hr.js"></script>
+  <script src="js/icons.js"></script>
 </body>
 </html>

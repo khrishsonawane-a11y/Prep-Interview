@@ -88,8 +88,8 @@ function renderRecentInterviews(interviews) {
           <td>${statusBadge}</td>
           <td>
             ${item.status === 'completed' 
-              ? `<a href="report.html?id=${item.id}" class="btn btn-secondary btn-sm">View Report ↗</a>`
-              : `<a href="interview.html?resume=${item.id}" class="btn btn-primary btn-sm">Resume →</a>`}
+              ? `<a href="report.html?id=${item.id}" class="btn btn-secondary btn-sm"><i data-lucide="file-text"></i> View Report</a>`
+              : `<a href="interview.html?resume=${item.id}" class="btn btn-primary btn-sm"><i data-lucide="play"></i> Resume</a>`}
           </td>
         </tr>
       `;

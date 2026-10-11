@@ -24,12 +24,12 @@
     <section class="welcome-banner">
       <div class="welcome-text">
         <span class="badge badge-primary" style="margin-bottom: 0.5rem;">Candidate Portal</span>
-        <h1>Welcome back, <span id="user-welcome-name" style="color: #60a5fa;">Candidate</span>! 👋</h1>
+        <h1>Welcome back, <span id="user-welcome-name" style="color: #60a5fa;">Candidate</span>!</h1>
         <p>Ready to level up your technical communication and algorithmic skills today?</p>
       </div>
       <div>
         <a href="interview.html" class="btn btn-primary btn-lg">
-          Start Full Interview 🚀
+          <i data-lucide="play-circle"></i> Start Full Interview
         </a>
       </div>
     </section>
@@ -37,7 +37,7 @@
     <!-- Stat Metrics -->
     <section class="stats-grid">
       <div class="stat-card">
-        <div class="stat-icon green">✓</div>
+        <div class="stat-icon green"><i data-lucide="check-circle-2"></i></div>
         <div class="stat-info">
           <div class="stat-value" id="stat-completed">0</div>
           <div class="stat-label">Interviews Completed</div>
@@ -45,7 +45,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon blue">📋</div>
+        <div class="stat-icon blue"><i data-lucide="clipboard-list"></i></div>
         <div class="stat-info">
           <div class="stat-value" id="stat-attempted">0</div>
           <div class="stat-label">Interviews Attempted</div>
@@ -53,7 +53,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon purple">📊</div>
+        <div class="stat-icon purple"><i data-lucide="bar-chart-3"></i></div>
         <div class="stat-info">
           <div class="stat-value" id="stat-avg-score">0%</div>
           <div class="stat-label">Average Score</div>
@@ -61,7 +61,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon green">🎯</div>
+        <div class="stat-icon green"><i data-lucide="target"></i></div>
         <div class="stat-info">
           <div class="stat-value" id="stat-correct-count" style="color:#059669;">0</div>
           <div class="stat-label">Correct Questions</div>
@@ -69,7 +69,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon amber">❌</div>
+        <div class="stat-icon amber"><i data-lucide="x-circle"></i></div>
         <div class="stat-info">
           <div class="stat-value" id="stat-wrong-count" style="color:#dc2626;">0</div>
           <div class="stat-label">Wrong Questions</div>
@@ -77,7 +77,7 @@
       </div>
 
       <div class="stat-card">
-        <div class="stat-icon purple">📈</div>
+        <div class="stat-icon purple"><i data-lucide="trending-up"></i></div>
         <div class="stat-info">
           <div class="stat-value" id="stat-improvement" style="color:#7c3aed;">+0%</div>
           <div class="stat-label">Latest Improvement</div>
@@ -89,15 +89,15 @@
     <section style="margin-bottom: 2.25rem;">
       <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.25rem; border-left:4px solid var(--accent-blue);">
         <div>
-          <div style="font-weight:700; font-size:1.05rem; color:var(--text-main); margin-bottom:0.25rem;">
-            🎯 Prepare for Your Target Job Role
+          <div style="font-weight:700; font-size:1.05rem; color:var(--text-main); margin-bottom:0.25rem; display:flex; align-items:center; gap:0.5rem;">
+            <i data-lucide="compass" class="icon-sm" style="color:var(--accent-blue);"></i> Prepare for Your Target Job Role
           </div>
           <p style="margin:0; font-size:0.88rem; color:var(--text-muted);">
             Explore 6-phase learning roadmaps, core CS curriculums, and interview strategies across 8 engineering roles.
           </p>
         </div>
         <a href="preparation.html" class="btn btn-secondary">
-          View Preparation Roadmaps →
+          View Preparation Roadmaps <i data-lucide="arrow-right"></i>
         </a>
       </div>
     </section>
@@ -113,31 +113,31 @@
 
       <div class="practice-grid">
         <div class="practice-card">
-          <div class="practice-icon">🧠</div>
+          <div class="practice-icon" style="color:#6366f1;"><i data-lucide="brain"></i></div>
           <h3>Aptitude Practice</h3>
           <p>Quantitative, Profit & Loss, Percentages, and Logical Puzzles.</p>
-          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Practice Aptitude →</a>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Practice Aptitude <i data-lucide="arrow-right"></i></a>
         </div>
 
         <div class="practice-card">
-          <div class="practice-icon">⚙️</div>
+          <div class="practice-icon" style="color:#059669;"><i data-lucide="cpu"></i></div>
           <h3>Technical Interview</h3>
           <p>Deep dive on Core CS, DBMS, OOP, APIs, and system architecture.</p>
-          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start Technical →</a>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start Technical <i data-lucide="arrow-right"></i></a>
         </div>
 
         <div class="practice-card">
-          <div class="practice-icon">💻</div>
+          <div class="practice-icon" style="color:#2563eb;"><i data-lucide="code-2"></i></div>
           <h3>Coding / DSA</h3>
           <p>Solve data structures and algorithmic challenges with safe execution.</p>
-          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start Coding →</a>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start Coding <i data-lucide="arrow-right"></i></a>
         </div>
 
         <div class="practice-card">
-          <div class="practice-icon">🎙️</div>
+          <div class="practice-icon" style="color:#d97706;"><i data-lucide="mic"></i></div>
           <h3>HR / Voice Interview</h3>
           <p>Behavioral storytelling with live speech recognition and STAR feedback.</p>
-          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start HR Round →</a>
+          <a href="interview.html?role=Software%20Developer" class="btn btn-secondary btn-sm">Start HR Round <i data-lucide="arrow-right"></i></a>
         </div>
       </div>
     </section>
@@ -149,7 +149,7 @@
           <h2>Recent Interview Sessions</h2>
           <p>Your performance history and AI evaluations</p>
         </div>
-        <a href="history.html" class="btn btn-secondary btn-sm">View Full History ↗</a>
+        <a href="history.html" class="btn btn-secondary btn-sm">View Full History <i data-lucide="arrow-up-right"></i></a>
       </div>
 
       <div class="table-card">
@@ -170,15 +170,18 @@
           </table>
         </div>
         <div id="empty-interviews-state" style="display:none; padding:3rem; text-align:center;">
-          <div style="font-size:2.5rem; margin-bottom:0.75rem;">📝</div>
+          <div style="font-size:2.5rem; margin-bottom:0.75rem; color:var(--text-dim); display:flex; justify-content:center;">
+            <i data-lucide="inbox" class="icon-xl"></i>
+          </div>
           <h3>No Interview Sessions Yet</h3>
           <p style="margin-bottom:1.25rem;">Start your first AI-assisted mock interview to see analytics and reports here.</p>
-          <a href="interview.html" class="btn btn-primary">Start New Interview 🚀</a>
+          <a href="interview.html" class="btn btn-primary"><i data-lucide="play-circle"></i> Start New Interview</a>
         </div>
       </div>
     </section>
   </main>
 
+  <script src="js/libs/lucide.min.js"></script>
   <script src="js/libs/supabase.js"></script>
   <script>if (typeof window.supabase === 'undefined') { document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>'); }</script>
   <script src="js/config.js"></script>
@@ -187,5 +190,6 @@
   <script src="js/api.js"></script>
   <script src="js/navbar.js"></script>
   <script src="js/dashboard.js"></script>
+  <script src="js/icons.js"></script>
 </body>
 </html>

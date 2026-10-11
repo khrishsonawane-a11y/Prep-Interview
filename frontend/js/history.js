@@ -69,7 +69,7 @@ async function loadInterviewHistory(filters = {}) {
                 const rounds = item.rounds_config || ['aptitude', 'technical', 'coding', 'hr'];
                 const roundsBadges = rounds.map(r => {
                     const isDone = isCompleted || (item.current_round_index || 0) > rounds.indexOf(r);
-                    return `<span class="round-pill ${isDone ? 'done' : ''}">${isDone ? '✓ ' : ''}${r}</span>`;
+                    return `<span class="round-pill ${isDone ? 'done' : ''}">${isDone ? '<i data-lucide="check" class="icon-xs" style="margin-right:2px;"></i>' : ''}${r}</span>`;
                 }).join(' ');
 
                 return `
@@ -85,8 +85,8 @@ async function loadInterviewHistory(filters = {}) {
                     <td>${statusBadge}</td>
                     <td>
                         ${isCompleted
-                            ? `<a href="report.html?id=${item.id}" class="btn btn-secondary btn-sm">View Feedback ↗</a>`
-                            : `<a href="interview.html?resume=${item.id}" class="btn btn-primary btn-sm">Resume →</a>`}
+                            ? `<a href="report.html?id=${item.id}" class="btn btn-secondary btn-sm"><i data-lucide="file-text"></i> View Feedback</a>`
+                            : `<a href="interview.html?resume=${item.id}" class="btn btn-primary btn-sm"><i data-lucide="play"></i> Resume</a>`}
                     </td>
                 </tr>
                 `;

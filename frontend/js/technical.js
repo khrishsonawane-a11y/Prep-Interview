@@ -105,9 +105,10 @@ function stopQuestionSpeech() {
     isSpeakingQuestion = false;
     const btn = document.getElementById('speak-tech-btn');
     if (btn) {
-        btn.innerHTML = '🔊 Read Question Aloud';
+        btn.innerHTML = '<i data-lucide="volume-2"></i> Read Question Aloud';
         btn.classList.remove('btn-danger');
         btn.classList.add('btn-secondary');
+        if (window.renderIcons) window.renderIcons();
     }
 }
 
@@ -131,7 +132,8 @@ function setupAnswerModal() {
 
             const conceptsList = document.getElementById('tech-modal-concepts-list');
             if (conceptsList && q.expected_concepts) {
-                conceptsList.innerHTML = q.expected_concepts.map(c => `<li>✓ <strong style="color:var(--text-main);">${c}</strong></li>`).join('');
+                conceptsList.innerHTML = q.expected_concepts.map(c => `<li><i data-lucide="check" class="icon-xs" style="color:var(--accent-emerald);"></i> <strong style="color:var(--text-main);">${c}</strong></li>`).join('');
+                if (window.renderIcons) window.renderIcons();
             }
 
             modal.style.display = 'flex';
@@ -232,10 +234,11 @@ function renderQuestion(index) {
     if (prevBtn) prevBtn.disabled = currentIndex === 0;
     if (nextBtn) {
         if (currentIndex === questions.length - 1) {
-            nextBtn.textContent = 'Proceed to Coding Round ⚡';
+            nextBtn.innerHTML = 'Proceed to Coding Round <i data-lucide="arrow-right"></i>';
         } else {
-            nextBtn.textContent = 'Next Technical Question →';
+            nextBtn.innerHTML = 'Next Technical Question <i data-lucide="arrow-right"></i>';
         }
+        if (window.renderIcons) window.renderIcons();
     }
 }
 
@@ -359,7 +362,8 @@ function setupSpeechRecognition() {
         const btn = document.getElementById('voice-dictate-btn');
         if (btn) {
             btn.classList.remove('recording');
-            btn.innerHTML = '🎙️ Dictate with Voice';
+            btn.innerHTML = '<i data-lucide="mic"></i> Dictate with Voice';
+            if (window.renderIcons) window.renderIcons();
         }
     };
 
@@ -385,7 +389,7 @@ function startRecording() {
         const btn = document.getElementById('voice-dictate-btn');
         if (btn) {
             btn.classList.add('recording');
-            btn.innerHTML = '🔴 Listening... (Click to stop)';
+            btn.innerHTML = '<span class="recording-dot"></span> Listening... (Click to stop)';
         }
         window.Toast.info('Microphone active. Speak your technical answer clearly.');
     } catch (e) {
@@ -506,7 +510,8 @@ function setupButtons() {
                 window.Toast.error(err.message || 'Failed to evaluate answer.');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = 'Submit Answer & Evaluate 🤖';
+                submitBtn.innerHTML = 'Submit Answer & Evaluate <i data-lucide="send"></i>';
+                if (window.renderIcons) window.renderIcons();
             }
         });
     }
@@ -604,11 +609,15 @@ function displayEvaluation(evalData, scroll = true) {
     if (conceptsGridEl) {
         conceptsGridEl.innerHTML = conceptsList.map(item => {
             const status = (item.status || 'covered').toLowerCase();
-            const icon = status === 'covered' ? '✓' : (status === 'incorrect' ? '❌' : '✗');
+            const iconHtml = status === 'covered' 
+                ? '<i data-lucide="check" class="icon-xs" style="color:var(--accent-emerald);"></i>' 
+                : (status === 'incorrect' 
+                    ? '<i data-lucide="x" class="icon-xs" style="color:var(--accent-rose);"></i>' 
+                    : '<i data-lucide="minus" class="icon-xs" style="color:var(--accent-amber);"></i>');
             const label = status === 'covered' ? 'Covered' : (status === 'incorrect' ? 'Incorrect' : 'Missing');
             return `
                 <div class="concept-pill ${status}">
-                    <span>${icon}</span>
+                    <span>${iconHtml}</span>
                     <span><strong>${item.name}</strong> (${label})</span>
                 </div>
             `;
@@ -621,7 +630,7 @@ function displayEvaluation(evalData, scroll = true) {
     const strengthsList = document.getElementById('eval-strengths');
     if (strengthsList) {
         if (strengths.length > 0) {
-            strengthsList.innerHTML = strengths.map(s => `<li>✓ ${s}</li>`).join('');
+            strengthsList.innerHTML = strengths.map(s => `<li><i data-lucide="check" class="icon-xs" style="color:var(--accent-emerald);"></i> ${s}</li>`).join('');
             if (strengthsBox) strengthsBox.style.display = 'block';
         } else {
             strengthsList.innerHTML = `<li>No specific accurate technical statements detected in response.</li>`;
@@ -634,7 +643,7 @@ function displayEvaluation(evalData, scroll = true) {
     const missingList = document.getElementById('eval-missing-points');
     if (missingList) {
         if (missing.length > 0) {
-            missingList.innerHTML = missing.map(m => `<li>⚠️ ${m}</li>`).join('');
+            missingList.innerHTML = missing.map(m => `<li><i data-lucide="alert-triangle" class="icon-xs" style="color:var(--accent-amber);"></i> ${m}</li>`).join('');
             if (missingBox) missingBox.style.display = 'block';
         } else {
             missingList.innerHTML = `<li>All expected core concepts and architectural criteria were addressed.</li>`;
@@ -647,7 +656,7 @@ function displayEvaluation(evalData, scroll = true) {
     const mistakesList = document.getElementById('eval-mistakes-list');
     if (mistakesBox && mistakesList) {
         if (mistakes && mistakes.length > 0) {
-            mistakesList.innerHTML = mistakes.map(m => `<li>❌ ${m}</li>`).join('');
+            mistakesList.innerHTML = mistakes.map(m => `<li><i data-lucide="alert-circle" class="icon-xs" style="color:var(--accent-rose);"></i> ${m}</li>`).join('');
             mistakesBox.style.display = 'block';
         } else {
             mistakesBox.style.display = 'none';
@@ -672,8 +681,11 @@ function displayEvaluation(evalData, scroll = true) {
 
     const nextBtn = document.getElementById('next-stage-btn');
     if (nextBtn) {
-        nextBtn.textContent = currentIndex < questions.length - 1 ? 'Next Technical Question →' : 'Proceed to Coding Round ⚡';
+        nextBtn.innerHTML = currentIndex < questions.length - 1 
+            ? 'Next Technical Question <i data-lucide="arrow-right"></i>' 
+            : 'Proceed to Coding Round <i data-lucide="arrow-right"></i>';
     }
+    if (window.renderIcons) window.renderIcons();
 }
 
 async function finishTechnicalRound() {
